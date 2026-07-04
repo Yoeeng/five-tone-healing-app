@@ -1,0 +1,51 @@
+﻿# ========== Node.js ==========
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========== 构建产物 ==========
+build/
+dist/
+*.apk
+*.aab
+*.ipa
+
+# ========== 安装包 ==========
+*.msi
+*.exe
+
+# ========== 环境变量与密钥 ==========
+.env
+.env.local
+*.pem
+*.cert
+
+# ========== IDE / 编辑器 ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========== 日志与缓存 ==========
+*.log
+logs/
+.cache/
+.temp/
+tmp/
+
+# ========== 操作系统 ==========
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ========== 临时测试文件 ==========
+test_*.mp3
+direct_test.mp3
+tts_test*.mp3
+fix_*.py
+modify_*.py
+simulate_flow.js
