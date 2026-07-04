@@ -1656,7 +1656,7 @@
         <div class="home-subtitle letter-spaced">以五音调和情志，守护身心健康</div>
 
       </div>
-      <div class="home-greeting">李老朋友，早晨啊，今日心情点呀？</div>
+      <div class="home-greeting" id="homeGreeting">老朋友好呀~</div>
       <div class="checkin-wrap">
         <button class="checkin-btn" id="checkinBtn" onclick="doCheckIn()">
           <span class="checkin-text" id="checkinText">签</span>
@@ -6237,6 +6237,26 @@ function getHourPeriod() {
   if (h >= 18 && h < 22) return { key:'evening', label:'傍晚模式', emoji:'', className:'chat-avatar-evening' };
   return { key:'night', label:'夜晚模式', emoji:'', className:'chat-avatar-night' };
 }
+
+function getHomeGreeting() {
+  var h = new Date().getHours();
+  var timeWord = '';
+  var tail = '';
+  if (h >= 5 && h < 9)  { timeWord = '清晨'; tail = '，今天感觉怎么样呀？'; }
+  else if (h >= 9 && h < 11) { timeWord = '上午'; tail = '，今天过得还好吗？'; }
+  else if (h >= 11 && h < 14) { timeWord = '中午'; tail = '，吃饭了没呀？'; }
+  else if (h >= 14 && h < 18) { timeWord = '下午'; tail = '，今天感觉如何？'; }
+  else if (h >= 18 && h < 21) { timeWord = '晚上'; tail = '，今天累不累呀？'; }
+  else if (h >= 21 && h < 23) { timeWord = '夜深了'; tail = '，早点休息哦~'; }
+  else { timeWord = '夜深了'; tail = '，记得早点休息呀~'; }
+  return '老朋友，' + timeWord + '好呀' + tail;
+}
+
+function updateHomeGreeting() {
+  var el = document.getElementById('homeGreeting');
+  if (!el) return;
+  el.textContent = getHomeGreeting();
+}
 function getEmotionFromChat() {
   var texts = chatHistory.filter(function(m) { return m.role === 'user'; }).map(function(m) { return m.content; }).join('');
   if (texts.match(/开心|高兴|快乐|愉快/)) return 'happy';
@@ -6713,6 +6733,7 @@ function initNewFeatures() {
   applyLovableUIOptimizations();
   initTTSSettings();
   checkTTSStatus();
+  updateHomeGreeting();
 }
 
 // ========== INIT ==========
