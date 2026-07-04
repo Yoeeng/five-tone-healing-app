@@ -979,6 +979,32 @@
   .edit-name-btn-cancel { background:rgba(0,0,0,.06); color:#7A7A7A; }
   .edit-name-btn-save { background:var(--green); color:#fff; }
 
+  /* API key modal (复用 edit-name 风格) */
+  .apikey-hint {
+    font-size:13px; color:#7A7A7A; line-height:1.6; margin-bottom:14px;
+    background:rgba(201,169,78,.08); padding:10px 12px; border-radius:10px;
+    border:1px solid rgba(201,169,78,.2);
+  }
+  .apikey-hint a { color:var(--green); text-decoration:none; font-weight:600; }
+  .apikey-input {
+    width:100%; padding:14px 16px; border-radius:12px;
+    border:1px solid var(--border); font-size:15px; font-family:inherit;
+    color:var(--ink); background:rgba(253,250,245,.5); outline:none;
+    letter-spacing:.5px;
+  }
+  .apikey-input:focus { border-color:var(--green); }
+  .apikey-row-eye { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; color:#7A7A7A; }
+  .apikey-clear-btn {
+    margin-top:12px; width:100%; padding:10px; border-radius:10px;
+    background:rgba(200,90,61,.08); color:#C85A3D; border:1px solid rgba(200,90,61,.2);
+    font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  .apikey-status {
+    display:inline-block; padding:3px 10px; border-radius:8px; font-size:12px; font-weight:600;
+  }
+  .apikey-status.set { background:rgba(90,142,90,.15); color:#4A7A4A; }
+  .apikey-status.unset { background:rgba(200,90,61,.12); color:#A0452F; }
+
   /* Toast */
   .toast {
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -2044,6 +2070,16 @@
           </div>
           <div class="profile-menu-chevron"><ion-icon name="chevron-forward"></ion-icon></div>
         </div>
+        <div class="profile-menu-item" onclick="showApiKeyModal()">
+          <div class="profile-menu-icon-bg" style="background:rgba(90,142,138,.12);">
+            <ion-icon name="key-outline" style="color:#5A8E8A;"></ion-icon>
+          </div>
+          <div class="profile-menu-info">
+            <div class="profile-menu-title">AI 密钥设置</div>
+            <div class="profile-menu-subtitle" id="apikeyMenuSubtitle">DashScope API Key · 未设置</div>
+          </div>
+          <div class="profile-menu-chevron"><ion-icon name="chevron-forward"></ion-icon></div>
+        </div>
         <!-- 声音设置面板（默认折叠，点击声音设置展开） -->
         <div class="profile-voice-card" id="voiceSettingsCard" style="display:none;margin:0 16px 12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -2206,6 +2242,29 @@
           <button class="edit-name-btn edit-name-btn-cancel" onclick="closeEditNameModal()">取消</button>
           <button class="edit-name-btn edit-name-btn-save" onclick="saveEditName()">保存</button>
         </div>
+      </div>
+    </div>
+
+    <!-- API key modal -->
+    <div class="edit-name-overlay" id="apikeyOverlay">
+      <div class="edit-name-modal">
+        <h3>设置 DashScope API Key</h3>
+        <div class="apikey-hint">
+          您的 Key 仅保存在本机浏览器，不会上传任何服务器。
+          <br>前往 <a href="https://dashscope.console.aliyun.com/apiKey" target="_blank" rel="noopener">阿里云百炼控制台</a> 获取。
+        </div>
+        <input class="apikey-input" id="apikeyInput" type="password" placeholder="sk-xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+        <div class="apikey-row-eye">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="apikeyShowPwd" onchange="var i=document.getElementById('apikeyInput'); i.type=this.checked?'text':'password';"> 显示明文
+          </label>
+          <span id="apikeyStatusBadge" class="apikey-status unset">未设置</span>
+        </div>
+        <div class="edit-name-btns" style="margin-top:18px;">
+          <button class="edit-name-btn edit-name-btn-cancel" onclick="closeApiKeyModal()">取消</button>
+          <button class="edit-name-btn edit-name-btn-save" onclick="saveApiKeyFromModal()">保存</button>
+        </div>
+        <button class="apikey-clear-btn" id="apikeyClearBtn" onclick="clearApiKeyFromModal()" style="display:none;">清除已保存的 Key</button>
       </div>
     </div>
   </div>
@@ -2509,6 +2568,49 @@
 </div>
 
 <script>
+// ========== SAFE STORAGE WRAPPER (全局异常保护) ==========
+// 覆盖原生 localStorage 方法，自动捕获隐私模式/存储满/无痕模式下的异常
+(function() {
+  if (typeof Storage === 'undefined') return;
+  var _get = Storage.prototype.getItem;
+  var _set = Storage.prototype.setItem;
+  var _remove = Storage.prototype.removeItem;
+  Storage.prototype.getItem = function(key) {
+    try { return _get.call(this, key); }
+    catch (e) { console.warn('[storage] getItem failed:', key, e); return null; }
+  };
+  Storage.prototype.setItem = function(key, value) {
+    try { _set.call(this, key, value); return true; }
+    catch (e) { console.warn('[storage] setItem failed:', key, e); return false; }
+  };
+  Storage.prototype.removeItem = function(key) {
+    try { _remove.call(this, key); return true; }
+    catch (e) { console.warn('[storage] removeItem failed:', key, e); return false; }
+  };
+  // 安全 JSON 解析工具
+  window.safeJsonParse = function(str, fallback) {
+    if (str === null || str === undefined || str === '') return fallback;
+    try { return JSON.parse(str); } catch (e) { return fallback; }
+  };
+})();
+
+// ========== API KEY 管理 (不再硬编码) ==========
+var API_KEY_STORAGE = 'wuyin_dashscope_api_key';
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE) || '';
+}
+function hasApiKey() {
+  var k = getApiKey();
+  return !!k && k.indexOf('sk-') === 0;
+}
+function setApiKey(key) {
+  if (!key || key.indexOf('sk-') !== 0) return false;
+  return localStorage.setItem(API_KEY_STORAGE, key);
+}
+function clearApiKey() {
+  localStorage.removeItem(API_KEY_STORAGE);
+}
+
 // ========== DATA ==========
 var WUYIN_DATA = [
   { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'角音属木，通于肝。适于疏解肝气郁结，让心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['assets/audio/jue_1.m4a','assets/audio/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军' },
@@ -2910,7 +3012,12 @@ async function callQwenAPI(userText) {
     { role: 'system', content: systemPrompt }
   ].concat(chatHistory.slice(-10));
 
-  var apiKey = 'sk-ws-H.RXRXXPP.GMUl.MEUCIQCl-bxgx9I76J1xnP2irhgoAs6UIvubImebRGOJzPLC0QIgBwuVSw8Se7QEsJTrgY1O-BYdAaoHmjf6plyfn0OCxTo';
+  var apiKey = getApiKey();
+  if (!apiKey) {
+    removeTypingIndicator();
+    addBotMsg('请先在"我的"页面设置您的 DashScope API Key 后再开始聊天哦~', 'system');
+    return;
+  }
 
   try {
     var response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
@@ -4585,6 +4692,75 @@ function saveEditName() {
   closeEditNameModal();
 }
 
+// ========== API KEY MODAL ==========
+function showApiKeyModal() {
+  var badge = document.getElementById('apikeyStatusBadge');
+  var clearBtn = document.getElementById('apikeyClearBtn');
+  var input = document.getElementById('apikeyInput');
+  if (hasApiKey()) {
+    badge.textContent = '已设置';
+    badge.className = 'apikey-status set';
+    clearBtn.style.display = 'block';
+    // 不要回显原值到输入框（安全考虑），仅显示"已设置"状态
+    input.value = '';
+    input.placeholder = '留空保持原 Key 不变，或输入新 Key 替换';
+  } else {
+    badge.textContent = '未设置';
+    badge.className = 'apikey-status unset';
+    clearBtn.style.display = 'none';
+    input.value = '';
+    input.placeholder = 'sk-xxxxxxxxxxxxxxxxxxxx';
+  }
+  document.getElementById('apikeyOverlay').classList.add('active');
+  setTimeout(function() { input.focus(); }, 100);
+}
+
+function closeApiKeyModal() {
+  document.getElementById('apikeyOverlay').classList.remove('active');
+  document.getElementById('apikeyShowPwd').checked = false;
+  var i = document.getElementById('apikeyInput');
+  if (i) i.type = 'password';
+}
+
+function saveApiKeyFromModal() {
+  var input = document.getElementById('apikeyInput');
+  var raw = input.value.trim();
+  if (!raw) {
+    // 输入框为空：若已存在 key 则保持不变
+    if (hasApiKey()) {
+      closeApiKeyModal();
+      showToast('已保留原 Key');
+    } else {
+      showToast('请输入 API Key');
+    }
+    return;
+  }
+  if (setApiKey(raw)) {
+    closeApiKeyModal();
+    showToast('API Key 已保存到本机');
+  } else {
+    showToast('Key 格式不正确（应以 sk- 开头）');
+  }
+}
+
+function clearApiKeyFromModal() {
+  if (!hasApiKey()) { closeApiKeyModal(); return; }
+  if (confirm('确定要清除已保存的 API Key 吗？清除后 AI 聊天将不可用。')) {
+    clearApiKey();
+    showToast('已清除');
+    closeApiKeyModal();
+  }
+}
+
+function updateApiKeyStatus() {
+  var sub = document.getElementById('apikeyMenuSubtitle');
+  if (sub) {
+    sub.textContent = hasApiKey()
+      ? 'DashScope API Key · 已设置（点击修改）'
+      : 'DashScope API Key · 未设置（点击配置）';
+  }
+}
+
 // ========== QUESTIONNAIRE MODAL ==========
 function showQuestionnaireModal() {
   document.getElementById('questionnaireModal').classList.add('active');
@@ -5592,7 +5768,7 @@ var ttsConfig = {
   provider: 'edgetts', // 'edgetts' 或 'browser'
   language: 'cantonese', // 'cantonese' 或 'mandarin'
   voiceGender: 'female', // 'female' 或 'male'
-  apiKey: 'sk-ws-H.RXRXXPP.GMUl.MEUCIQCl-bxgx9I76J1xnP2irhgoAs6UIvubImebRGOJzPLC0QIgBwuVSw8Se7QEsJTrgY1O-BYdAaoHmjf6plyfn0OCxTo',
+  // apiKey 不再硬编码，运行时通过 getApiKey() 从 localStorage 读取
   wsUrl: 'http://localhost:8765/tts',
   model: 'edge-tts'
 };
@@ -6734,6 +6910,7 @@ function initNewFeatures() {
   initTTSSettings();
   checkTTSStatus();
   updateHomeGreeting();
+  updateApiKeyStatus();
 }
 
 // ========== INIT ==========
@@ -6744,6 +6921,19 @@ buildHealingRecords();
 initChat();
 initNewFeatures();
 updateQuestionnaireStatus();
+
+// 首次访问且未设置 API Key 时，2 秒后弹出引导
+if (!hasApiKey()) {
+  setTimeout(function() {
+    // 仅在首页弹出，避免打扰其他操作
+    var home = document.getElementById('page-home');
+    if (home && home.classList.contains('active')) {
+      if (confirm('检测到您还未设置 DashScope API Key。\n\nAI 聊天功能需要该 Key 才能正常工作。\n\n是否现在设置？')) {
+        showApiKeyModal();
+      }
+    }
+  }, 2000);
+}
 </script>
 </body>
 </html>
