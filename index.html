@@ -1656,7 +1656,7 @@
         <div class="home-subtitle letter-spaced">以五音调和情志，守护身心健康</div>
 
       </div>
-      <div class="home-greeting">李阿姨，早晨啊，今日心情点呀？</div>
+      <div class="home-greeting">李老朋友，早晨啊，今日心情点呀？</div>
       <div class="checkin-wrap">
         <button class="checkin-btn" id="checkinBtn" onclick="doCheckIn()">
           <span class="checkin-text" id="checkinText">签</span>
@@ -2559,7 +2559,7 @@ var RATING_LABELS = ['', '非常不满意', '不太满意', '一般', '比较满
 var CARE_MESSAGES = [
   '今天天气不错呢，要不要出去走走，晒晒太阳呀？',
   '心情不好的时候，听一段五音疗愈特别有帮助哦~',
-  '阿姨记得多喝水，保持好心情最重要呢~',
+  '老朋友记得多喝水，保持好心情最重要呢~',
 ];
 
 var pages = ['page-home','page-chat','page-healing','page-data','page-profile'];
@@ -3235,19 +3235,19 @@ function getFallbackResponseWithRec(userText) {
   // 文字中不提音调名称，只做心理疏导；推荐通过卡片展示（仅一次）
 
   if (t.match(/焦虑|紧张|不安|害怕|担心/)) {
-    response = '阿姨别担心呀~ 焦虑的时候试试深呼吸，吸气四秒、屏住四秒、呼气四秒，会舒服很多哦。跟我说说是什么让您焦虑呢？'; recId = 'gong'; detectedEmotion = '焦虑';
+    response = '老朋友别担心呀~ 焦虑的时候试试深呼吸，吸气四秒、屏住四秒、呼气四秒，会舒服很多哦。跟我说说是什么让您焦虑呢？'; recId = 'gong'; detectedEmotion = '焦虑';
   } else if (t.match(/生气|愤怒|烦躁|恼火/)) {
-    response = '阿姨消消气哦~ 生气的时候喝杯温水，闭眼休息一下会好很多。是什么事让您这么生气呀？'; recId = 'jue'; detectedEmotion = '怒';
+    response = '老朋友消消气哦~ 生气的时候喝杯温水，闭眼休息一下会好很多。是什么事让您这么生气呀？'; recId = 'jue'; detectedEmotion = '怒';
   } else if (t.match(/难过|悲伤|哭|伤心|失落/)) {
-    response = '阿姨难过就哭出来哦~ 哭出来心里会舒服很多。有什么心事跟我说说吧，说出来会好受一些。'; recId = 'shang'; detectedEmotion = '悲';
+    response = '老朋友难过就哭出来哦~ 哭出来心里会舒服很多。有什么心事跟我说说吧，说出来会好受一些。'; recId = 'shang'; detectedEmotion = '悲';
   } else if (t.match(/害怕|恐惧|噩梦/)) {
-    response = '阿姨不要怕呀~ 您不是一个人，我陪着您呢。是什么让您害怕呀？跟我说说吧。'; recId = 'yu'; detectedEmotion = '恐';
+    response = '老朋友不要怕呀~ 您不是一个人，我陪着您呢。是什么让您害怕呀？跟我说说吧。'; recId = 'yu'; detectedEmotion = '恐';
   } else if (t.match(/开心|高兴|快乐|愉快/)) {
     response = '太好了，心情不错呀！保持好心情对身体特别好呢~ 今天有什么开心的事呀？'; recId = 'zhi'; detectedEmotion = '喜';
   } else if (t.match(/失眠|睡不着/)) {
-    response = '睡不着确实难受呀~ 睡前喝杯温牛奶，泡个热水脚，会好很多哦。阿姨平时几点睡觉呀？'; recId = 'gong'; detectedEmotion = '思';
+    response = '睡不着确实难受呀~ 睡前喝杯温牛奶，泡个热水脚，会好很多哦。老朋友平时几点睡觉呀？'; recId = 'gong'; detectedEmotion = '思';
   } else if (t.match(/头痛|头晕/)) {
-    response = '阿姨要好好休息呀~ 头痛的时候按按太阳穴会舒服一些。记得多喝水，注意休息哦。'; recId = 'jue'; detectedEmotion = '怒';
+    response = '老朋友要好好休息呀~ 头痛的时候按按太阳穴会舒服一些。记得多喝水，注意休息哦。'; recId = 'jue'; detectedEmotion = '怒';
   } else if (t.match(/节气|养生|今天什么节气|当前节气/)) {
     var info = getCurrentSolarTerm();
     var now = new Date();
@@ -3269,14 +3269,14 @@ function getFallbackResponseWithRec(userText) {
         var parts = termObj.date.split('-');
         response = now.getFullYear() + '年的' + foundTerm + '是' + parseInt(parts[0]) + '月' + parseInt(parts[1]) + '日。' + getSolarTermDetailAdvice(foundTerm);
       } else {
-        response = '阿姨，我查一下' + foundTerm + '的日期哦~';
+        response = '老朋友，我查一下' + foundTerm + '的日期哦~';
       }
     } else if (t.match(/今天|几号|日期|时间|星期|礼拜|周几/)) {
       var weekDays = ['日','一','二','三','四','五','六'];
       var now2 = new Date();
       response = '今天是' + now2.getFullYear() + '年' + (now2.getMonth()+1) + '月' + now2.getDate() + '日，星期' + weekDays[now2.getDay()] + '。';
     } else {
-      response = '阿姨今天过得怎么样呀？有什么想跟我聊聊的吗？';
+      response = '老朋友今天过得怎么样呀？有什么想跟我聊聊的吗？';
     }
   }
   if (detectedEmotion && recId) logChatEmotion(detectedEmotion, recId, 'chat_fallback');
@@ -5406,35 +5406,35 @@ var guideMessages = [];
 function startGuideMessages(wuyinId) {
   var guides = {
     jue: [
-      { time: 10, text: '阿姨，闭上眼睛，听竹林里风吹过的声音...感受角音在身体里流动~' },
+      { time: 10, text: '老朋友，闭上眼睛，听竹林里风吹过的声音...感受角音在身体里流动~' },
       { time: 45, text: '现在深吸一口气...慢慢呼出...角音正在帮您疏解肝气呢~' },
       { time: 90, text: '想象您正走在竹林小径上，阳光透过竹叶洒下来...好舒服呀~' },
-      { time: 150, text: '阿姨，角音正在调和您的情绪，心情是不是舒畅多了呢？' },
+      { time: 150, text: '老朋友，角音正在调和您的情绪，心情是不是舒畅多了呢？' },
       { time: 220, text: '再坚持一会儿~ 疗愈快结束了，感受身体的轻松吧~' },
     ],
     zhi: [
-      { time: 10, text: '阿姨，徵音像温暖的阳光，正在照亮您的心田呢~' },
+      { time: 10, text: '老朋友，徵音像温暖的阳光，正在照亮您的心田呢~' },
       { time: 50, text: '感受心里的温暖...徵音通于心，正在滋养您的心气~' },
       { time: 100, text: '想象阳光洒在身上，暖暖的...心情是不是更开朗了呢？' },
       { time: 170, text: '徵音正在帮您提振喜悦，保持这份好心情哦~' },
       { time: 240, text: '快结束了，感受一下心里的阳光吧~' },
     ],
     gong: [
-      { time: 10, text: '阿姨，宫音沉稳厚重，像大地一样给人踏实感呢~' },
+      { time: 10, text: '老朋友，宫音沉稳厚重，像大地一样给人踏实感呢~' },
       { time: 50, text: '深呼吸...宫音属土，正在帮您安定心神~' },
       { time: 100, text: '想象躺在田野上，风吹麦浪...好宁静呀~' },
       { time: 170, text: '宫音正在健脾安神，身体是不是暖洋洋的？' },
       { time: 240, text: '再坚持一下~ 感受大地的力量在支撑着您~' },
     ],
     shang: [
-      { time: 10, text: '阿姨，商音清澈悠远，像秋风一样洗去烦恼~' },
+      { time: 10, text: '老朋友，商音清澈悠远，像秋风一样洗去烦恼~' },
       { time: 50, text: '如果想哭就哭出来哦...商音通肺，帮助释放情绪~' },
       { time: 100, text: '想象秋风轻轻吹过...带走所有的忧愁~' },
       { time: 170, text: '商音正在涤荡悲忧，心里是不是轻松多了？' },
       { time: 240, text: '快结束了...感受内心的一片澄净吧~' },
     ],
     yu: [
-      { time: 10, text: '阿姨，羽音柔和宁静，像月光洒在湖面上~' },
+      { time: 10, text: '老朋友，羽音柔和宁静，像月光洒在湖面上~' },
       { time: 50, text: '深呼吸...羽音属水，正在滋养肾气，消除恐惧~' },
       { time: 100, text: '想象湖面上波光粼粼...好安宁呀~' },
       { time: 170, text: '羽音正在帮您安宁内心，害怕的感觉慢慢消失~' },
@@ -6576,8 +6576,8 @@ function doCheckIn() {
     showToast('解锁徽章：' + badge.name + '！', 3000);
   }
   // 小五消息
-  var xiaowuMsg = '阿姨今天签到啦！连续' + data.streak + '天，真棒！';
-  if (data.streak === 1) xiaowuMsg = '阿姨今天签到啦！开始新的一天~';
+  var xiaowuMsg = '老朋友今天签到啦！连续' + data.streak + '天，真棒！';
+  if (data.streak === 1) xiaowuMsg = '老朋友今天签到啦！开始新的一天~';
   if (badge && badge.new) xiaowuMsg += ' 还解锁了「' + badge.name + '」徽章呢！';
   setTimeout(function() {
     if (document.getElementById('page-chat').classList.contains('active')) {
@@ -6629,31 +6629,31 @@ function updateJourneyProgress() {
 }
 var JOURNEY_GUIDES = {
   jue: [
-    { stage:0, text:'阿姨，闭上眼睛，听竹林里风吹过的声音...感受角音在身体里流动~' },
+    { stage:0, text:'老朋友，闭上眼睛，听竹林里风吹过的声音...感受角音在身体里流动~' },
     { stage:1, text:'现在深吸一口气...慢慢呼出...角音正在帮您疏解肝气呢~' },
     { stage:2, text:'想象您正走在竹林小径上，阳光透过竹叶洒下来...好舒服呀~' },
-    { stage:3, text:'阿姨，角音正在调和您的情绪，感受身体的轻松吧~' },
+    { stage:3, text:'老朋友，角音正在调和您的情绪，感受身体的轻松吧~' },
   ],
   zhi: [
-    { stage:0, text:'阿姨，徵音像温暖的阳光，正在照亮您的心田呢~' },
+    { stage:0, text:'老朋友，徵音像温暖的阳光，正在照亮您的心田呢~' },
     { stage:1, text:'感受心里的温暖...徵音通于心，正在滋养您的心气~' },
     { stage:2, text:'想象阳光洒在身上，暖暖的...心情是不是更开朗了呢？' },
     { stage:3, text:'徵音正在帮您提振喜悦，保持这份好心情哦~' },
   ],
   gong: [
-    { stage:0, text:'阿姨，宫音沉稳厚重，像大地一样给人踏实感呢~' },
+    { stage:0, text:'老朋友，宫音沉稳厚重，像大地一样给人踏实感呢~' },
     { stage:1, text:'深呼吸...宫音属土，正在帮您安定心神~' },
     { stage:2, text:'想象躺在田野上，风吹麦浪...好宁静呀~' },
     { stage:3, text:'宫音正在健脾安神，身体是不是暖洋洋的？' },
   ],
   shang: [
-    { stage:0, text:'阿姨，商音清澈悠远，像秋风一样洗去烦恼~' },
+    { stage:0, text:'老朋友，商音清澈悠远，像秋风一样洗去烦恼~' },
     { stage:1, text:'如果想哭就哭出来哦...商音通肺，帮助释放情绪~' },
     { stage:2, text:'想象秋风轻轻吹过...带走所有的忧愁~' },
     { stage:3, text:'商音正在涤荡悲忧，心里是不是轻松多了？' },
   ],
   yu: [
-    { stage:0, text:'阿姨，羽音柔和宁静，像月光洒在湖面上~' },
+    { stage:0, text:'老朋友，羽音柔和宁静，像月光洒在湖面上~' },
     { stage:1, text:'深呼吸...羽音属水，正在滋养肾气，消除恐惧~' },
     { stage:2, text:'想象湖面上波光粼粼...好安宁呀~' },
     { stage:3, text:'羽音正在帮您安宁内心，害怕的感觉慢慢消失~' },
