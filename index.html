@@ -4153,6 +4153,9 @@ function togglePlay() {
     if (playTimer) { clearInterval(playTimer); playTimer = null; }
     // 暂停真实音频
     if (realAudioPlayer) { try { realAudioPlayer.pause(); } catch(e) {} }
+    // 同时暂停第二个 audio 元素（交叉淡入淡出期间可能两个都在播）
+    var audio2El = document.getElementById('hiddenAudioPlayer2');
+    if (audio2El) { try { audio2El.pause(); } catch(e) {} }
     // 暂停合成音
     var engine = getWuyinAudioEngine();
     engine.stop();
@@ -4575,13 +4578,27 @@ function stopPlay() {
     var mins = Math.round(playProgress / 60);
     recordHealingDuration(mins);
   }
-  // 渐出音频（3秒淡出）
+  // 渐出音频（3秒淡出），并清理两个 audio 元素的定时器
+  var audio1 = document.getElementById('hiddenAudioPlayer');
+  var audio2El = document.getElementById('hiddenAudioPlayer2');
+  [audio1, audio2El].forEach(function(el) {
+    if (el) {
+      if (el._fadeOutTimer) { clearInterval(el._fadeOutTimer); el._fadeOutTimer = null; }
+      if (el._fadeInTimer) { clearInterval(el._fadeInTimer); el._fadeInTimer = null; }
+    }
+  });
   if (realAudioPlayer) {
     fadeOutAudio(realAudioPlayer, 3, function() {
       try { realAudioPlayer.pause(); realAudioPlayer.currentTime = 0; } catch(e) {}
       realAudioPlayer = null;
     });
   }
+  // 同时静音并暂停另一个 audio 元素（避免残留播放）
+  [audio1, audio2El].forEach(function(el) {
+    if (el && el !== realAudioPlayer) {
+      try { el.pause(); el.currentTime = 0; el.volume = 0.9; } catch(e) {}
+    }
+  });
   // 停止合成音频引擎
   var engine = getWuyinAudioEngine();
   engine.stop();
@@ -4754,52 +4771,81 @@ function doDualSwitch(instant) {
     return;
   }
 
-  // 自然播放过渡：渐退旧音频 → 切换 → 渐入新音频
-  // 注：audio 元素已被第一次 play() 激活，后续在回调中 play() 可正常执行
+  // 自然播放过渡：双 audio 元素交叉淡入淡出
+  // 关键：play() 必须在 doDualSwitch 同步执行路径中调用（用户已激活状态），
+  // 不能放在 fadeOutAudio 的 4 秒后回调里（会脱离用户激活上下文 → NotAllowedError）
   window._crossfading = true;
 
   // 清理旧的淡入淡出定时器
   if (audio._fadeOutTimer) { clearInterval(audio._fadeOutTimer); audio._fadeOutTimer = null; }
   if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
 
-  // 第一步：渐退当前音频（4秒，easeInCubic 曲线——前半段只降12.5%）
-  fadeOutAudio(audio, 4, function() {
-    // 渐退完成，切换 src + play + 渐入
-    try { audio.pause(); audio.currentTime = 0; } catch(e) {}
-    var audioSrc = selectWeightedTrack(targetId);
-    audio.volume = 0;
-    audio.src = audioSrc;
-    audio.load();
-    realAudioPlayer = audio;
-    var pp = audio.play();
-    if (pp && typeof pp.then === 'function') {
-      pp.then(function() {
-        console.log('[crossfade] new track playing, fading in:', audioSrc);
-        fadeInAudio(audio, 4, 0.9);
-        window._crossfading = false;
-      }).catch(function(e) {
-        console.warn('[crossfade] play err:', e.message);
-        window._crossfading = false;
-        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
-          showToast('请点击页面开始播放');
-        } else {
-          // mp4 回退
-          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
-          if (mp4Src !== audioSrc) {
-            audio.src = mp4Src; audio.load();
-            audio.play().then(function() {
-              fadeInAudio(audio, 4, 0.9);
-            }).catch(function() { showToast('音频播放失败'); });
-          } else {
-            showToast('音频播放失败');
-          }
-        }
+  // 获取第二个 audio 元素（或创建）
+  var audio2 = document.getElementById('hiddenAudioPlayer2');
+  if (!audio2) {
+    audio2 = document.createElement('audio');
+    audio2.id = 'hiddenAudioPlayer2';
+    audio2.style.display = 'none';
+    audio2.preload = 'auto';
+    audio2.loop = true;
+    audio2.setAttribute('playsinline', '');
+    audio2.setAttribute('webkit-playsinline', '');
+    document.body.appendChild(audio2);
+  }
+  if (audio2._fadeOutTimer) { clearInterval(audio2._fadeOutTimer); audio2._fadeOutTimer = null; }
+  if (audio2._fadeInTimer) { clearInterval(audio2._fadeInTimer); audio2._fadeInTimer = null; }
+  try { audio2.pause(); audio2.currentTime = 0; } catch(e) {}
+
+  // 同步设置新 src 并 play()（关键：在同步执行路径中，避免 NotAllowedError）
+  var audioSrc = selectWeightedTrack(targetId);
+  audio2.volume = 0;
+  audio2.src = audioSrc;
+  audio2.load();
+  var pp = audio2.play();
+  if (pp && typeof pp.then === 'function') {
+    pp.then(function() {
+      console.log('[crossfade] new track playing, starting crossfade:', audioSrc);
+      // 新音频播放成功，开始交叉淡入淡出
+      // 旧 audio 渐退（4秒），完成后 pause
+      fadeOutAudio(audio, 4, function() {
+        try { audio.pause(); audio.currentTime = 0; } catch(e) {}
       });
-    } else {
-      fadeInAudio(audio, 4, 0.9);
+      // 新 audio 渐入（4秒）
+      fadeInAudio(audio2, 4, 0.9);
+      // 切换 realAudioPlayer 指向新 audio
+      realAudioPlayer = audio2;
       window._crossfading = false;
-    }
-  });
+    }).catch(function(e) {
+      console.warn('[crossfade] play err:', e.message);
+      window._crossfading = false;
+      if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+        showToast('请点击页面开始播放');
+      } else {
+        // mp4 回退
+        var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+        if (mp4Src !== audioSrc) {
+          audio2.src = mp4Src; audio2.load();
+          audio2.play().then(function() {
+            fadeOutAudio(audio, 4, function() {
+              try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+            });
+            fadeInAudio(audio2, 4, 0.9);
+            realAudioPlayer = audio2;
+          }).catch(function() { showToast('音频播放失败'); });
+        } else {
+          showToast('音频播放失败');
+        }
+      }
+    });
+  } else {
+    // 同步返回（旧浏览器），直接交叉淡入淡出
+    fadeOutAudio(audio, 4, function() {
+      try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+    });
+    fadeInAudio(audio2, 4, 0.9);
+    realAudioPlayer = audio2;
+    window._crossfading = false;
+  }
 
   var label2 = isInSecondHalf
     ? '已切换到' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第二调式')
