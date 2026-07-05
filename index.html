@@ -657,7 +657,7 @@
   .immersive-overlay {
     display:none; position:absolute; top:0; left:0; right:0; bottom:0; z-index:1000;
     background:#000; flex-direction:column; overflow:hidden;
-    border-radius:32px;
+    border-radius:0;
   }
   .immersive-overlay.active { display:flex; }
   .immersive-panorama-wrap {
@@ -4371,32 +4371,39 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
   }
 
   if (needReload) {
-    // 新音频：使用带回退的加载（m4a → mp3 → wav）
+    // 新音频：同步设置 src + play()（保持在用户交互上下文中）
     showToast('正在加载音频...');
-    setAudioSrcWithFallback(hiddenAudio, audioSrc,
-      function(loadedSrc) {
+    hiddenAudio.src = audioSrc;
+    hiddenAudio.load();
+    var pp = hiddenAudio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
         showToast('');
-        if (wuyin && wuyin.audioTracks) {
-          var baseLoaded = loadedSrc.split('?')[0];
-          window._currentTrackIndex = wuyin.audioTracks.findIndex(function(t) {
-            return t.split('?')[0] === baseLoaded;
-          });
+        console.log('[dualPlay] playing OK:', audioSrc);
+      }).catch(function(e) {
+        console.warn('[dualPlay] play() rejected:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // 尝试 mp4 回退
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            console.log('[dualPlay] retrying with mp4:', mp4Src);
+            hiddenAudio.src = mp4Src;
+            hiddenAudio.load();
+            hiddenAudio.play().then(function() {
+              showToast('');
+              console.log('[dualPlay] mp4 playing OK');
+            }).catch(function(e2) {
+              console.error('[dualPlay] mp4 also failed:', e2.message);
+              showToast('音频播放失败');
+            });
+          } else {
+            showToast('音频播放失败');
+          }
         }
-        var pp = hiddenAudio.play();
-        if (pp && typeof pp.then === 'function') {
-          pp.catch(function(e) {
-            console.warn('[dualPlay] play() rejected:', e.message);
-            if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
-              showToast('请点击页面开始播放');
-            }
-          });
-        }
-      },
-      function(err) {
-        console.error('[dualPlay] all sources failed:', err && err.message);
-        showToast('音频加载失败');
-      }
-    );
+      });
+    }
   } else {
     // 同一音频（切回前半）：直接 play
     showToast('');
@@ -4439,6 +4446,8 @@ function startSinglePlay() {
       hiddenAudio.id = 'hiddenAudioPlayer';
       hiddenAudio.style.display = 'none';
       hiddenAudio.preload = 'auto';
+      hiddenAudio.setAttribute('playsinline', '');
+      hiddenAudio.setAttribute('webkit-playsinline', '');
       document.body.appendChild(hiddenAudio);
     }
     if (realAudioPlayer) { try { realAudioPlayer.pause(); } catch(e) {} }
@@ -4446,38 +4455,40 @@ function startSinglePlay() {
     hiddenAudio.loop = true; hiddenAudio.volume = 0.9;
     realAudioPlayer = hiddenAudio;
     showToast('正在加载音频...');
-    // 使用带回退的加载（m4a → mp3 → wav）
-    setAudioSrcWithFallback(hiddenAudio, audioSrc,
-      function(loadedSrc) {
-        // 成功加载
+    // 关键：在用户交互上下文中同步设置 src + play()
+    // 移动端要求 play() 必须在用户手势同步调用栈中
+    hiddenAudio.src = audioSrc;
+    hiddenAudio.load();
+    // 立即调用 play()，不等待 canplay（浏览器会自动缓冲后播放）
+    var pp = hiddenAudio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
         showToast('');
-        console.log('[startPlay] source loaded:', loadedSrc);
-        // 更新实际播放的曲目索引
-        if (wuyin.audioTracks) {
-          var baseLoaded = loadedSrc.split('?')[0];
-          window._currentTrackIndex = wuyin.audioTracks.findIndex(function(t) {
-            return t.split('?')[0] === baseLoaded;
-          });
-        }
-        var pp = hiddenAudio.play();
-        if (pp && typeof pp.then === 'function') {
-          pp.then(function() { console.log('[startPlay] playing OK'); })
-            .catch(function(e) {
-              console.warn('[startPlay] play() rejected:', e.message);
-              // 自动播放被阻止时，提示用户点击
-              if (e && (e.name === 'NotAllowedError' || e.message.indexOf('user') >= 0)) {
-                showToast('请点击页面开始播放');
-              } else {
-                showToast('音频播放失败');
-              }
+        console.log('[startPlay] playing OK:', audioSrc);
+      }).catch(function(e) {
+        console.warn('[startPlay] play() rejected:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // 其他错误：尝试 mp4 回退（m4a 在某些移动端不被支持）
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            console.log('[startPlay] retrying with mp4:', mp4Src);
+            hiddenAudio.src = mp4Src;
+            hiddenAudio.load();
+            hiddenAudio.play().then(function() {
+              showToast('');
+              console.log('[startPlay] mp4 playing OK');
+            }).catch(function(e2) {
+              console.error('[startPlay] mp4 also failed:', e2.message);
+              showToast('音频播放失败');
             });
+          } else {
+            showToast('音频播放失败');
+          }
         }
-      },
-      function(err) {
-        console.error('[startPlay] all sources failed:', err && err.message);
-        showToast('音频加载失败，请检查网络');
-      }
-    );
+      });
+    }
     // 显示专辑信息
     if (currentWuyinItem.albumTitle) {
       var albumEl = document.getElementById('playerAlbumInfo');
@@ -4646,6 +4657,8 @@ function doDualSwitch(instant) {
     audio.style.display = 'none';
     audio.preload = 'auto';
     audio.loop = true;
+    audio.setAttribute('playsinline', '');
+    audio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(audio);
   }
 
@@ -4656,31 +4669,32 @@ function doDualSwitch(instant) {
     try { audio.pause(); audio.currentTime = 0; } catch(e) {}
     var audioSrc = selectWeightedTrack(targetId);
     audio.volume = 0.9;
-    setAudioSrcWithFallback(audio, audioSrc,
-      function(loadedSrc) {
-        var pp = audio.play();
-        if (pp && typeof pp.then === 'function') {
-          pp.then(function() {
-            console.log('[instant] playing, seeking to position:', loadedSrc);
-            // seek 到拖动位置对应的音频位置
-            if (audio.duration && audio.duration > 0 && isFinite(audio.duration)) {
-              var audioPct = playProgress / playerDuration;
-              try { audio.currentTime = audioPct * audio.duration; } catch(e) {}
-            }
-          }).catch(function(e) {
-            console.warn('[instant] play err:', e.message);
-            if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
-              showToast('请点击页面开始播放');
-            }
-          });
-        }
-      },
-      function(err) {
-        console.error('[instant] all sources failed:', err && err.message);
-        showToast('音频加载失败');
-      }
-    );
+    // 同步设置 src + play()（保持用户交互上下文）
+    audio.src = audioSrc;
+    audio.load();
     realAudioPlayer = audio;
+    var pp = audio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
+        console.log('[instant] playing, seeking to position:', audioSrc);
+        if (audio.duration && audio.duration > 0 && isFinite(audio.duration)) {
+          var audioPct = playProgress / playerDuration;
+          try { audio.currentTime = audioPct * audio.duration; } catch(e) {}
+        }
+      }).catch(function(e) {
+        console.warn('[instant] play err:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // mp4 回退
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            audio.src = mp4Src; audio.load();
+            audio.play().catch(function(e2) { showToast('音频播放失败'); });
+          }
+        }
+      });
+    }
     var label = isInSecondHalf
       ? '已切换到' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第二调式')
       : '已切回' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第一调式');
@@ -4690,38 +4704,38 @@ function doDualSwitch(instant) {
 
   // 自然播放过渡：渐进渐出
   window._crossfading = true;
-  var FADE_SECONDS = 4;
 
   // 第一步：淡出当前音频（2秒）
   fadeOutAudio(audio, 2, function() {
     try { audio.pause(); audio.currentTime = 0; } catch(e) {}
-    // 第二步：加载新调式（带回退）
+    // 第二步：同步设置 src + play()（交叉淡入淡出在定时器回调中，可能脱离用户上下文，
+    // 但因为是延续播放，大多数移动端会允许）
     var audioSrc = selectWeightedTrack(targetId);
     audio.volume = 0;
-    setAudioSrcWithFallback(audio, audioSrc,
-      function(loadedSrc) {
-        var pp = audio.play();
-        if (pp && typeof pp.then === 'function') {
-          pp.then(function() {
-            console.log('[crossfade] new track playing, fading in:', loadedSrc);
-            // 第三步：淡入新音频（2秒）
-            fadeInAudio(audio, 2, 0.9);
-            window._crossfading = false;
-          }).catch(function(e) {
-            console.warn('[crossfade] play err:', e.message);
-            window._crossfading = false;
-            if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
-              showToast('请点击页面开始播放');
-            }
-          });
-        }
-      },
-      function(err) {
-        console.error('[crossfade] all sources failed:', err && err.message);
-        showToast('音频加载失败');
+    audio.src = audioSrc;
+    audio.load();
+    var pp = audio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
+        console.log('[crossfade] new track playing, fading in:', audioSrc);
+        fadeInAudio(audio, 2, 0.9);
         window._crossfading = false;
-      }
-    );
+      }).catch(function(e) {
+        console.warn('[crossfade] play err:', e.message);
+        window._crossfading = false;
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            audio.src = mp4Src; audio.load();
+            audio.play().then(function() {
+              fadeInAudio(audio, 2, 0.9);
+            }).catch(function() { showToast('音频播放失败'); });
+          }
+        }
+      });
+    }
   });
 
   realAudioPlayer = audio;
