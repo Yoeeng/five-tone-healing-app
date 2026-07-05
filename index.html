@@ -4346,6 +4346,8 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
     hiddenAudio.preload = 'auto';
+    hiddenAudio.setAttribute('playsinline', '');
+    hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
   }
   // 如果音频源没变（同一文件），不需要重新加载，直接 seek+play
@@ -4417,18 +4419,17 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
       });
     }
   }
-  // 独立的切换定时器：到时间必定切换，不受音频状态影响
+  // 独立的切换定时器：作为 fallback，确保到时间必定切换
+  // 优先由 playTimer 中的 doDualSwitch() 触发（同步切换，避免脱离用户上下文）
   var switchTimer = setTimeout(function() {
     console.log('[dual] switch timer fired for', wuyinId, 'isPlaying=', isPlaying);
     if (!isPlaying) return;
-    // 如果 doDualSwitch 已经处理了交叉淡入淡出，跳过
+    // 如果 doDualSwitch 已经处理了切换，跳过
     if (window._dualSwitched) return;
-    // 淡出当前音频
-    fadeOutAudio(hiddenAudio, 2, function() {
-      try { hiddenAudio.pause(); hiddenAudio.currentTime = 0; } catch(e) {}
-    });
-    // 无论音频状态如何，必定调用 onDone 进行切换
-    if (onDone) onDone();
+    // fallback：确保 playProgress 已达到 halfDuration，然后调用 doDualSwitch 同步切换
+    var halfDur = Math.floor(playerDuration / 2);
+    if (playProgress < halfDur) playProgress = halfDur;
+    doDualSwitch();
   }, duration * 1000);
   // 保存定时器引用，便于 cleanup
   window._dualSwitchTimer = switchTimer;
@@ -4702,43 +4703,54 @@ function doDualSwitch(instant) {
     return;
   }
 
-  // 自然播放过渡：渐进渐出
+  // 自然播放过渡：同步切换 src + play()（避免异步回调脱离用户上下文）
+  // 注：第一个调式已在用户点击时成功 play()，audio 元素已被激活，
+  // 后续同步 play() 调用在已激活的元素上通常会被移动端允许。
   window._crossfading = true;
 
-  // 第一步：淡出当前音频（2秒）
-  fadeOutAudio(audio, 2, function() {
-    try { audio.pause(); audio.currentTime = 0; } catch(e) {}
-    // 第二步：同步设置 src + play()（交叉淡入淡出在定时器回调中，可能脱离用户上下文，
-    // 但因为是延续播放，大多数移动端会允许）
-    var audioSrc = selectWeightedTrack(targetId);
-    audio.volume = 0;
-    audio.src = audioSrc;
-    audio.load();
-    var pp = audio.play();
-    if (pp && typeof pp.then === 'function') {
-      pp.then(function() {
-        console.log('[crossfade] new track playing, fading in:', audioSrc);
-        fadeInAudio(audio, 2, 0.9);
-        window._crossfading = false;
-      }).catch(function(e) {
-        console.warn('[crossfade] play err:', e.message);
-        window._crossfading = false;
-        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
-          showToast('请点击页面开始播放');
-        } else {
-          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
-          if (mp4Src !== audioSrc) {
-            audio.src = mp4Src; audio.load();
-            audio.play().then(function() {
-              fadeInAudio(audio, 2, 0.9);
-            }).catch(function() { showToast('音频播放失败'); });
-          }
-        }
-      });
-    }
-  });
+  // 清理旧的淡入淡出定时器
+  if (audio._fadeOutTimer) { clearInterval(audio._fadeOutTimer); audio._fadeOutTimer = null; }
+  if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
 
+  // 同步暂停旧音频（直接降低音量后 pause，不用异步 fadeOut）
+  try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+
+  // 同步设置新 src + play()
+  var audioSrc = selectWeightedTrack(targetId);
+  audio.volume = 0;
+  audio.src = audioSrc;
+  audio.load();
   realAudioPlayer = audio;
+  var pp = audio.play();
+  if (pp && typeof pp.then === 'function') {
+    pp.then(function() {
+      console.log('[crossfade] new track playing, fading in:', audioSrc);
+      fadeInAudio(audio, 2, 0.9);
+      window._crossfading = false;
+    }).catch(function(e) {
+      console.warn('[crossfade] play err:', e.message);
+      window._crossfading = false;
+      if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+        showToast('请点击页面开始播放');
+      } else {
+        // mp4 回退
+        var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+        if (mp4Src !== audioSrc) {
+          audio.src = mp4Src; audio.load();
+          audio.play().then(function() {
+            fadeInAudio(audio, 2, 0.9);
+          }).catch(function() { showToast('音频播放失败'); });
+        } else {
+          showToast('音频播放失败');
+        }
+      }
+    });
+  } else {
+    // 同步返回（旧浏览器），直接淡入
+    fadeInAudio(audio, 2, 0.9);
+    window._crossfading = false;
+  }
+
   var label2 = isInSecondHalf
     ? '已切换到' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第二调式')
     : '已切回' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第一调式');
