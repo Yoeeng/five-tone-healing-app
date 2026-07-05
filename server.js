@@ -1,6 +1,6 @@
 // =============================================================
 //  五音疗愈 APP 静态服务器 + 云语音 TTS 代理
-//  - 静态文件:  GET  /*
+//  - 静态文件:  GET  /*  (支持 HTTP Range 移动端音频流式)
 //  - 健康检查:  GET  /health
 //  - 云语音代理: POST /tts  → DashScope CosyVoice
 // =============================================================
@@ -204,13 +204,92 @@ async function handleTTS(req, res) {
   }
 }
 
+// 解析 Range 头，返回 { start, end } 或 null
+function parseRangeHeader(rangeHeader, fileSize) {
+  if (!rangeHeader || typeof rangeHeader !== 'string') return null;
+  // 支持 bytes=start-end / bytes=start- / bytes=-suffixLen
+  const m = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
+  if (!m) return null;
+  const startStr = m[1];
+  const endStr = m[2];
+  let start, end;
+  if (startStr === '' && endStr === '') return null;
+  if (startStr === '') {
+    // 后缀长度：bytes=-500 表示最后 500 字节
+    const suffix = parseInt(endStr, 10);
+    if (isNaN(suffix) || suffix <= 0) return null;
+    start = Math.max(0, fileSize - suffix);
+    end = fileSize - 1;
+  } else {
+    start = parseInt(startStr, 10);
+    if (isNaN(start) || start < 0 || start >= fileSize) return null;
+    if (endStr === '') {
+      end = fileSize - 1;
+    } else {
+      end = parseInt(endStr, 10);
+      if (isNaN(end) || end < start) return null;
+      if (end >= fileSize) end = fileSize - 1;
+    }
+  }
+  return { start: start, end: end };
+}
+
+// 流式发送静态文件（支持 HTTP Range 请求，移动端音频/图片必需）
+function sendStaticFile(req, res, filePath, stat) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME[ext] || 'application/octet-stream';
+  const fileSize = stat.size;
+  const rangeHeader = req.headers['range'];
+
+  // 是否为可流式播放的多媒体
+  const isStreamable = /\.(mp3|m4a|mp4|wav|ogg|webm|jpg|jpeg|png|gif|webp)$/i.test(ext);
+
+  if (rangeHeader && isStreamable) {
+    const range = parseRangeHeader(rangeHeader, fileSize);
+    if (range) {
+      const chunkSize = range.end - range.start + 1;
+      res.writeHead(206, {
+        'Content-Range': 'bytes ' + range.start + '-' + range.end + '/' + fileSize,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': contentType,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache'
+      });
+      const stream = fs.createReadStream(filePath, { start: range.start, end: range.end });
+      stream.on('error', function(err) {
+        console.error('[static] range stream error:', err.message);
+        try { res.destroy(err); } catch (e) {}
+      });
+      stream.pipe(res);
+      return;
+    }
+  }
+
+  // 无 Range 头 或 Range 解析失败：返回完整文件（流式）
+  res.writeHead(200, {
+    'Content-Type': contentType,
+    'Content-Length': fileSize,
+    'Accept-Ranges': 'bytes',
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-cache'
+  });
+  const stream = fs.createReadStream(filePath);
+  stream.on('error', function(err) {
+    console.error('[static] stream error:', err.message);
+    try { res.destroy(err); } catch (e) {}
+  });
+  stream.pipe(res);
+}
+
 const server = http.createServer(async (req, res) => {
   // CORS 预检
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length',
       'Access-Control-Max-Age': '86400'
     });
     return res.end();
@@ -238,17 +317,12 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(403);
     return res.end('Forbidden');
   }
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
+  fs.stat(filePath, (err, stat) => {
+    if (err || !stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('Not found: ' + urlPath);
     }
-    const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, {
-      'Content-Type': MIME[ext] || 'application/octet-stream',
-      'Cache-Control': 'no-cache'
-    });
-    res.end(data);
+    sendStaticFile(req, res, filePath, stat);
   });
 });
 
@@ -257,5 +331,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('[server] http://localhost:' + PORT + '/');
   console.log('[tts]    POST http://localhost:' + PORT + '/tts');
   console.log('[health] GET  http://localhost:' + PORT + '/health');
+  console.log('[range]  HTTP Range requests supported ✓ (mobile audio fix)');
   console.log('=========================================');
 });
