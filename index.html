@@ -2125,11 +2125,15 @@
           </div>
           <div class="voice-setting-row" style="margin-top:8px;align-items:center;">
             <span class="voice-setting-label">服务状态</span>
-            <div style="display:flex;align-items:center;gap:6px;">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;">
               <span id="ttsStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#E06060;transition:background 0.3s;"></span>
               <span id="ttsStatusText" style="font-size:13px;color:#9A9A9A;">检测中...</span>
             </div>
           </div>
+          <div style="padding:10px 16px 4px;">
+            <button onclick="testCloudTTS()" style="width:100%;padding:12px 16px;border-radius:12px;background:var(--green);color:#fff;border:none;font-size:15px;font-family:inherit;cursor:pointer;">🔊 测试云语音</button>
+          </div>
+          <div id="ttsTestResult" style="padding:6px 16px 14px;font-size:12px;color:#9A9A9A;line-height:1.6;display:none;"></div>
           <div class="profile-speed-row">
             <span class="profile-speed-label">语速</span>
             <div class="profile-speed-controls">
@@ -2951,7 +2955,7 @@ function sendChatMessage() {
   // 日期/节气相关问题优先走本地回复，避免AI编造日期
   var t = text.toLowerCase();
   var termNames = '小寒|大寒|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至';
-  if (t.match(/今天.*几号|今天.*日期|今天.*几月|现在.*几号|当前.*日期|节气|今天什么节气|什么时候|哪天|几月几号|星期几|周几|礼拜|日期|时间|year|month|day|date/) || t.match(new RegExp(termNames))) {
+  if (t.match(/今天|今日|几号|日期|几月几日|星期几|周几|礼拜|时间|节气|什么节气|当前节气|什么时候|哪天|几月几号|year|month|day|date/) || t.match(new RegExp(termNames))) {
     addTypingIndicator();
     setTimeout(function() {
       removeTypingIndicator();
@@ -3394,7 +3398,7 @@ function getFallbackResponseWithRec(userText) {
       } else {
         response = '老朋友，我查一下' + foundTerm + '的日期哦~';
       }
-    } else if (t.match(/今天|几号|日期|时间|星期|礼拜|周几/)) {
+    } else if (t.match(/今天|今日|几号|日期|时间|星期|礼拜|周几|几月几日|几月几号/)) {
       var weekDays = ['日','一','二','三','四','五','六'];
       var now2 = new Date();
       response = '今天是' + now2.getFullYear() + '年' + (now2.getMonth()+1) + '月' + now2.getDate() + '日，星期' + weekDays[now2.getDay()] + '。';
@@ -5989,17 +5993,124 @@ function checkTTSStatus() {
 }
 
 function updateTTSStatusUI() {
+  var hasKey = (typeof hasApiKey === 'function') ? hasApiKey() : false;
+  var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline && hasKey;
   var el = document.getElementById('ttsStatusDot');
   if (el) {
-    var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline;
-    el.style.background = usingCloud ? '#5DBE8C' : '#E0A95F';
-    el.title = usingCloud ? '云语音服务在线（CosyVoice）' : '已切换到本地语音（云语音未启动）';
+    if (usingCloud) {
+      el.style.background = '#5DBE8C';
+      el.title = '云语音服务在线（CosyVoice）';
+    } else if (!hasKey && ttsProxyOnline) {
+      el.style.background = '#E0A95F';
+      el.title = '代理在线，但未设置 API Key（请到"AI 密钥设置"填写）';
+    } else {
+      el.style.background = '#E0A95F';
+      el.title = '已切换到本地语音（云语音未启动）';
+    }
   }
   var txt = document.getElementById('ttsStatusText');
   if (txt) {
-    var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline;
-    txt.textContent = usingCloud ? '云语音正常' : '已使用本地语音';
+    if (usingCloud) txt.textContent = '云语音正常';
+    else if (!hasKey && ttsProxyOnline) txt.textContent = '缺少 API Key';
+    else txt.textContent = '已使用本地语音';
   }
+  // 同步更新语音设置副标题
+  var sub = document.getElementById('voiceSettingsSubtitle');
+  if (sub) {
+    var langText = ttsConfig.language === 'cantonese' ? '粤语' : '普通话';
+    var genderText = ttsConfig.voiceGender === 'female' ? '女声' : '男声';
+    var engineText = usingCloud ? '云语音' : '本地语音';
+    sub.textContent = langText + genderText + ' · ' + engineText;
+  }
+}
+
+// 测试云语音：返回详细错误信息，方便排查问题
+function testCloudTTS() {
+  var resultEl = document.getElementById('ttsTestResult');
+  if (resultEl) { resultEl.style.display = 'block'; resultEl.style.color = '#9A9A9A'; resultEl.textContent = '正在测试，请稍候...'; }
+  showToast('正在测试云语音...');
+
+  var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+  var steps = [];
+
+  // 步骤 1: 检查 API Key
+  if (!apiKey) {
+    steps.push('❌ 未设置 API Key');
+    steps.push('👉 请先在"AI 密钥设置"中填写 DashScope API Key');
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    showToast('请先设置 API Key');
+    return;
+  }
+  if (apiKey.indexOf('sk-') !== 0) {
+    steps.push('❌ API Key 格式错误（应以 sk- 开头）');
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    return;
+  }
+  steps.push('✅ API Key 已设置（sk-' + apiKey.substring(3, 7) + '...）');
+
+  // 步骤 2: 检查代理是否可达
+  fetch('/health').then(function(r) {
+    if (r.ok) {
+      steps.push('✅ 云语音代理在线');
+    } else {
+      steps.push('❌ 代理返回 HTTP ' + r.status);
+      if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+      return Promise.reject('health_failed');
+    }
+    // 步骤 3: 尝试真正的 TTS 调用
+    steps.push('⏳ 正在调用 DashScope CosyVoice...');
+    if (resultEl) resultEl.innerHTML = steps.join('<br>');
+
+    var body = JSON.stringify({
+      apiKey: apiKey,
+      text: '您好呀老朋友，我是小五，今天过得怎么样呀？',
+      voice: getVoiceId(),
+      language: ttsConfig.language,
+      gender: ttsConfig.voiceGender
+    });
+    return fetch('/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body });
+  }).then(function(resp) {
+    if (!resp) return;
+    var ct = resp.headers.get('content-type') || '';
+    if (ct.indexOf('audio') >= 0) {
+      steps.push('✅ 云语音合成成功！🎉');
+      steps.push('👉 正在播放测试语音...');
+      if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#5A8E8A'; }
+      ttsProxyOnline = true;
+      ttsConfig.provider = 'edgetts';
+      localStorage.setItem('wuyin_tts_engine', 'edgetts');
+      updateTTSStatusUI();
+      // 播放音频
+      return resp.blob().then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio(url);
+        audio.onended = function() { URL.revokeObjectURL(url); };
+        audio.onerror = function() {
+          URL.revokeObjectURL(url);
+          steps.push('⚠️ 音频播放失败（可能是浏览器自动播放限制）');
+          if (resultEl) resultEl.innerHTML = steps.join('<br>');
+        };
+        audio.play().catch(function(e) {
+          steps.push('⚠️ 播放被阻止：' + e.message);
+          if (resultEl) resultEl.innerHTML = steps.join('<br>');
+        });
+      });
+    } else {
+      return resp.json().then(function(data) {
+        steps.push('❌ 合成失败：' + (data.error || JSON.stringify(data).substring(0, 200)));
+        if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+        showToast('云语音测试失败');
+      }).catch(function() {
+        steps.push('❌ 合成失败（非 JSON 响应）');
+        if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+      });
+    }
+  }).catch(function(err) {
+    if (err === 'health_failed') return;
+    steps.push('❌ 网络错误：' + (err.message || err));
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    showToast('测试失败：' + (err.message || err));
+  });
 }
 
 var _ttsSpeaking = false;
