@@ -5884,24 +5884,25 @@ var currentSpeech = null;
 
 // TTS配置
 var ttsConfig = {
-  provider: 'edgetts', // 'edgetts' 或 'browser'
+  provider: 'edgetts', // 'edgetts' 或 'browser'（edgetts 现在由同源 server.js 的 /tts 代理走 DashScope CosyVoice）
   language: 'cantonese', // 'cantonese' 或 'mandarin'
   voiceGender: 'female', // 'female' 或 'male'
   // apiKey 不再硬编码，运行时通过 getApiKey() 从 localStorage 读取
-  wsUrl: 'http://localhost:8765/tts',
-  model: 'edge-tts'
+  wsUrl: '/tts', // 同源相对路径，桌面端和手机端（通过 cloudflared）都能访问
+  model: 'cosyvoice-v1'
 };
 
-// 音色映射（成熟稳重风格，适合小五形象）
+// 音色映射（DashScope CosyVoice 音色 ID；对应"语言+性别"）
+// 备选音色：longxiaochun(温柔女), longxiaoxia(活泼女), longwan(粤语女), longcheng(沉稳男), longfei(粤语男)
 var VOICE_MAP = {
-  'cantonese_female': 'zh-HK-HiuGaaiNeural',    // 粤语女声（自然亲切）
-  'cantonese_male': 'zh-HK-WanLungNeural',      // 粤语男声
-  'mandarin_female': 'zh-CN-XiaoxiaoNeural',     // 普通话女声（公认最自然）
-  'mandarin_male': 'zh-CN-YunyangNeural'        // 普通话男声（专业沉稳）
+  'cantonese_female': 'longwan',       // 粤语女声
+  'cantonese_male':   'longfei',       // 粤语男声
+  'mandarin_female':  'longxiaochun',  // 普通话女声（温柔亲切，最适合小五）
+  'mandarin_male':    'longcheng'      // 普通话男声（沉稳专业）
 };
 
 function getVoiceId() {
-  return VOICE_MAP[ttsConfig.language + '_' + ttsConfig.voiceGender] || 'zh-CN-XiaoxiaoNeural';
+  return VOICE_MAP[ttsConfig.language + '_' + ttsConfig.voiceGender] || 'longxiaochun';
 }
 
 function selectBestVoice() {
@@ -5954,13 +5955,14 @@ var cosyVoiceWs = null;
 var ttsProxyOnline = false;
 var ttsProviderResolved = false; // 是否已自动选择 provider
 
-// 智能选择 TTS provider：edgetts 代理在线就用云语音，否则直接用浏览器 TTS
+// 智能选择 TTS provider：探测同源 /tts 端点（由 server.js 提供），可达就用云语音
 function resolveTTSProvider(silent) {
   if (ttsProviderResolved) return;
   ttsProviderResolved = true;
   var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timeoutId = setTimeout(function() { if (controller) controller.abort(); }, 1500);
-  fetch('http://localhost:8765/', { method: 'GET', mode: 'cors', signal: controller ? controller.signal : undefined })
+  // 用 /health 探活：HTTP 200 表示 server.js 在跑（同源 /tts 代理可用）
+  fetch('/health', { method: 'GET', signal: controller ? controller.signal : undefined })
     .then(function(r) {
       clearTimeout(timeoutId);
       ttsProxyOnline = !!r.ok;
@@ -5975,7 +5977,7 @@ function resolveTTSProvider(silent) {
     .catch(function() {
       clearTimeout(timeoutId);
       ttsProxyOnline = false;
-      // 移动端或代理未启动：直接走浏览器 TTS，不再尝试云端
+      // server.js 不在线：直接走浏览器 TTS
       ttsConfig.provider = 'browser';
       updateTTSStatusUI();
     });
@@ -5991,12 +5993,12 @@ function updateTTSStatusUI() {
   if (el) {
     var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline;
     el.style.background = usingCloud ? '#5DBE8C' : '#E0A95F';
-    el.title = usingCloud ? '云语音服务在线' : '已切换到本地语音（云语音未启动）';
+    el.title = usingCloud ? '云语音服务在线（CosyVoice）' : '已切换到本地语音（云语音未启动）';
   }
   var txt = document.getElementById('ttsStatusText');
   if (txt) {
     var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline;
-    txt.textContent = usingCloud ? '语音服务正常' : '已使用本地语音';
+    txt.textContent = usingCloud ? '云语音正常' : '已使用本地语音';
   }
 }
 
@@ -6022,11 +6024,22 @@ function speakCosyVoice(text, emotion, volume) {
     if (!ttsProxyOnline) {
       resolveTTSProvider(true);
     }
+    // 必须先有 API Key 才能调云语音
+    var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+    if (!apiKey) {
+      console.warn('[tts] 缺少 API Key，降级到浏览器 TTS');
+      _ttsSpeaking = false;
+      speakBrowser(text, emotion, volume);
+      return;
+    }
     var voiceName = getVoiceId();
     var rate = getTTSRate();
     var body = JSON.stringify({
+      apiKey: apiKey,
       text: text,
       voice: voiceName,
+      language: ttsConfig.language,
+      gender: ttsConfig.voiceGender,
       rate: rate,
       model: ttsConfig.model
     });
@@ -6035,7 +6048,11 @@ function speakCosyVoice(text, emotion, volume) {
       headers: { 'Content-Type': 'application/json' },
       body: body
     }).then(function(resp) {
-      if (!resp.ok) throw new Error('TTS代理返回错误: ' + resp.status);
+      if (!resp.ok) {
+        return resp.text().then(function(t) {
+          throw new Error('TTS代理返回 ' + resp.status + ': ' + t.substring(0, 200));
+        });
+      }
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('audio') >= 0) {
         return resp.blob();
@@ -6060,14 +6077,14 @@ function speakCosyVoice(text, emotion, volume) {
         showToast('请点击页面任意位置激活音频播放');
       });
     }).catch(function(e) {
-      console.warn('Edge TTS 失败，回退到本地语音:', e);
+      console.warn('云语音失败，降级到本地浏览器 TTS:', e);
       ttsProxyOnline = false;
       _ttsSpeaking = false;
       updateTTSStatusUI();
       speakBrowser(text, emotion, volume);
     });
   } catch(e) {
-    console.warn('Edge TTS异常:', e);
+    console.warn('云语音异常:', e);
     _ttsSpeaking = false;
     speakBrowser(text, emotion, volume);
   }

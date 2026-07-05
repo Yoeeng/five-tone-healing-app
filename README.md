@@ -1,4 +1,4 @@
-﻿# 🎵 AI 五音情境疗愈 APP
+# 🎵 AI 五音情境疗愈 APP
 
 > 基于中医五音疗法理论的移动端 AI 疗愈应用，专为老年人情绪调节设计
 
@@ -35,6 +35,8 @@ AI 五音情境疗愈 APP 是一款结合传统中医五音疗法与现代 AI �
 ```
 five-tone-healing-app/
 ├── index.html                    # 主应用（含四大页面）
+├── server.js                     # 静态服务器 + 云语音 TTS 代理（POST /tts → DashScope CosyVoice）
+├── package.json                  # Node.js 依赖
 ├── lovable-design-prompt.md      # 设计提示词文档
 ├── assets/
 │   ├── audio/                    # 五音音频文件
@@ -59,14 +61,41 @@ five-tone-healing-app/
 
 ## 🚀 快速开始
 
-### 本地预览
+### 1. 安装依赖
+```bash
+npm install
+```
+
+### 2. 启动服务器
 ```bash
 node server.js
 ```
-然后浏览器打开 http://localhost:3001
+服务器会监听 `http://localhost:8080/`，同时提供：
+- `GET /*` — 静态文件
+- `GET /health` — 健康检查
+- `POST /tts` — 云语音 TTS 代理（DashScope CosyVoice）
 
-### 移动端预览
-手机和电脑连接同一 WiFi，用手机浏览器访问电脑 IP:3001
+### 3. 设置 API Key
+首次打开 APP，进入「我的」→「AI 密钥设置」，填入 DashScope sk- 开头的 API Key（与 AI 聊天共用）。
+
+### 4. 移动端预览
+- 方式一（同一 WiFi）：手机访问 `电脑IP:8080`
+- 方式二（任意网络）：本机运行 `cloudflared tunnel --url http://localhost:8080`，把临时域名发给手机访问
+
+## 🎙️ 云语音 TTS 代理说明
+
+`POST /tts` 接收以下 JSON 参数：
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `apiKey`  | 是 | DashScope API Key（sk- 开头） |
+| `text`    | 是 | 要合成的文字 |
+| `voice`   | 否 | 音色 ID（默认按 language+gender 自动选） |
+| `language`| 否 | mandarin / cantonese（默认 mandarin） |
+| `gender`  | 否 | female / male（默认 female） |
+| `rate`    | 否 | 语速（默认 1.0） |
+
+成功返回 `audio/mpeg` 二进制；失败返回 `{"error": "..."}` JSON。
 
 ## 📌 开发规范
 
