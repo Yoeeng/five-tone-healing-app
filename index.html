@@ -3616,6 +3616,12 @@ function openIntro(idx) {
   selectedIntroIdx = idx;
   var item = WUYIN_DATA[idx];
   currentWuyinItem = item;
+  // 进入选择界面：重置多选状态（从聊天推荐的组合疗愈除外）
+  if (!(window._isDualMode && window._dualHealingIds && window._dualHealingIds.length >= 2)) {
+    window._selectedModeIndices = [idx];
+    window._isDualMode = false;
+    window._dualHealingIds = null;
+  }
   // 双调式模式：紧凑一屏展示
   if (window._isDualMode && window._dualHealingIds && window._dualHealingIds.length >= 2) {
     var id1 = window._dualHealingIds[0];
@@ -3801,6 +3807,29 @@ function toggleIntroMode(el, idx) {
   } else {
     check.style.display = 'none';
   }
+  // 重新收集所有选中的调式索引
+  window._selectedModeIndices = [];
+  var items = document.querySelectorAll('.intro-mode-item');
+  items.forEach(function(item, i) {
+    if (item.classList.contains('selected')) {
+      window._selectedModeIndices.push(i);
+    }
+  });
+  // 更新双模式状态（选了 2 个或以上 → 双模式）
+  if (window._selectedModeIndices.length >= 2) {
+    window._isDualMode = true;
+    window._dualHealingIds = window._selectedModeIndices.map(function(i) {
+      return WUYIN_DATA[i].id;
+    });
+    showToast('已选 ' + window._selectedModeIndices.length + ' 种调式 · 组合疗愈');
+  } else {
+    window._isDualMode = false;
+    window._dualHealingIds = null;
+    if (window._selectedModeIndices.length === 1) {
+      showToast('已选 1 种调式 · 单调式疗愈');
+    }
+  }
+  console.log('[toggleIntroMode] selected:', window._selectedModeIndices, 'dual:', window._isDualMode, 'ids:', window._dualHealingIds);
 }
 
 function selectDuration(btn, mins) {
@@ -3811,7 +3840,14 @@ function selectDuration(btn, mins) {
 
 function startHealing() {
   closeIntro();
-  openPlayer(selectedIntroIdx);
+  // 确定第一个调式的索引（优先用用户多选的第一个，否则用默认选中）
+  var firstIdx = selectedIntroIdx;
+  if (window._selectedModeIndices && window._selectedModeIndices.length > 0) {
+    firstIdx = window._selectedModeIndices[0];
+    selectedIntroIdx = firstIdx; // 同步更新，确保 openPlayer 用对索引
+  }
+  console.log('[startHealing] firstIdx=', firstIdx, 'dual=', window._isDualMode, 'ids=', window._dualHealingIds, 'duration=', playerDuration);
+  openPlayer(firstIdx);
   // 自动开始播放
   setTimeout(function() { startPlay(); }, 500);
 }
