@@ -4593,18 +4593,26 @@ function stopPlay() {
 function fadeInAudio(audioEl, durationSec, targetVol) {
   if (audioEl._fadeInTimer) { clearInterval(audioEl._fadeInTimer); audioEl._fadeInTimer = null; }
   if (audioEl._fadeOutTimer) { clearInterval(audioEl._fadeOutTimer); audioEl._fadeOutTimer = null; }
-  var steps = 20;
+  // 指数曲线渐入：前段快增、后段慢增（符合人耳对数感知）
+  var steps = 40;
   var interval = (durationSec * 1000) / steps;
-  var volStep = targetVol / steps;
-  var current = audioEl.volume || 0;
+  var startVol = audioEl.volume || 0;
+  var current = startVol;
   var timer = setInterval(function() {
-    current += volStep;
-    if (current >= targetVol) {
-      current = targetVol;
+    // progress: 0 → 1
+    var progress = (current - startVol) / (targetVol - startVol);
+    if (progress >= 1) {
+      audioEl.volume = targetVol;
       clearInterval(timer);
       audioEl._fadeInTimer = null;
+      return;
     }
-    audioEl.volume = current;
+    // 指数曲线：vol = startVol + (targetVol - startVol) * progress^2
+    // 平方曲线让前段增长快、后段平缓（与淡出对称）
+    var nextProgress = Math.min(1, progress + 1 / steps);
+    var nextVol = startVol + (targetVol - startVol) * Math.pow(nextProgress, 2);
+    current = nextVol;
+    try { audioEl.volume = Math.max(0, Math.min(1, nextVol)); } catch(e) {}
   }, interval);
   audioEl._fadeInTimer = timer;
 }
@@ -4614,19 +4622,27 @@ function fadeOutAudio(audioEl, durationSec, callback) {
   if (audioEl._fadeInTimer) { clearInterval(audioEl._fadeInTimer); audioEl._fadeInTimer = null; }
   var startVol = audioEl.volume || 0.9;
   if (startVol <= 0.01) { if (callback) callback(); return; }
-  var steps = 20;
+  // 指数曲线渐退：前段慢降、后段快降（避免前段骤降听起来突然）
+  // 人耳对音量感知是对数关系，线性降音量在前段听起来像骤降
+  var steps = 40;
   var interval = (durationSec * 1000) / steps;
-  var volStep = startVol / steps;
   var current = startVol;
   var timer = setInterval(function() {
-    current -= volStep;
-    if (current <= 0) {
-      current = 0;
+    // progress: 0 → 1（从 startVol 降到 0）
+    var progress = (startVol - current) / startVol;
+    if (progress >= 1) {
+      audioEl.volume = 0;
       clearInterval(timer);
       audioEl._fadeOutTimer = null;
       if (callback) callback();
+      return;
     }
-    try { audioEl.volume = Math.max(0, current); } catch(e) {}
+    // 指数曲线：vol = startVol * (1 - progress)^2
+    // 平方曲线让前段降得慢、后段降得快（与淡入对称）
+    var nextProgress = Math.min(1, progress + 1 / steps);
+    var nextVol = startVol * Math.pow(1 - nextProgress, 2);
+    current = nextVol;
+    try { audioEl.volume = Math.max(0, Math.min(1, nextVol)); } catch(e) {}
   }, interval);
   audioEl._fadeOutTimer = timer;
 }
@@ -4747,8 +4763,8 @@ function doDualSwitch(instant) {
   if (audio._fadeOutTimer) { clearInterval(audio._fadeOutTimer); audio._fadeOutTimer = null; }
   if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
 
-  // 第一步：渐退当前音频（1.5秒降到0）
-  fadeOutAudio(audio, 1.5, function() {
+  // 第一步：渐退当前音频（3秒降到0，指数曲线避免前段骤降）
+  fadeOutAudio(audio, 3, function() {
     // 渐退完成，切换 src + play + 渐入
     try { audio.pause(); audio.currentTime = 0; } catch(e) {}
     var audioSrc = selectWeightedTrack(targetId);
@@ -4760,7 +4776,7 @@ function doDualSwitch(instant) {
     if (pp && typeof pp.then === 'function') {
       pp.then(function() {
         console.log('[crossfade] new track playing, fading in:', audioSrc);
-        fadeInAudio(audio, 1.5, 0.9);
+        fadeInAudio(audio, 3, 0.9);
         window._crossfading = false;
       }).catch(function(e) {
         console.warn('[crossfade] play err:', e.message);
@@ -4773,7 +4789,7 @@ function doDualSwitch(instant) {
           if (mp4Src !== audioSrc) {
             audio.src = mp4Src; audio.load();
             audio.play().then(function() {
-              fadeInAudio(audio, 1.5, 0.9);
+              fadeInAudio(audio, 3, 0.9);
             }).catch(function() { showToast('音频播放失败'); });
           } else {
             showToast('音频播放失败');
@@ -4781,7 +4797,7 @@ function doDualSwitch(instant) {
         }
       });
     } else {
-      fadeInAudio(audio, 1.5, 0.9);
+      fadeInAudio(audio, 3, 0.9);
       window._crossfading = false;
     }
   });
