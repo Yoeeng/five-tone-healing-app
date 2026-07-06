@@ -366,9 +366,11 @@
   }
   .healing-rec-section-title ion-icon { font-size:20px; color:var(--gold); }
   .healing-rec-section-title span { font-size:17px; font-weight:600; color:var(--ink); }
+  .healing-rec-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .healing-rec-badge {
-    background:var(--gold); color:#fff; font-size:11px;
-    padding:2px 10px; border-radius:12px; font-weight:500;
+    background:var(--gold); color:#fff; font-size:13px;
+    padding:4px 12px; border-radius:14px; font-weight:600;
+    letter-spacing:1px; box-shadow:0 1px 3px rgba(0,0,0,.12);
   }
   .healing-rec-card {
     border-radius:16px; overflow:hidden; margin-bottom:24px;
@@ -381,10 +383,6 @@
   .healing-rec-name { font-size:18px; font-weight:700; color:var(--ink); margin-bottom:4px; }
   .healing-rec-desc { font-size:13px; color:#7A7A7A; line-height:1.6; margin-bottom:10px; }
   .healing-rec-tags { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-  .healing-rec-tag-emotion {
-    display:inline-block; background:rgba(107,142,107,.1); color:var(--green);
-    font-size:11px; padding:3px 10px; border-radius:10px; font-weight:500;
-  }
   .healing-rec-tag-detail {
     display:inline-block; font-size:11px; color:#9A9A9A; padding:3px 10px;
     border-radius:10px; border:1px solid var(--border);
@@ -1830,7 +1828,7 @@
       <div class="healing-rec-section-title" id="healingRecTitle">
         <ion-icon name="star"></ion-icon>
         <span>今日推荐</span>
-        <span class="healing-rec-badge" id="healingRecBadge">为您精选</span>
+        <span id="healingRecBadge" class="healing-rec-badges"></span>
       </div>
       <div id="healingTodayRec"></div>
       <!-- all five tones -->
@@ -3292,63 +3290,81 @@ function getTodayRecommendation() {
   var scItem = WUYIN_DATA.find(function(w) { return w.id === sc.wuyinId; });
   var scReason = '现在' + sc.name + '，' + sc.organ + '当令，' + sc.wuyin + '助您调理身心';
 
-  // 1. 问卷推荐（优先级最高）
+  // 1. 收集所有来源（按优先级：问卷 > 对话 > 时辰）
+  var sources = [];
   var qResult = getQuestionnaireResult();
   if (qResult) {
-    result.questionnaireRec = qResult.wuyinId;
-    result.questionnaireItem = qResult.wuyin;
-    result.questionnaireReason = '根据您的中医情志问卷，' + qResult.wuyin.name + '最适合您当前的体质';
-    if (qResult.maxIds && qResult.maxIds.length >= 2) {
-      result.questionnaireRecIds = qResult.maxIds;
-      var secondWuyin = WUYIN_DATA.find(function(w) { return w.id === qResult.maxIds[1]; });
-      result.questionnaireReason = '根据您的中医情志问卷，' + qResult.wuyin.name + (secondWuyin ? '、' + secondWuyin.name : '') + '最适合您当前的体质';
-    }
+    var qSecondWuyin = (qResult.maxIds && qResult.maxIds.length >= 2) ?
+      WUYIN_DATA.find(function(w) { return w.id === qResult.maxIds[1]; }) : null;
+    var qReason = '根据您的中医情志问卷，' + qResult.wuyin.name + (qSecondWuyin ? '、' + qSecondWuyin.name : '') + '最适合您当前的体质';
+    sources.push({
+      priority: 1,
+      source: 'questionnaire',
+      wuyinId: qResult.wuyinId,
+      wuyin: qResult.wuyin,
+      reason: qReason,
+      maxIds: qResult.maxIds
+    });
   }
 
-  // 2. 对话情绪推荐（仅当真的有对话记录时才显示）
   var chatLog = JSON.parse(localStorage.getItem('wuyin_chat_emotion_log') || '[]');
-  var hasRealChat = chatLog.length > 0;
-  var chatDominant = hasRealChat ? getDominantChatEmotion(24) : null;
+  var chatDominant = chatLog.length > 0 ? getDominantChatEmotion(24) : null;
   if (chatDominant && chatDominant.count >= 1) {
-    result.chatRec = chatDominant.wuyinId;
     var chatItem = WUYIN_DATA.find(function(w) { return w.id === chatDominant.wuyinId; });
     if (chatItem) {
-      result.chatItem = chatItem;
-      result.chatReason = '根据近期对话，检测到您有' + chatItem.emotion + '情绪倾向（' + chatDominant.count + '次），推荐' + chatItem.name + '调和';
+      sources.push({
+        priority: 2,
+        source: 'chat',
+        wuyinId: chatDominant.wuyinId,
+        wuyin: chatItem,
+        reason: '根据近期对话，检测到您有' + chatItem.emotion + '情绪倾向（' + chatDominant.count + '次），推荐' + chatItem.name + '调和'
+      });
     }
   }
 
-  // 3. 确定主推荐：问卷 > 对话 > 时辰
-  if (result.questionnaireRec) {
-    result.primaryRec = result.questionnaireRec;
-    result.primarySource = 'questionnaire';
-    result.primaryItem = result.questionnaireItem;
-    result.primaryReason = result.questionnaireReason;
-  } else if (result.chatRec) {
-    result.primaryRec = result.chatRec;
-    result.primarySource = 'chat';
-    result.primaryItem = result.chatItem;
-    result.primaryReason = result.chatReason;
-  } else {
-    result.primaryRec = sc.wuyinId;
-    result.primarySource = 'shichen';
-    result.primaryItem = scItem;
-    result.primaryReason = scReason;
-  }
+  sources.push({
+    priority: 3,
+    source: 'shichen',
+    wuyinId: sc.wuyinId,
+    wuyin: scItem,
+    reason: scReason
+  });
 
-  // 4. 辅助推荐：所有与主推荐不同的来源（时辰始终包含）
-  result.secondary = [];
-  // 时辰推荐始终作为辅助（除非它已经是主推荐）
-  if (sc.wuyinId !== result.primaryRec && scItem) {
-    result.secondary.push({ item: scItem, source: 'shichen', reason: scReason });
-  }
-  // 问卷作为辅助（当对话/时辰为主推荐时）
-  if (result.questionnaireRec && result.questionnaireRec !== result.primaryRec) {
-    result.secondary.push({ item: result.questionnaireItem, source: 'questionnaire', reason: result.questionnaireReason });
-  }
-  // 对话作为辅助（当问卷/时辰为主推荐时，且确实有对话记录）
-  if (result.chatRec && result.chatRec !== result.primaryRec) {
-    result.secondary.push({ item: result.chatItem, source: 'chat', reason: result.chatReason });
+  // 2. 按优先级顺序合并相同 wuyinId 的卡片（同音调的不同来源标签合并到一张卡片上）
+  var cardMap = {};
+  var orderedIds = [];
+  sources.forEach(function(src) {
+    if (cardMap[src.wuyinId]) {
+      cardMap[src.wuyinId].tags.push(src.source);
+      cardMap[src.wuyinId].reasons.push(src.reason);
+    } else {
+      var card = {
+        wuyin: src.wuyin,
+        wuyinId: src.wuyinId,
+        tags: [src.source],
+        reasons: [src.reason],
+        maxIds: src.maxIds
+      };
+      cardMap[src.wuyinId] = card;
+      orderedIds.push(src.wuyinId);
+    }
+  });
+  result.cards = orderedIds.map(function(id) { return cardMap[id]; });
+
+  // 3. 兼容旧字段（供 updateHomeRecommendation 等使用）
+  if (result.cards.length > 0) {
+    result.primaryItem = result.cards[0].wuyin;
+    result.primaryRec = result.cards[0].wuyinId;
+    result.primarySource = result.cards[0].tags[0];
+    result.primaryReason = result.cards[0].reasons[0];
+    if (result.cards[0].maxIds && result.cards[0].maxIds.length >= 2) {
+      result.questionnaireRecIds = result.cards[0].maxIds;
+    }
+    result.secondary = result.cards.slice(1).map(function(c) {
+      return { item: c.wuyin, source: c.tags[0], reason: c.reasons[0] };
+    });
+  } else {
+    result.secondary = [];
   }
 
   return result;
@@ -5415,6 +5431,7 @@ function showRoundComplete() {
     document.getElementById('roundCompleteBtnPrimary').textContent = '查看情志分析结果';
     document.getElementById('roundCompleteBtnPrimary').setAttribute('onclick', 'showResultsFromUnlock()');
     document.getElementById('roundCompleteBtnSecondary').textContent = '返回首页';
+    document.getElementById('roundCompleteBtnSecondary').setAttribute('onclick', 'backToHomeFromUnlock()');
     // 隐藏中间内容，显示拼图和礼炮
     document.getElementById('roundCompleteText').style.display = 'none';
     document.getElementById('roundCompleteFeeling').style.display = 'none';
@@ -5501,10 +5518,26 @@ function restFromUnlock() {
   closeRoundComplete();
   document.getElementById('questionnaireOverlay').classList.remove('active');
   switchTab('home');
+  // 切到首页时再刷一次"今日推荐"（双重保险，覆盖 closeRoundComplete 失败的情况）
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
+}
+
+// 问卷完成后"返回首页"按钮回调（最后一轮专用）
+function backToHomeFromUnlock() {
+  closeRoundComplete();
+  document.getElementById('questionnaireOverlay').classList.remove('active');
+  switchTab('home');
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
 }
 
 function closeRoundComplete() {
   document.getElementById('roundCompleteOverlay').classList.remove('active');
+  // 关闭"完成"遮罩时主动刷新首页/疗愈页的"今日推荐"，
+  // 避免用户完成问卷后必须手动刷新页面才能看到"情志问卷推荐"标签
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
 }
 
 function selectFeeling(idx) {
@@ -7059,53 +7092,58 @@ function updateHomeRecommendation() {
 function updateHealingRecommendation() {
   var rec = getTodayRecommendation();
   var container = document.getElementById('healingTodayRec');
-  if (!container || !rec.primaryItem) return;
-  var isDual = (rec.primarySource === 'questionnaire' && rec.questionnaireRecIds && rec.questionnaireRecIds.length >= 2);
+  if (!container || !rec.cards || rec.cards.length === 0) return;
+
+  // 收集所有出现的来源（去重），并按 情志问卷 → 对话 → 时辰 优先级排序
+  var allTags = [];
+  rec.cards.forEach(function(card) {
+    card.tags.forEach(function(t) {
+      if (allTags.indexOf(t) < 0) allTags.push(t);
+    });
+  });
+  var orderedSources = ['questionnaire', 'chat', 'shichen'];
+  var sortedTags = orderedSources.filter(function(s) { return allTags.indexOf(s) >= 0; });
+
+  // 顶部"今日推荐"标题旁的徽标（老人能看清的大字号）
+  var badgeEl = document.getElementById('healingRecBadge');
+  if (badgeEl) {
+    badgeEl.innerHTML = sortedTags.map(function(t) {
+      return '<span class="healing-rec-badge">' + tagToSourceLabel(t) + '</span>';
+    }).join('');
+  }
+
+  // 渲染卡片（不再在卡片内显示小标签）
   var html = '';
-  // === 情志问卷推荐（主推荐）===
-  if (rec.primarySource === 'questionnaire') {
-    document.getElementById('healingRecBadge').textContent = '情志问卷推荐';
-    if (isDual) {
-      var secondId = rec.questionnaireRecIds[1];
+  rec.cards.forEach(function(card, idx) {
+    // 第一张卡片如果是问卷双调式，使用双调式专用卡片
+    if (idx === 0 && card.tags[0] === 'questionnaire' && card.maxIds && card.maxIds.length >= 2) {
+      var secondId = card.maxIds[1];
       var secondItem = WUYIN_DATA.find(function(w) { return w.id === secondId; });
       if (secondItem) {
-        html += buildDualRecCard(rec.primaryItem, secondItem);
+        html += buildDualRecCard(card.wuyin, secondItem);
+        return;
       }
-    } else {
-      html += buildRecCard(rec.primaryItem, ['情志问卷推荐']);
     }
-  } else if (rec.primarySource === 'chat') {
-    document.getElementById('healingRecBadge').textContent = '对话情绪推荐';
-    html += buildRecCard(rec.primaryItem, ['对话情绪推荐']);
-  } else {
-    document.getElementById('healingRecBadge').textContent = '时辰推荐';
-    html += buildRecCard(rec.primaryItem, ['时辰推荐']);
-  }
-  // === 辅助推荐（时辰/对话）===
-  if (rec.secondary && rec.secondary.length > 0) {
-    rec.secondary.forEach(function(sec) {
-      if (!sec.item) return;
-      var sIcon = sec.source === 'shichen' ? 'sunny' : (sec.source === 'chat' ? 'chatbubble' : 'star');
-      var sLabel = sec.source === 'shichen' ? '时辰推荐' : (sec.source === 'chat' ? '对话情绪推荐' : '情志问卷推荐');
-      html += '<div class="healing-rec-section-title" style="margin-top:16px;margin-bottom:8px;">' +
-        '<ion-icon name="' + sIcon + '"></ion-icon><span>' + sLabel + '</span></div>';
-      html += buildRecCard(sec.item, [sLabel]);
-    });
-  }
+    html += buildRecCard(card.wuyin);
+  });
   container.innerHTML = html;
 }
 
-// 单推荐卡片（支持多标签）
-function buildRecCard(item, tags) {
-  var tagHtml = tags.map(function(t) {
-    return '<span class="healing-rec-tag-emotion" style="margin-right:6px;">' + t + '</span>';
-  }).join('');
+// 内部 source key → 用户可见的推荐标签文字
+function tagToSourceLabel(t) {
+  if (t === 'shichen') return '时辰推荐';
+  if (t === 'chat') return '对话情绪推荐';
+  return '情志问卷推荐';
+}
+
+// 单推荐卡片（来源标签在卡片上方的"今日推荐"标题处统一显示，卡片内不再重复）
+function buildRecCard(item) {
   return '<div class="healing-rec-card" onclick="window._isDualMode=false;window._dualHealingIds=null;openIntro(' + WUYIN_DATA.indexOf(item) + ')">' +
     '<img class="healing-rec-img" src="assets/images/scene_' + item.id + '.jpg" alt="' + item.name + '">' +
     '<div class="healing-rec-body">' +
       '<div class="healing-rec-name">' + item.name + ' · ' + item.scene + '</div>' +
       '<div class="healing-rec-desc">' + item.description + '</div>' +
-      '<div class="healing-rec-tags">' + tagHtml +
+      '<div class="healing-rec-tags">' +
         '<span class="healing-rec-tag-detail">' + item.element + ' · ' + item.organ + ' · ' + item.emotion + '</span>' +
       '</div>' +
       '<div class="healing-rec-play">' +
