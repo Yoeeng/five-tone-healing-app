@@ -1,0 +1,22 @@
+{
+  "name": "6a4961bca83e23931b2a28ce",
+  "version": "1.0.0",
+  "description": "> 基于中医五音疗法理论的移动端 AI 疗愈应用，专为老年人情绪调节设计",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yoeeng/five-tone-healing-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Yoeeng/five-tone-healing-app/issues"
+  },
+  "homepage": "https://github.com/Yoeeng/five-tone-healing-app#readme"
+}

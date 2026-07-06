@@ -280,58 +280,61 @@
 
   /* chat input content */
   .chat-input-content {
-    padding:14px 20px 10px;
+    padding:12px 16px 8px;
   }
   /* voice mode */
   .chat-voice-mode {
-    display:none; flex-direction:column; align-items:center; gap:10px;
+    display:none; flex-direction:column; align-items:center; gap:8px;
   }
   .chat-mic-btn-outer {
-    width:80px; height:80px; border-radius:50%;
+    width:72px; height:72px; border-radius:50%;
     background:rgba(107,142,107,.12);
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; transition:all .2s;
   }
   .chat-mic-btn-outer:active { transform:scale(.95); }
   .chat-mic-btn-inner {
-    width:56px; height:56px; border-radius:50%;
+    width:52px; height:52px; border-radius:50%;
     background:var(--green);
     display:flex; align-items:center; justify-content:center;
   }
-  .chat-mic-btn-inner ion-icon { font-size:40px; color:#fff; }
+  .chat-mic-btn-inner ion-icon { font-size:36px; color:#fff; }
   .chat-mic-btn-text { font-size:13px; color:#7A7A7A; }
   .chat-mic-btn-text.recording { color:var(--green); font-weight:600; }
 
   /* text mode */
   .chat-text-mode {
-    display:none; align-items:center; gap:10px;
+    display:none; align-items:center; gap:8px;
+    width:100%; max-width:100%;
   }
   .chat-text-mode.active { display:flex; }
   .chat-voice-mode.active { display:flex; }
   .chat-text-input-wrap {
-    flex:1; display:flex; align-items:center;
+    flex:1 1 auto; min-width:0; display:flex; align-items:center;
     background:rgba(253,250,245,.9); border-radius:22px;
-    padding:8px 14px; gap:8px;
+    padding:6px 12px; gap:6px;
     border:1px solid var(--border);
+    box-sizing:border-box;
   }
   .chat-text-input {
-    flex:1; border:none; outline:none; font-size:15px; font-family:inherit;
+    flex:1 1 auto; min-width:0; border:none; outline:none; font-size:15px; font-family:inherit;
     background:transparent; color:var(--ink);
+    box-sizing:border-box;
   }
   .chat-send-btn {
-    width:44px; height:44px; border-radius:50%; background:var(--green);
+    width:40px; height:40px; min-width:40px; border-radius:50%; background:var(--green);
     border:none; color:#fff; display:flex; align-items:center; justify-content:center;
     cursor:pointer; flex-shrink:0;
   }
-  .chat-send-btn ion-icon { font-size:20px; }
+  .chat-send-btn ion-icon { font-size:18px; }
 
   /* switchBar */
   .chat-switch-bar {
-    display:flex; gap:8px; padding:6px 20px 14px; justify-content:center;
+    display:flex; gap:8px; padding:4px 16px 12px; justify-content:center;
   }
   .chat-switch-btn {
     display:flex; align-items:center; gap:5px;
-    padding:9px 18px; border-radius:20px;
+    padding:7px 16px; border-radius:20px;
     background:rgba(255,255,255,.6); border:1px solid var(--border);
     cursor:pointer; font-family:inherit; font-size:13px; color:#7A7A7A;
     transition:all .2s;
@@ -363,9 +366,11 @@
   }
   .healing-rec-section-title ion-icon { font-size:20px; color:var(--gold); }
   .healing-rec-section-title span { font-size:17px; font-weight:600; color:var(--ink); }
+  .healing-rec-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .healing-rec-badge {
-    background:var(--gold); color:#fff; font-size:11px;
-    padding:2px 10px; border-radius:12px; font-weight:500;
+    background:var(--gold); color:#fff; font-size:13px;
+    padding:4px 12px; border-radius:14px; font-weight:600;
+    letter-spacing:1px; box-shadow:0 1px 3px rgba(0,0,0,.12);
   }
   .healing-rec-card {
     border-radius:16px; overflow:hidden; margin-bottom:24px;
@@ -378,10 +383,6 @@
   .healing-rec-name { font-size:18px; font-weight:700; color:var(--ink); margin-bottom:4px; }
   .healing-rec-desc { font-size:13px; color:#7A7A7A; line-height:1.6; margin-bottom:10px; }
   .healing-rec-tags { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-  .healing-rec-tag-emotion {
-    display:inline-block; background:rgba(107,142,107,.1); color:var(--green);
-    font-size:11px; padding:3px 10px; border-radius:10px; font-weight:500;
-  }
   .healing-rec-tag-detail {
     display:inline-block; font-size:11px; color:#9A9A9A; padding:3px 10px;
     border-radius:10px; border:1px solid var(--border);
@@ -654,7 +655,7 @@
   .immersive-overlay {
     display:none; position:absolute; top:0; left:0; right:0; bottom:0; z-index:1000;
     background:#000; flex-direction:column; overflow:hidden;
-    border-radius:32px;
+    border-radius:0;
   }
   .immersive-overlay.active { display:flex; }
   .immersive-panorama-wrap {
@@ -1020,6 +1021,19 @@
   }
   @media (min-width:801px) and (max-height:920px) {
     .phone-frame { transform:scale(0.85); transform-origin:top center; }
+  }
+  /* 移动端（手机端打开）专用：内容超 390 时按比例缩放，杜绝溢出 */
+  @media (max-width:420px) {
+    html, body { overflow-x:hidden; }
+    .app-wrapper { padding:0; gap:0; min-height:100vh; background:url('assets/images/bg_jue.jpg') center/cover no-repeat; }
+    .app-title-bar { display:none; }
+    .phone-frame {
+      width:100vw; height:100vh; max-width:100vw; max-height:100vh;
+      border-radius:0; padding:0; box-shadow:none; background:transparent;
+      transform:none !important; margin:0;
+    }
+    .phone-side-btn, .phone-notch, .phone-home-indicator { display:none; }
+    .phone-screen { border-radius:0; }
   }
 
   /* ========== HEALING RECOMMENDATION CARD (in chat) ========== */
@@ -1814,7 +1828,7 @@
       <div class="healing-rec-section-title" id="healingRecTitle">
         <ion-icon name="star"></ion-icon>
         <span>今日推荐</span>
-        <span class="healing-rec-badge" id="healingRecBadge">为您精选</span>
+        <span id="healingRecBadge" class="healing-rec-badges"></span>
       </div>
       <div id="healingTodayRec"></div>
       <!-- all five tones -->
@@ -2109,11 +2123,15 @@
           </div>
           <div class="voice-setting-row" style="margin-top:8px;align-items:center;">
             <span class="voice-setting-label">服务状态</span>
-            <div style="display:flex;align-items:center;gap:6px;">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;">
               <span id="ttsStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#E06060;transition:background 0.3s;"></span>
               <span id="ttsStatusText" style="font-size:13px;color:#9A9A9A;">检测中...</span>
             </div>
           </div>
+          <div style="padding:10px 16px 4px;">
+            <button onclick="testCloudTTS()" style="width:100%;padding:12px 16px;border-radius:12px;background:var(--green);color:#fff;border:none;font-size:15px;font-family:inherit;cursor:pointer;">🔊 测试云语音</button>
+          </div>
+          <div id="ttsTestResult" style="padding:6px 16px 14px;font-size:12px;color:#9A9A9A;line-height:1.6;display:none;"></div>
           <div class="profile-speed-row">
             <span class="profile-speed-label">语速</span>
             <div class="profile-speed-controls">
@@ -2935,7 +2953,7 @@ function sendChatMessage() {
   // 日期/节气相关问题优先走本地回复，避免AI编造日期
   var t = text.toLowerCase();
   var termNames = '小寒|大寒|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至';
-  if (t.match(/今天.*几号|今天.*日期|今天.*几月|现在.*几号|当前.*日期|节气|今天什么节气|什么时候|哪天|几月几号|星期几|周几|礼拜|日期|时间|year|month|day|date/) || t.match(new RegExp(termNames))) {
+  if (t.match(/今天|今日|几号|日期|几月几日|星期几|周几|礼拜|时间|节气|什么节气|当前节气|什么时候|哪天|几月几号|year|month|day|date/) || t.match(new RegExp(termNames))) {
     addTypingIndicator();
     setTimeout(function() {
       removeTypingIndicator();
@@ -3272,63 +3290,81 @@ function getTodayRecommendation() {
   var scItem = WUYIN_DATA.find(function(w) { return w.id === sc.wuyinId; });
   var scReason = '现在' + sc.name + '，' + sc.organ + '当令，' + sc.wuyin + '助您调理身心';
 
-  // 1. 问卷推荐（优先级最高）
+  // 1. 收集所有来源（按优先级：问卷 > 对话 > 时辰）
+  var sources = [];
   var qResult = getQuestionnaireResult();
   if (qResult) {
-    result.questionnaireRec = qResult.wuyinId;
-    result.questionnaireItem = qResult.wuyin;
-    result.questionnaireReason = '根据您的中医情志问卷，' + qResult.wuyin.name + '最适合您当前的体质';
-    if (qResult.maxIds && qResult.maxIds.length >= 2) {
-      result.questionnaireRecIds = qResult.maxIds;
-      var secondWuyin = WUYIN_DATA.find(function(w) { return w.id === qResult.maxIds[1]; });
-      result.questionnaireReason = '根据您的中医情志问卷，' + qResult.wuyin.name + (secondWuyin ? '、' + secondWuyin.name : '') + '最适合您当前的体质';
-    }
+    var qSecondWuyin = (qResult.maxIds && qResult.maxIds.length >= 2) ?
+      WUYIN_DATA.find(function(w) { return w.id === qResult.maxIds[1]; }) : null;
+    var qReason = '根据您的中医情志问卷，' + qResult.wuyin.name + (qSecondWuyin ? '、' + qSecondWuyin.name : '') + '最适合您当前的体质';
+    sources.push({
+      priority: 1,
+      source: 'questionnaire',
+      wuyinId: qResult.wuyinId,
+      wuyin: qResult.wuyin,
+      reason: qReason,
+      maxIds: qResult.maxIds
+    });
   }
 
-  // 2. 对话情绪推荐（仅当真的有对话记录时才显示）
   var chatLog = JSON.parse(localStorage.getItem('wuyin_chat_emotion_log') || '[]');
-  var hasRealChat = chatLog.length > 0;
-  var chatDominant = hasRealChat ? getDominantChatEmotion(24) : null;
+  var chatDominant = chatLog.length > 0 ? getDominantChatEmotion(24) : null;
   if (chatDominant && chatDominant.count >= 1) {
-    result.chatRec = chatDominant.wuyinId;
     var chatItem = WUYIN_DATA.find(function(w) { return w.id === chatDominant.wuyinId; });
     if (chatItem) {
-      result.chatItem = chatItem;
-      result.chatReason = '根据近期对话，检测到您有' + chatItem.emotion + '情绪倾向（' + chatDominant.count + '次），推荐' + chatItem.name + '调和';
+      sources.push({
+        priority: 2,
+        source: 'chat',
+        wuyinId: chatDominant.wuyinId,
+        wuyin: chatItem,
+        reason: '根据近期对话，检测到您有' + chatItem.emotion + '情绪倾向（' + chatDominant.count + '次），推荐' + chatItem.name + '调和'
+      });
     }
   }
 
-  // 3. 确定主推荐：问卷 > 对话 > 时辰
-  if (result.questionnaireRec) {
-    result.primaryRec = result.questionnaireRec;
-    result.primarySource = 'questionnaire';
-    result.primaryItem = result.questionnaireItem;
-    result.primaryReason = result.questionnaireReason;
-  } else if (result.chatRec) {
-    result.primaryRec = result.chatRec;
-    result.primarySource = 'chat';
-    result.primaryItem = result.chatItem;
-    result.primaryReason = result.chatReason;
-  } else {
-    result.primaryRec = sc.wuyinId;
-    result.primarySource = 'shichen';
-    result.primaryItem = scItem;
-    result.primaryReason = scReason;
-  }
+  sources.push({
+    priority: 3,
+    source: 'shichen',
+    wuyinId: sc.wuyinId,
+    wuyin: scItem,
+    reason: scReason
+  });
 
-  // 4. 辅助推荐：所有与主推荐不同的来源（时辰始终包含）
-  result.secondary = [];
-  // 时辰推荐始终作为辅助（除非它已经是主推荐）
-  if (sc.wuyinId !== result.primaryRec && scItem) {
-    result.secondary.push({ item: scItem, source: 'shichen', reason: scReason });
-  }
-  // 问卷作为辅助（当对话/时辰为主推荐时）
-  if (result.questionnaireRec && result.questionnaireRec !== result.primaryRec) {
-    result.secondary.push({ item: result.questionnaireItem, source: 'questionnaire', reason: result.questionnaireReason });
-  }
-  // 对话作为辅助（当问卷/时辰为主推荐时，且确实有对话记录）
-  if (result.chatRec && result.chatRec !== result.primaryRec) {
-    result.secondary.push({ item: result.chatItem, source: 'chat', reason: result.chatReason });
+  // 2. 按优先级顺序合并相同 wuyinId 的卡片（同音调的不同来源标签合并到一张卡片上）
+  var cardMap = {};
+  var orderedIds = [];
+  sources.forEach(function(src) {
+    if (cardMap[src.wuyinId]) {
+      cardMap[src.wuyinId].tags.push(src.source);
+      cardMap[src.wuyinId].reasons.push(src.reason);
+    } else {
+      var card = {
+        wuyin: src.wuyin,
+        wuyinId: src.wuyinId,
+        tags: [src.source],
+        reasons: [src.reason],
+        maxIds: src.maxIds
+      };
+      cardMap[src.wuyinId] = card;
+      orderedIds.push(src.wuyinId);
+    }
+  });
+  result.cards = orderedIds.map(function(id) { return cardMap[id]; });
+
+  // 3. 兼容旧字段（供 updateHomeRecommendation 等使用）
+  if (result.cards.length > 0) {
+    result.primaryItem = result.cards[0].wuyin;
+    result.primaryRec = result.cards[0].wuyinId;
+    result.primarySource = result.cards[0].tags[0];
+    result.primaryReason = result.cards[0].reasons[0];
+    if (result.cards[0].maxIds && result.cards[0].maxIds.length >= 2) {
+      result.questionnaireRecIds = result.cards[0].maxIds;
+    }
+    result.secondary = result.cards.slice(1).map(function(c) {
+      return { item: c.wuyin, source: c.tags[0], reason: c.reasons[0] };
+    });
+  } else {
+    result.secondary = [];
   }
 
   return result;
@@ -3378,7 +3414,7 @@ function getFallbackResponseWithRec(userText) {
       } else {
         response = '老朋友，我查一下' + foundTerm + '的日期哦~';
       }
-    } else if (t.match(/今天|几号|日期|时间|星期|礼拜|周几/)) {
+    } else if (t.match(/今天|今日|几号|日期|时间|星期|礼拜|周几|几月几日|几月几号/)) {
       var weekDays = ['日','一','二','三','四','五','六'];
       var now2 = new Date();
       response = '今天是' + now2.getFullYear() + '年' + (now2.getMonth()+1) + '月' + now2.getDate() + '日，星期' + weekDays[now2.getDay()] + '。';
@@ -3433,19 +3469,122 @@ function setChatMode(mode) {
 }
 
 // Chat recording
+var _chatRecognition = null;
+var _chatRecFinalText = '';
+var _chatRecSilenceTimer = null;
+var _chatRecAutoStopTimer = null;
+
 function toggleChatRecording() {
   var textEl = document.getElementById('chatMicText');
   if (!isChatRecording) {
+    // === 开始录音 ===
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      showToast('您的浏览器暂不支持语音识别，请使用手写打字');
+      // 自动切到文字模式
+      if (typeof setChatMode === 'function') setChatMode('text');
+      return;
+    }
     isChatRecording = true;
+    _chatRecFinalText = '';
     textEl.textContent = '正在聆听，请说话...';
     textEl.classList.add('recording');
     addWaveform();
-    showToast('语音录制中...');
+    showToast('请开始说话，停顿后自动发送');
+    try {
+      var recognition = new SpeechRecognition();
+      recognition.lang = (ttsConfig && ttsConfig.language === 'cantonese') ? 'zh-HK' : 'zh-CN';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = function(event) {
+        var interim = '';
+        var final = '';
+        for (var i = 0; i < event.results.length; i++) {
+          var transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += transcript;
+          else interim += transcript;
+        }
+        var fullText = (_chatRecFinalText + final + interim).trim();
+        // 同步把识别到的文字填到聊天输入框
+        var input = document.getElementById('chatInput');
+        if (input) input.value = fullText;
+        if (final) {
+          _chatRecFinalText += final;
+          // 用户说话后，重置静音计时器
+          if (_chatRecSilenceTimer) clearTimeout(_chatRecSilenceTimer);
+          _chatRecSilenceTimer = setTimeout(function() {
+            if (isChatRecording) stopChatRecording(true);
+          }, 1500);
+        }
+      };
+      recognition.onerror = function(event) {
+        console.warn('[chat-rec] error:', event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          showToast('请允许浏览器使用麦克风权限');
+        } else if (event.error === 'no-speech') {
+          showToast('没有听到声音，请重试');
+        } else if (event.error === 'audio-capture') {
+          showToast('麦克风不可用');
+        }
+      };
+      recognition.onend = function() {
+        // 如果还在录音状态但识别被中断（部分浏览器会自动停止），尝试重启
+        if (isChatRecording && _chatRecognition && Date.now() - (_chatRecognition._startTime || 0) < 60000) {
+          try { _chatRecognition._startTime = Date.now(); _chatRecognition.start(); return; }
+          catch(e) { /* 忽略 */ }
+        }
+        if (isChatRecording) {
+          // 兜底：自然结束时如果还有内容，自动发送
+          stopChatRecording(true);
+        }
+      };
+      _chatRecognition = recognition;
+      _chatRecognition._startTime = Date.now();
+      recognition.start();
+      // 最长录音 30 秒强制结束，防止用户说完忘记点
+      if (_chatRecAutoStopTimer) clearTimeout(_chatRecAutoStopTimer);
+      _chatRecAutoStopTimer = setTimeout(function() {
+        if (isChatRecording) {
+          showToast('已达最长录音时间，自动结束');
+          stopChatRecording(true);
+        }
+      }, 30000);
+    } catch(e) {
+      console.warn('[chat-rec] start failed:', e);
+      showToast('语音启动失败：' + (e.message || e));
+      isChatRecording = false;
+      textEl.textContent = '按住说话';
+      textEl.classList.remove('recording');
+      removeTypingIndicator();
+    }
   } else {
-    isChatRecording = false;
+    // === 手动结束录音 ===
+    stopChatRecording(true);
+  }
+}
+
+function stopChatRecording(autoSend) {
+  if (!isChatRecording) return;
+  isChatRecording = false;
+  if (_chatRecSilenceTimer) { clearTimeout(_chatRecSilenceTimer); _chatRecSilenceTimer = null; }
+  if (_chatRecAutoStopTimer) { clearTimeout(_chatRecAutoStopTimer); _chatRecAutoStopTimer = null; }
+  var textEl = document.getElementById('chatMicText');
+  if (textEl) {
     textEl.textContent = '按住说话';
     textEl.classList.remove('recording');
-    removeTypingIndicator();
+  }
+  removeTypingIndicator();
+  if (_chatRecognition) {
+    try { _chatRecognition.stop(); } catch(e) {}
+    _chatRecognition = null;
+  }
+  var input = document.getElementById('chatInput');
+  if (autoSend && input && input.value && input.value.trim()) {
+    showToast('识别完成，自动发送');
+    if (typeof setChatMode === 'function') setChatMode('text');
+    setTimeout(function() { if (typeof sendChatMessage === 'function') sendChatMessage(); }, 200);
+  } else {
     showToast('语音录制已结束');
   }
 }
@@ -3493,6 +3632,12 @@ function openIntro(idx) {
   selectedIntroIdx = idx;
   var item = WUYIN_DATA[idx];
   currentWuyinItem = item;
+  // 进入选择界面：重置多选状态（从聊天推荐的组合疗愈除外）
+  if (!(window._isDualMode && window._dualHealingIds && window._dualHealingIds.length >= 2)) {
+    window._selectedModeIndices = [idx];
+    window._isDualMode = false;
+    window._dualHealingIds = null;
+  }
   // 双调式模式：紧凑一屏展示
   if (window._isDualMode && window._dualHealingIds && window._dualHealingIds.length >= 2) {
     var id1 = window._dualHealingIds[0];
@@ -3678,6 +3823,29 @@ function toggleIntroMode(el, idx) {
   } else {
     check.style.display = 'none';
   }
+  // 重新收集所有选中的调式索引
+  window._selectedModeIndices = [];
+  var items = document.querySelectorAll('.intro-mode-item');
+  items.forEach(function(item, i) {
+    if (item.classList.contains('selected')) {
+      window._selectedModeIndices.push(i);
+    }
+  });
+  // 更新双模式状态（选了 2 个或以上 → 双模式）
+  if (window._selectedModeIndices.length >= 2) {
+    window._isDualMode = true;
+    window._dualHealingIds = window._selectedModeIndices.map(function(i) {
+      return WUYIN_DATA[i].id;
+    });
+    showToast('已选 ' + window._selectedModeIndices.length + ' 种调式 · 组合疗愈');
+  } else {
+    window._isDualMode = false;
+    window._dualHealingIds = null;
+    if (window._selectedModeIndices.length === 1) {
+      showToast('已选 1 种调式 · 单调式疗愈');
+    }
+  }
+  console.log('[toggleIntroMode] selected:', window._selectedModeIndices, 'dual:', window._isDualMode, 'ids:', window._dualHealingIds);
 }
 
 function selectDuration(btn, mins) {
@@ -3688,7 +3856,14 @@ function selectDuration(btn, mins) {
 
 function startHealing() {
   closeIntro();
-  openPlayer(selectedIntroIdx);
+  // 确定第一个调式的索引（优先用用户多选的第一个，否则用默认选中）
+  var firstIdx = selectedIntroIdx;
+  if (window._selectedModeIndices && window._selectedModeIndices.length > 0) {
+    firstIdx = window._selectedModeIndices[0];
+    selectedIntroIdx = firstIdx; // 同步更新，确保 openPlayer 用对索引
+  }
+  console.log('[startHealing] firstIdx=', firstIdx, 'dual=', window._isDualMode, 'ids=', window._dualHealingIds, 'duration=', playerDuration);
+  openPlayer(firstIdx);
   // 自动开始播放
   setTimeout(function() { startPlay(); }, 500);
 }
@@ -3796,22 +3971,58 @@ function startImmersiveAutoPan() {
 function loadImmersiveImage(idx) {
   var img = document.getElementById('immersiveImg');
   var wrap = document.getElementById('immersiveWrap');
+  if (!img || !wrap) return;
   // 重置偏移和自动平移
   if (immersiveState.autoTimer) { clearInterval(immersiveState.autoTimer); immersiveState.autoTimer = null; }
   immersiveState.currentOffset = 0;
   img.style.transform = 'translateY(-50%) translateX(0px)';
-  // 设置图片源
-  img.src = PANORAMA_IMAGES[idx] + '?v=' + Date.now();
-  // 等图片加载后居中并启动自动平移
-  img.onload = function() {
-    var wrapW = wrap.offsetWidth;
-    var imgW = img.offsetWidth;
-    var offsetX = -(imgW - wrapW) / 2;
-    immersiveState.currentOffset = Math.max(-(imgW - wrapW), Math.min(0, offsetX));
-    img.style.transform = 'translateY(-50%) translateX(' + immersiveState.currentOffset + 'px)';
-    // 重启自动平移
-    startImmersiveAutoPan();
-  };
+  // 清理之前的事件
+  img.onload = null;
+  img.onerror = null;
+
+  // 图片源备选链：jpg 失败 → png 备选
+  var baseSrc = PANORAMA_IMAGES[idx];
+  var candidates = [baseSrc];
+  // 同名 png 备选
+  var pngSrc = baseSrc.replace(/\.jpg(\?.*)?$/i, '.png$1');
+  if (pngSrc !== baseSrc) candidates.push(pngSrc);
+  // 3D全景文件夹里的备选（用 URL 编码的中文文件名）
+  var panoramicNames = ['角音_翠竹林_全景.jpg', '徵音_阳光草地_全景.jpg', '宫音_田园麦田_全景.jpg', '商音_秋日晴空_全景.jpg', '羽音_宁静湖面_全景.jpg'];
+  if (panoramicNames[idx]) {
+    candidates.push(encodeURI('五音情境图_3D全景/' + panoramicNames[idx]));
+  }
+
+  var tryIdx = 0;
+  function tryNext() {
+    if (tryIdx >= candidates.length) {
+      console.error('[immersive] all image sources failed');
+      showToast('全景图加载失败');
+      return;
+    }
+    var src = candidates[tryIdx++];
+    console.log('[immersive] trying image:', src, '(' + tryIdx + '/' + candidates.length + ')');
+    img.onload = function() {
+      img.onload = null; img.onerror = null;
+      var wrapW = wrap.offsetWidth;
+      var imgW = img.offsetWidth;
+      if (imgW <= 0) { console.warn('[immersive] image loaded but width=0'); return; }
+      var offsetX = -(imgW - wrapW) / 2;
+      immersiveState.currentOffset = Math.max(-(imgW - wrapW), Math.min(0, offsetX));
+      img.style.transform = 'translateY(-50%) translateX(' + immersiveState.currentOffset + 'px)';
+      // 重启自动平移
+      startImmersiveAutoPan();
+    };
+    img.onerror = function() {
+      img.onload = null; img.onerror = null;
+      console.warn('[immersive] image failed:', src);
+      tryNext();
+    };
+    // 强制清除旧 src（避免部分浏览器缓存）
+    img.removeAttribute('src');
+    img.src = src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now() + '&idx=' + tryIdx;
+  }
+  tryNext();
+
   // 设置标题
   var names = ['角音 · 翠竹林','徵音 · 阳光草地','宫音 · 田园麦田','商音 · 秋日晴空','羽音 · 宁静湖面'];
   document.getElementById('immersiveTitle').textContent = names[idx] || '五音全景';
@@ -3958,6 +4169,9 @@ function togglePlay() {
     if (playTimer) { clearInterval(playTimer); playTimer = null; }
     // 暂停真实音频
     if (realAudioPlayer) { try { realAudioPlayer.pause(); } catch(e) {} }
+    // 同时暂停第二个 audio 元素（交叉淡入淡出期间可能两个都在播）
+    var audio2El = document.getElementById('hiddenAudioPlayer2');
+    if (audio2El) { try { audio2El.pause(); } catch(e) {} }
     // 暂停合成音
     var engine = getWuyinAudioEngine();
     engine.stop();
@@ -4028,6 +4242,59 @@ function selectWeightedTrack(wuyinId) {
     if (rnd <= cum) return tracks[i];
   }
   return tracks[tracks.length - 1];
+}
+
+// 获取音频的备选源（m4a → mp3 → 备选轨道）
+function getAudioFallbackSources(primarySrc) {
+  var sources = [];
+  if (!primarySrc) return sources;
+  sources.push(primarySrc);
+  // 同一文件名的 mp3 备选
+  var mp3Src = primarySrc.replace(/\.m4a(\?.*)?$/i, '.mp3$1');
+  if (mp3Src !== primarySrc) sources.push(mp3Src);
+  // 尝试同名 wav 备选
+  var wavSrc = primarySrc.replace(/\.m4a(\?.*)?$/i, '.wav$1');
+  if (wavSrc !== primarySrc && sources.indexOf(wavSrc) < 0) sources.push(wavSrc);
+  return sources;
+}
+
+// 健壮的音频 src 加载：m4a 失败时自动回退到 mp3
+function setAudioSrcWithFallback(audioEl, primarySrc, onSuccess, onError) {
+  var sources = getAudioFallbackSources(primarySrc);
+  if (!sources.length) { if (onError) onError(new Error('no source')); return; }
+  var tryIdx = 0;
+  function tryNext() {
+    if (tryIdx >= sources.length) {
+      if (onError) onError(new Error('all sources failed: ' + sources.join(', ')));
+      return;
+    }
+    var src = sources[tryIdx++];
+    console.log('[audio] trying source:', src, '(' + tryIdx + '/' + sources.length + ')');
+    // 一次性事件，尝试后清理
+    var onCanPlay = function() {
+      audioEl.removeEventListener('canplay', onCanPlay);
+      audioEl.removeEventListener('error', onError2);
+      if (onSuccess) onSuccess(src);
+    };
+    var onError2 = function(e) {
+      audioEl.removeEventListener('canplay', onCanPlay);
+      audioEl.removeEventListener('error', onError2);
+      console.warn('[audio] source failed, try next:', src);
+      tryNext();
+    };
+    audioEl.addEventListener('canplay', onCanPlay, { once: true });
+    audioEl.addEventListener('error', onError2, { once: true });
+    try {
+      audioEl.src = src;
+      audioEl.load();
+    } catch (e) {
+      audioEl.removeEventListener('canplay', onCanPlay);
+      audioEl.removeEventListener('error', onError2);
+      console.warn('[audio] load threw:', e.message);
+      tryNext();
+    }
+  }
+  tryNext();
 }
 
 function recordTrackFeedback(wuyinId, trackIndex, score) {
@@ -4134,15 +4401,18 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
     hiddenAudio.preload = 'auto';
+    hiddenAudio.setAttribute('playsinline', '');
+    hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
   }
-  // 如果音频源没变，不需要重新加载，直接seek即可
-  var needReload = hiddenAudio.src.indexOf(audioSrc) === -1;
+  // 如果音频源没变（同一文件），不需要重新加载，直接 seek+play
+  var baseCurrent = hiddenAudio.src.split('?')[0];
+  var baseNew = audioSrc.split('?')[0];
+  var needReload = baseCurrent !== baseNew;
   if (realAudioPlayer && realAudioPlayer !== hiddenAudio) { try { realAudioPlayer.pause(); } catch(e) {} }
   hiddenAudio.pause();
   if (needReload) {
     hiddenAudio.currentTime = 0;
-    hiddenAudio.src = audioSrc;
   }
   hiddenAudio.loop = true; hiddenAudio.volume = 0.9;
   realAudioPlayer = hiddenAudio;
@@ -4158,38 +4428,63 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
   }
 
   if (needReload) {
-    // 新音频：等canplay后play
+    // 新音频：同步设置 src + play()（保持在用户交互上下文中）
     showToast('正在加载音频...');
-    hiddenAudio.oncanplay = function() {
-      hiddenAudio.oncanplay = null;
-      hiddenAudio.onerror = null;
-      showToast('');
-      hiddenAudio.play().catch(function(e) { console.warn('[dualPlay] play err:', e); });
-    };
-    hiddenAudio.onerror = function(e) {
-      hiddenAudio.oncanplay = null;
-      hiddenAudio.onerror = null;
-      console.error('[dualPlay] Error:', e);
-      showToast('音频加载失败');
-    };
+    hiddenAudio.src = audioSrc;
     hiddenAudio.load();
+    var pp = hiddenAudio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
+        showToast('');
+        console.log('[dualPlay] playing OK:', audioSrc);
+      }).catch(function(e) {
+        console.warn('[dualPlay] play() rejected:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // 尝试 mp4 回退
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            console.log('[dualPlay] retrying with mp4:', mp4Src);
+            hiddenAudio.src = mp4Src;
+            hiddenAudio.load();
+            hiddenAudio.play().then(function() {
+              showToast('');
+              console.log('[dualPlay] mp4 playing OK');
+            }).catch(function(e2) {
+              console.error('[dualPlay] mp4 also failed:', e2.message);
+              showToast('音频播放失败');
+            });
+          } else {
+            showToast('音频播放失败');
+          }
+        }
+      });
+    }
   } else {
-    // 同一音频（切回前半）：直接play
+    // 同一音频（切回前半）：直接 play
     showToast('');
-    hiddenAudio.play().catch(function(e) { console.warn('[dualPlay] play err:', e); });
+    var pp2 = hiddenAudio.play();
+    if (pp2 && typeof pp2.then === 'function') {
+      pp2.catch(function(e) {
+        console.warn('[dualPlay] play() rejected:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        }
+      });
+    }
   }
-  // 独立的切换定时器：到时间必定切换，不受音频状态影响
+  // 独立的切换定时器：作为 fallback，确保到时间必定切换
+  // 优先由 playTimer 中的 doDualSwitch() 触发（同步切换，避免脱离用户上下文）
   var switchTimer = setTimeout(function() {
     console.log('[dual] switch timer fired for', wuyinId, 'isPlaying=', isPlaying);
     if (!isPlaying) return;
-    // 如果 doDualSwitch 已经处理了交叉淡入淡出，跳过
+    // 如果 doDualSwitch 已经处理了切换，跳过
     if (window._dualSwitched) return;
-    // 淡出当前音频
-    fadeOutAudio(hiddenAudio, 2, function() {
-      try { hiddenAudio.pause(); hiddenAudio.currentTime = 0; } catch(e) {}
-    });
-    // 无论音频状态如何，必定调用 onDone 进行切换
-    if (onDone) onDone();
+    // fallback：确保 playProgress 已达到 halfDuration，然后调用 doDualSwitch 同步切换
+    var halfDur = Math.floor(playerDuration / 2);
+    if (playProgress < halfDur) playProgress = halfDur;
+    doDualSwitch();
   }, duration * 1000);
   // 保存定时器引用，便于 cleanup
   window._dualSwitchTimer = switchTimer;
@@ -4207,32 +4502,48 @@ function startSinglePlay() {
       hiddenAudio.id = 'hiddenAudioPlayer';
       hiddenAudio.style.display = 'none';
       hiddenAudio.preload = 'auto';
+      hiddenAudio.setAttribute('playsinline', '');
+      hiddenAudio.setAttribute('webkit-playsinline', '');
       document.body.appendChild(hiddenAudio);
     }
     if (realAudioPlayer) { try { realAudioPlayer.pause(); } catch(e) {} }
     hiddenAudio.pause(); hiddenAudio.currentTime = 0;
-    hiddenAudio.src = audioSrc;
     hiddenAudio.loop = true; hiddenAudio.volume = 0.9;
     realAudioPlayer = hiddenAudio;
     showToast('正在加载音频...');
-    hiddenAudio.oncanplay = function() {
-      hiddenAudio.oncanplay = null;
-      hiddenAudio.onerror = null;
-      showToast('');
-    };
-    hiddenAudio.onerror = function(e) {
-      hiddenAudio.oncanplay = null;
-      hiddenAudio.onerror = null;
-      console.error('[audio] load error:', e);
-      showToast('音频加载失败');
-    };
+    // 关键：在用户交互上下文中同步设置 src + play()
+    // 移动端要求 play() 必须在用户手势同步调用栈中
+    hiddenAudio.src = audioSrc;
+    hiddenAudio.load();
+    // 立即调用 play()，不等待 canplay（浏览器会自动缓冲后播放）
     var pp = hiddenAudio.play();
     if (pp && typeof pp.then === 'function') {
-      pp.then(function() { console.log('[startPlay] OK:', audioSrc); })
-        .catch(function(e) {
-          console.warn('[startPlay] play() rejected:', e.message);
-          showToast('音频播放失败');
-        });
+      pp.then(function() {
+        showToast('');
+        console.log('[startPlay] playing OK:', audioSrc);
+      }).catch(function(e) {
+        console.warn('[startPlay] play() rejected:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // 其他错误：尝试 mp4 回退（m4a 在某些移动端不被支持）
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            console.log('[startPlay] retrying with mp4:', mp4Src);
+            hiddenAudio.src = mp4Src;
+            hiddenAudio.load();
+            hiddenAudio.play().then(function() {
+              showToast('');
+              console.log('[startPlay] mp4 playing OK');
+            }).catch(function(e2) {
+              console.error('[startPlay] mp4 also failed:', e2.message);
+              showToast('音频播放失败');
+            });
+          } else {
+            showToast('音频播放失败');
+          }
+        }
+      });
     }
     // 显示专辑信息
     if (currentWuyinItem.albumTitle) {
@@ -4283,13 +4594,27 @@ function stopPlay() {
     var mins = Math.round(playProgress / 60);
     recordHealingDuration(mins);
   }
-  // 渐出音频（3秒淡出）
+  // 渐出音频（3秒淡出），并清理两个 audio 元素的定时器
+  var audio1 = document.getElementById('hiddenAudioPlayer');
+  var audio2El = document.getElementById('hiddenAudioPlayer2');
+  [audio1, audio2El].forEach(function(el) {
+    if (el) {
+      if (el._fadeOutTimer) { clearInterval(el._fadeOutTimer); el._fadeOutTimer = null; }
+      if (el._fadeInTimer) { clearInterval(el._fadeInTimer); el._fadeInTimer = null; }
+    }
+  });
   if (realAudioPlayer) {
     fadeOutAudio(realAudioPlayer, 3, function() {
       try { realAudioPlayer.pause(); realAudioPlayer.currentTime = 0; } catch(e) {}
       realAudioPlayer = null;
     });
   }
+  // 同时静音并暂停另一个 audio 元素（避免残留播放）
+  [audio1, audio2El].forEach(function(el) {
+    if (el && el !== realAudioPlayer) {
+      try { el.pause(); el.currentTime = 0; el.volume = 0.9; } catch(e) {}
+    }
+  });
   // 停止合成音频引擎
   var engine = getWuyinAudioEngine();
   engine.stop();
@@ -4301,18 +4626,25 @@ function stopPlay() {
 function fadeInAudio(audioEl, durationSec, targetVol) {
   if (audioEl._fadeInTimer) { clearInterval(audioEl._fadeInTimer); audioEl._fadeInTimer = null; }
   if (audioEl._fadeOutTimer) { clearInterval(audioEl._fadeOutTimer); audioEl._fadeOutTimer = null; }
-  var steps = 20;
+  // easeOutCubic 渐入：前段快增、后段慢增
+  // 前半段升到 87.5%，后半段慢慢到满，听感上"很快出现、然后稳定下来"
+  var steps = 60;
   var interval = (durationSec * 1000) / steps;
-  var volStep = targetVol / steps;
-  var current = audioEl.volume || 0;
+  var startVol = audioEl.volume || 0;
+  var step = 0;
   var timer = setInterval(function() {
-    current += volStep;
-    if (current >= targetVol) {
-      current = targetVol;
+    step++;
+    var progress = step / steps;
+    if (progress >= 1) {
+      audioEl.volume = targetVol;
       clearInterval(timer);
       audioEl._fadeInTimer = null;
+      return;
     }
-    audioEl.volume = current;
+    // easeOutCubic: f(x) = 1 - (1-x)^3
+    var eased = 1 - Math.pow(1 - progress, 3);
+    var nextVol = startVol + (targetVol - startVol) * eased;
+    try { audioEl.volume = Math.max(0, Math.min(1, nextVol)); } catch(e) {}
   }, interval);
   audioEl._fadeInTimer = timer;
 }
@@ -4322,19 +4654,27 @@ function fadeOutAudio(audioEl, durationSec, callback) {
   if (audioEl._fadeInTimer) { clearInterval(audioEl._fadeInTimer); audioEl._fadeInTimer = null; }
   var startVol = audioEl.volume || 0.9;
   if (startVol <= 0.01) { if (callback) callback(); return; }
-  var steps = 20;
+  // easeInCubic 渐退：前段慢降、后段快降
+  // 前半段只降 12.5%（从 0.9 降到 0.7875），大部分时间音量保持较高
+  // 后半段才快速降到 0，听感上"慢慢消失"而非"突然切断"
+  var steps = 60;
   var interval = (durationSec * 1000) / steps;
-  var volStep = startVol / steps;
-  var current = startVol;
+  var step = 0;
   var timer = setInterval(function() {
-    current -= volStep;
-    if (current <= 0) {
-      current = 0;
+    step++;
+    var progress = step / steps;
+    if (progress >= 1) {
+      audioEl.volume = 0;
       clearInterval(timer);
       audioEl._fadeOutTimer = null;
       if (callback) callback();
+      return;
     }
-    try { audioEl.volume = Math.max(0, current); } catch(e) {}
+    // easeInCubic: f(x) = x^3
+    // 音量 = startVol * (1 - progress^3)
+    var eased = Math.pow(progress, 3);
+    var nextVol = startVol * (1 - eased);
+    try { audioEl.volume = Math.max(0, Math.min(1, nextVol)); } catch(e) {}
   }, interval);
   audioEl._fadeOutTimer = timer;
 }
@@ -4402,6 +4742,8 @@ function doDualSwitch(instant) {
     audio.style.display = 'none';
     audio.preload = 'auto';
     audio.loop = true;
+    audio.setAttribute('playsinline', '');
+    audio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(audio);
   }
 
@@ -4411,31 +4753,33 @@ function doDualSwitch(instant) {
     if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
     try { audio.pause(); audio.currentTime = 0; } catch(e) {}
     var audioSrc = selectWeightedTrack(targetId);
-    audio.src = audioSrc;
     audio.volume = 0.9;
-    audio.oncanplay = function() {
-      audio.oncanplay = null;
-      audio.onerror = null;
-      audio.play().then(function() {
-        console.log('[instant] playing, seeking to position');
-        // seek 到拖动位置对应的音频位置
+    // 同步设置 src + play()（保持用户交互上下文）
+    audio.src = audioSrc;
+    audio.load();
+    realAudioPlayer = audio;
+    var pp = audio.play();
+    if (pp && typeof pp.then === 'function') {
+      pp.then(function() {
+        console.log('[instant] playing, seeking to position:', audioSrc);
         if (audio.duration && audio.duration > 0 && isFinite(audio.duration)) {
           var audioPct = playProgress / playerDuration;
           try { audio.currentTime = audioPct * audio.duration; } catch(e) {}
         }
-      }).catch(function(e) { console.warn('[instant] play err:', e); });
-    };
-    audio.onerror = function() {
-      audio.oncanplay = null;
-      audio.onerror = null;
-      showToast('音频加载失败');
-    };
-    if (audio.readyState >= 3) {
-      audio.oncanplay();
-    } else {
-      audio.load();
+      }).catch(function(e) {
+        console.warn('[instant] play err:', e.message);
+        if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+          showToast('请点击页面开始播放');
+        } else {
+          // mp4 回退
+          var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+          if (mp4Src !== audioSrc) {
+            audio.src = mp4Src; audio.load();
+            audio.play().catch(function(e2) { showToast('音频播放失败'); });
+          }
+        }
+      });
     }
-    realAudioPlayer = audio;
     var label = isInSecondHalf
       ? '已切换到' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第二调式')
       : '已切回' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第一调式');
@@ -4443,44 +4787,82 @@ function doDualSwitch(instant) {
     return;
   }
 
-  // 自然播放过渡：渐进渐出
+  // 自然播放过渡：双 audio 元素交叉淡入淡出
+  // 关键：play() 必须在 doDualSwitch 同步执行路径中调用（用户已激活状态），
+  // 不能放在 fadeOutAudio 的 4 秒后回调里（会脱离用户激活上下文 → NotAllowedError）
   window._crossfading = true;
-  var FADE_SECONDS = 4;
 
-  // 第一步：淡出当前音频（2秒）
-  fadeOutAudio(audio, 2, function() {
-    try { audio.pause(); audio.currentTime = 0; } catch(e) {}
-    // 第二步：加载新调式
-    var audioSrc = selectWeightedTrack(targetId);
-    audio.src = audioSrc;
-    audio.volume = 0;
-    audio.oncanplay = function() {
-      audio.oncanplay = null;
-      audio.onerror = null;
-      audio.play().then(function() {
-        console.log('[crossfade] new track playing, fading in');
-        // 第三步：淡入新音频（2秒）
-        fadeInAudio(audio, 2, 0.9);
-        window._crossfading = false;
-      }).catch(function(e) {
-        console.warn('[crossfade] play err:', e);
-        window._crossfading = false;
+  // 清理旧的淡入淡出定时器
+  if (audio._fadeOutTimer) { clearInterval(audio._fadeOutTimer); audio._fadeOutTimer = null; }
+  if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
+
+  // 获取第二个 audio 元素（或创建）
+  var audio2 = document.getElementById('hiddenAudioPlayer2');
+  if (!audio2) {
+    audio2 = document.createElement('audio');
+    audio2.id = 'hiddenAudioPlayer2';
+    audio2.style.display = 'none';
+    audio2.preload = 'auto';
+    audio2.loop = true;
+    audio2.setAttribute('playsinline', '');
+    audio2.setAttribute('webkit-playsinline', '');
+    document.body.appendChild(audio2);
+  }
+  if (audio2._fadeOutTimer) { clearInterval(audio2._fadeOutTimer); audio2._fadeOutTimer = null; }
+  if (audio2._fadeInTimer) { clearInterval(audio2._fadeInTimer); audio2._fadeInTimer = null; }
+  try { audio2.pause(); audio2.currentTime = 0; } catch(e) {}
+
+  // 同步设置新 src 并 play()（关键：在同步执行路径中，避免 NotAllowedError）
+  var audioSrc = selectWeightedTrack(targetId);
+  audio2.volume = 0;
+  audio2.src = audioSrc;
+  audio2.load();
+  var pp = audio2.play();
+  if (pp && typeof pp.then === 'function') {
+    pp.then(function() {
+      console.log('[crossfade] new track playing, starting crossfade:', audioSrc);
+      // 新音频播放成功，开始交叉淡入淡出
+      // 旧 audio 渐退（4秒），完成后 pause
+      fadeOutAudio(audio, 4, function() {
+        try { audio.pause(); audio.currentTime = 0; } catch(e) {}
       });
-    };
-    audio.onerror = function() {
-      audio.oncanplay = null;
-      audio.onerror = null;
-      showToast('音频加载失败');
+      // 新 audio 渐入（4秒）
+      fadeInAudio(audio2, 4, 0.9);
+      // 切换 realAudioPlayer 指向新 audio
+      realAudioPlayer = audio2;
       window._crossfading = false;
-    };
-    if (audio.readyState >= 3) {
-      audio.oncanplay();
-    } else {
-      audio.load();
-    }
-  });
+    }).catch(function(e) {
+      console.warn('[crossfade] play err:', e.message);
+      window._crossfading = false;
+      if (e && (e.name === 'NotAllowedError' || (e.message || '').indexOf('user') >= 0)) {
+        showToast('请点击页面开始播放');
+      } else {
+        // mp4 回退
+        var mp4Src = audioSrc.replace(/\.m4a(\?.*)?$/i, '.mp4$1');
+        if (mp4Src !== audioSrc) {
+          audio2.src = mp4Src; audio2.load();
+          audio2.play().then(function() {
+            fadeOutAudio(audio, 4, function() {
+              try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+            });
+            fadeInAudio(audio2, 4, 0.9);
+            realAudioPlayer = audio2;
+          }).catch(function() { showToast('音频播放失败'); });
+        } else {
+          showToast('音频播放失败');
+        }
+      }
+    });
+  } else {
+    // 同步返回（旧浏览器），直接交叉淡入淡出
+    fadeOutAudio(audio, 4, function() {
+      try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+    });
+    fadeInAudio(audio2, 4, 0.9);
+    realAudioPlayer = audio2;
+    window._crossfading = false;
+  }
 
-  realAudioPlayer = audio;
   var label2 = isInSecondHalf
     ? '已切换到' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第二调式')
     : '已切回' + (WUYIN_DATA[targetIdx] ? WUYIN_DATA[targetIdx].name : '第一调式');
@@ -5049,6 +5431,7 @@ function showRoundComplete() {
     document.getElementById('roundCompleteBtnPrimary').textContent = '查看情志分析结果';
     document.getElementById('roundCompleteBtnPrimary').setAttribute('onclick', 'showResultsFromUnlock()');
     document.getElementById('roundCompleteBtnSecondary').textContent = '返回首页';
+    document.getElementById('roundCompleteBtnSecondary').setAttribute('onclick', 'backToHomeFromUnlock()');
     // 隐藏中间内容，显示拼图和礼炮
     document.getElementById('roundCompleteText').style.display = 'none';
     document.getElementById('roundCompleteFeeling').style.display = 'none';
@@ -5135,10 +5518,26 @@ function restFromUnlock() {
   closeRoundComplete();
   document.getElementById('questionnaireOverlay').classList.remove('active');
   switchTab('home');
+  // 切到首页时再刷一次"今日推荐"（双重保险，覆盖 closeRoundComplete 失败的情况）
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
+}
+
+// 问卷完成后"返回首页"按钮回调（最后一轮专用）
+function backToHomeFromUnlock() {
+  closeRoundComplete();
+  document.getElementById('questionnaireOverlay').classList.remove('active');
+  switchTab('home');
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
 }
 
 function closeRoundComplete() {
   document.getElementById('roundCompleteOverlay').classList.remove('active');
+  // 关闭"完成"遮罩时主动刷新首页/疗愈页的"今日推荐"，
+  // 避免用户完成问卷后必须手动刷新页面才能看到"情志问卷推荐"标签
+  try { updateHomeRecommendation(); } catch(e) {}
+  try { updateHealingRecommendation(); } catch(e) {}
 }
 
 function selectFeeling(idx) {
@@ -5765,24 +6164,25 @@ var currentSpeech = null;
 
 // TTS配置
 var ttsConfig = {
-  provider: 'edgetts', // 'edgetts' 或 'browser'
+  provider: 'edgetts', // 'edgetts' 或 'browser'（edgetts 现在由同源 server.js 的 /tts 代理走 DashScope CosyVoice）
   language: 'cantonese', // 'cantonese' 或 'mandarin'
   voiceGender: 'female', // 'female' 或 'male'
   // apiKey 不再硬编码，运行时通过 getApiKey() 从 localStorage 读取
-  wsUrl: 'http://localhost:8765/tts',
-  model: 'edge-tts'
+  wsUrl: '/tts', // 同源相对路径，桌面端和手机端（通过 cloudflared）都能访问
+  model: 'cosyvoice-v1'
 };
 
-// 音色映射（成熟稳重风格，适合小五形象）
+// 音色映射（DashScope CosyVoice 音色 ID；对应"语言+性别"）
+// 备选音色：longxiaochun(温柔女), longxiaoxia(活泼女), longwan(粤语女), longcheng(沉稳男), longfei(粤语男)
 var VOICE_MAP = {
-  'cantonese_female': 'zh-HK-HiuGaaiNeural',    // 粤语女声（自然亲切）
-  'cantonese_male': 'zh-HK-WanLungNeural',      // 粤语男声
-  'mandarin_female': 'zh-CN-XiaoxiaoNeural',     // 普通话女声（公认最自然）
-  'mandarin_male': 'zh-CN-YunyangNeural'        // 普通话男声（专业沉稳）
+  'cantonese_female': 'longwan',       // 粤语女声
+  'cantonese_male':   'longfei',       // 粤语男声
+  'mandarin_female':  'longxiaochun',  // 普通话女声（温柔亲切，最适合小五）
+  'mandarin_male':    'longcheng'      // 普通话男声（沉稳专业）
 };
 
 function getVoiceId() {
-  return VOICE_MAP[ttsConfig.language + '_' + ttsConfig.voiceGender] || 'zh-CN-XiaoxiaoNeural';
+  return VOICE_MAP[ttsConfig.language + '_' + ttsConfig.voiceGender] || 'longxiaochun';
 }
 
 function selectBestVoice() {
@@ -5833,26 +6233,170 @@ function playChime() {
 var cosyVoiceWs = null;
 
 var ttsProxyOnline = false;
+var ttsProviderResolved = false; // 是否已自动选择 provider
+
+// 智能选择 TTS provider：探测同源 /tts 端点（由 server.js 提供），可达就用云语音
+function resolveTTSProvider(silent) {
+  if (ttsProviderResolved) return;
+  ttsProviderResolved = true;
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timeoutId = setTimeout(function() { if (controller) controller.abort(); }, 1500);
+  // 用 /health 探活：HTTP 200 表示 server.js 在跑（同源 /tts 代理可用）
+  fetch('/health', { method: 'GET', signal: controller ? controller.signal : undefined })
+    .then(function(r) {
+      clearTimeout(timeoutId);
+      ttsProxyOnline = !!r.ok;
+      if (ttsProxyOnline) {
+        ttsConfig.provider = 'edgetts';
+        if (!silent) showToast('已连接云语音服务');
+      } else {
+        ttsConfig.provider = 'browser';
+      }
+      updateTTSStatusUI();
+    })
+    .catch(function() {
+      clearTimeout(timeoutId);
+      ttsProxyOnline = false;
+      // server.js 不在线：直接走浏览器 TTS
+      ttsConfig.provider = 'browser';
+      updateTTSStatusUI();
+    });
+}
 
 function checkTTSStatus() {
-  fetch('http://localhost:8765/', { method: 'GET', mode: 'cors' })
-    .then(function(r) { ttsProxyOnline = r.ok; updateTTSStatusUI(); })
-    .catch(function() { ttsProxyOnline = false; updateTTSStatusUI(); });
+  // 兼容老调用：现在直接复用 resolveTTSProvider
+  resolveTTSProvider(true);
 }
 
 function updateTTSStatusUI() {
+  var hasKey = (typeof hasApiKey === 'function') ? hasApiKey() : false;
+  var usingCloud = (ttsConfig.provider === 'edgetts' || ttsConfig.provider === 'cosyvoice') && ttsProxyOnline && hasKey;
   var el = document.getElementById('ttsStatusDot');
   if (el) {
-    el.style.background = ttsProxyOnline ? '#5DBE8C' : '#E06060';
-    el.title = ttsProxyOnline ? '语音服务在线' : '语音服务离线，请运行 node tts-proxy.js';
+    if (usingCloud) {
+      el.style.background = '#5DBE8C';
+      el.title = '云语音服务在线（CosyVoice）';
+    } else if (!hasKey && ttsProxyOnline) {
+      el.style.background = '#E0A95F';
+      el.title = '代理在线，但未设置 API Key（请到"AI 密钥设置"填写）';
+    } else {
+      el.style.background = '#E0A95F';
+      el.title = '已切换到本地语音（云语音未启动）';
+    }
   }
   var txt = document.getElementById('ttsStatusText');
-  if (txt) txt.textContent = ttsProxyOnline ? '语音服务正常' : '语音服务未启动';
+  if (txt) {
+    if (usingCloud) txt.textContent = '云语音正常';
+    else if (!hasKey && ttsProxyOnline) txt.textContent = '缺少 API Key';
+    else txt.textContent = '已使用本地语音';
+  }
+  // 同步更新语音设置副标题
+  var sub = document.getElementById('voiceSettingsSubtitle');
+  if (sub) {
+    var langText = ttsConfig.language === 'cantonese' ? '粤语' : '普通话';
+    var genderText = ttsConfig.voiceGender === 'female' ? '女声' : '男声';
+    var engineText = usingCloud ? '云语音' : '本地语音';
+    sub.textContent = langText + genderText + ' · ' + engineText;
+  }
+}
+
+// 测试云语音：返回详细错误信息，方便排查问题
+function testCloudTTS() {
+  var resultEl = document.getElementById('ttsTestResult');
+  if (resultEl) { resultEl.style.display = 'block'; resultEl.style.color = '#9A9A9A'; resultEl.textContent = '正在测试，请稍候...'; }
+  showToast('正在测试云语音...');
+
+  var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+  var steps = [];
+
+  // 步骤 1: 检查 API Key
+  if (!apiKey) {
+    steps.push('❌ 未设置 API Key');
+    steps.push('👉 请先在"AI 密钥设置"中填写 DashScope API Key');
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    showToast('请先设置 API Key');
+    return;
+  }
+  if (apiKey.indexOf('sk-') !== 0) {
+    steps.push('❌ API Key 格式错误（应以 sk- 开头）');
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    return;
+  }
+  steps.push('✅ API Key 已设置（sk-' + apiKey.substring(3, 7) + '...）');
+
+  // 步骤 2: 检查代理是否可达
+  fetch('/health').then(function(r) {
+    if (r.ok) {
+      steps.push('✅ 云语音代理在线');
+    } else {
+      steps.push('❌ 代理返回 HTTP ' + r.status);
+      if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+      return Promise.reject('health_failed');
+    }
+    // 步骤 3: 尝试真正的 TTS 调用
+    steps.push('⏳ 正在调用 DashScope CosyVoice...');
+    if (resultEl) resultEl.innerHTML = steps.join('<br>');
+
+    var body = JSON.stringify({
+      apiKey: apiKey,
+      text: '您好呀老朋友，我是小五，今天过得怎么样呀？',
+      voice: getVoiceId(),
+      language: ttsConfig.language,
+      gender: ttsConfig.voiceGender
+    });
+    return fetch('/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body });
+  }).then(function(resp) {
+    if (!resp) return;
+    var ct = resp.headers.get('content-type') || '';
+    if (ct.indexOf('audio') >= 0) {
+      steps.push('✅ 云语音合成成功！🎉');
+      steps.push('👉 正在播放测试语音...');
+      if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#5A8E8A'; }
+      ttsProxyOnline = true;
+      ttsConfig.provider = 'edgetts';
+      localStorage.setItem('wuyin_tts_engine', 'edgetts');
+      updateTTSStatusUI();
+      // 播放音频
+      return resp.blob().then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio(url);
+        audio.onended = function() { URL.revokeObjectURL(url); };
+        audio.onerror = function() {
+          URL.revokeObjectURL(url);
+          steps.push('⚠️ 音频播放失败（可能是浏览器自动播放限制）');
+          if (resultEl) resultEl.innerHTML = steps.join('<br>');
+        };
+        audio.play().catch(function(e) {
+          steps.push('⚠️ 播放被阻止：' + e.message);
+          if (resultEl) resultEl.innerHTML = steps.join('<br>');
+        });
+      });
+    } else {
+      return resp.json().then(function(data) {
+        steps.push('❌ 合成失败：' + (data.error || JSON.stringify(data).substring(0, 200)));
+        if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+        showToast('云语音测试失败');
+      }).catch(function() {
+        steps.push('❌ 合成失败（非 JSON 响应）');
+        if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+      });
+    }
+  }).catch(function(err) {
+    if (err === 'health_failed') return;
+    steps.push('❌ 网络错误：' + (err.message || err));
+    if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
+    showToast('测试失败：' + (err.message || err));
+  });
 }
 
 var _ttsSpeaking = false;
 
 function speakCosyVoice(text, emotion, volume) {
+  // 如果 provider 已经被解析为 browser（如移动端），直接走浏览器 TTS
+  if (ttsConfig.provider === 'browser') {
+    speakBrowser(text, emotion, volume);
+    return;
+  }
   if (_ttsSpeaking) {
     try { window.speechSynthesis.cancel(); } catch(e){}
     if (currentSpeech && typeof currentSpeech.pause === 'function') {
@@ -5865,13 +6409,24 @@ function speakCosyVoice(text, emotion, volume) {
   var targetVol = (typeof volume === 'number') ? volume : 1;
   try {
     if (!ttsProxyOnline) {
-      checkTTSStatus();
+      resolveTTSProvider(true);
+    }
+    // 必须先有 API Key 才能调云语音
+    var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+    if (!apiKey) {
+      console.warn('[tts] 缺少 API Key，降级到浏览器 TTS');
+      _ttsSpeaking = false;
+      speakBrowser(text, emotion, volume);
+      return;
     }
     var voiceName = getVoiceId();
     var rate = getTTSRate();
     var body = JSON.stringify({
+      apiKey: apiKey,
       text: text,
       voice: voiceName,
+      language: ttsConfig.language,
+      gender: ttsConfig.voiceGender,
       rate: rate,
       model: ttsConfig.model
     });
@@ -5880,7 +6435,11 @@ function speakCosyVoice(text, emotion, volume) {
       headers: { 'Content-Type': 'application/json' },
       body: body
     }).then(function(resp) {
-      if (!resp.ok) throw new Error('TTS代理返回错误: ' + resp.status);
+      if (!resp.ok) {
+        return resp.text().then(function(t) {
+          throw new Error('TTS代理返回 ' + resp.status + ': ' + t.substring(0, 200));
+        });
+      }
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('audio') >= 0) {
         return resp.blob();
@@ -5905,14 +6464,14 @@ function speakCosyVoice(text, emotion, volume) {
         showToast('请点击页面任意位置激活音频播放');
       });
     }).catch(function(e) {
-      console.warn('Edge TTS 失败，回退到本地语音:', e);
+      console.warn('云语音失败，降级到本地浏览器 TTS:', e);
       ttsProxyOnline = false;
       _ttsSpeaking = false;
       updateTTSStatusUI();
       speakBrowser(text, emotion, volume);
     });
   } catch(e) {
-    console.warn('Edge TTS异常:', e);
+    console.warn('云语音异常:', e);
     _ttsSpeaking = false;
     speakBrowser(text, emotion, volume);
   }
@@ -6533,53 +7092,58 @@ function updateHomeRecommendation() {
 function updateHealingRecommendation() {
   var rec = getTodayRecommendation();
   var container = document.getElementById('healingTodayRec');
-  if (!container || !rec.primaryItem) return;
-  var isDual = (rec.primarySource === 'questionnaire' && rec.questionnaireRecIds && rec.questionnaireRecIds.length >= 2);
+  if (!container || !rec.cards || rec.cards.length === 0) return;
+
+  // 收集所有出现的来源（去重），并按 情志问卷 → 对话 → 时辰 优先级排序
+  var allTags = [];
+  rec.cards.forEach(function(card) {
+    card.tags.forEach(function(t) {
+      if (allTags.indexOf(t) < 0) allTags.push(t);
+    });
+  });
+  var orderedSources = ['questionnaire', 'chat', 'shichen'];
+  var sortedTags = orderedSources.filter(function(s) { return allTags.indexOf(s) >= 0; });
+
+  // 顶部"今日推荐"标题旁的徽标（老人能看清的大字号）
+  var badgeEl = document.getElementById('healingRecBadge');
+  if (badgeEl) {
+    badgeEl.innerHTML = sortedTags.map(function(t) {
+      return '<span class="healing-rec-badge">' + tagToSourceLabel(t) + '</span>';
+    }).join('');
+  }
+
+  // 渲染卡片（不再在卡片内显示小标签）
   var html = '';
-  // === 情志问卷推荐（主推荐）===
-  if (rec.primarySource === 'questionnaire') {
-    document.getElementById('healingRecBadge').textContent = '情志问卷推荐';
-    if (isDual) {
-      var secondId = rec.questionnaireRecIds[1];
+  rec.cards.forEach(function(card, idx) {
+    // 第一张卡片如果是问卷双调式，使用双调式专用卡片
+    if (idx === 0 && card.tags[0] === 'questionnaire' && card.maxIds && card.maxIds.length >= 2) {
+      var secondId = card.maxIds[1];
       var secondItem = WUYIN_DATA.find(function(w) { return w.id === secondId; });
       if (secondItem) {
-        html += buildDualRecCard(rec.primaryItem, secondItem);
+        html += buildDualRecCard(card.wuyin, secondItem);
+        return;
       }
-    } else {
-      html += buildRecCard(rec.primaryItem, ['情志问卷推荐']);
     }
-  } else if (rec.primarySource === 'chat') {
-    document.getElementById('healingRecBadge').textContent = '对话情绪推荐';
-    html += buildRecCard(rec.primaryItem, ['对话情绪推荐']);
-  } else {
-    document.getElementById('healingRecBadge').textContent = '时辰推荐';
-    html += buildRecCard(rec.primaryItem, ['时辰推荐']);
-  }
-  // === 辅助推荐（时辰/对话）===
-  if (rec.secondary && rec.secondary.length > 0) {
-    rec.secondary.forEach(function(sec) {
-      if (!sec.item) return;
-      var sIcon = sec.source === 'shichen' ? 'sunny' : (sec.source === 'chat' ? 'chatbubble' : 'star');
-      var sLabel = sec.source === 'shichen' ? '时辰推荐' : (sec.source === 'chat' ? '对话情绪推荐' : '情志问卷推荐');
-      html += '<div class="healing-rec-section-title" style="margin-top:16px;margin-bottom:8px;">' +
-        '<ion-icon name="' + sIcon + '"></ion-icon><span>' + sLabel + '</span></div>';
-      html += buildRecCard(sec.item, [sLabel]);
-    });
-  }
+    html += buildRecCard(card.wuyin);
+  });
   container.innerHTML = html;
 }
 
-// 单推荐卡片（支持多标签）
-function buildRecCard(item, tags) {
-  var tagHtml = tags.map(function(t) {
-    return '<span class="healing-rec-tag-emotion" style="margin-right:6px;">' + t + '</span>';
-  }).join('');
+// 内部 source key → 用户可见的推荐标签文字
+function tagToSourceLabel(t) {
+  if (t === 'shichen') return '时辰推荐';
+  if (t === 'chat') return '对话情绪推荐';
+  return '情志问卷推荐';
+}
+
+// 单推荐卡片（来源标签在卡片上方的"今日推荐"标题处统一显示，卡片内不再重复）
+function buildRecCard(item) {
   return '<div class="healing-rec-card" onclick="window._isDualMode=false;window._dualHealingIds=null;openIntro(' + WUYIN_DATA.indexOf(item) + ')">' +
     '<img class="healing-rec-img" src="assets/images/scene_' + item.id + '.jpg" alt="' + item.name + '">' +
     '<div class="healing-rec-body">' +
       '<div class="healing-rec-name">' + item.name + ' · ' + item.scene + '</div>' +
       '<div class="healing-rec-desc">' + item.description + '</div>' +
-      '<div class="healing-rec-tags">' + tagHtml +
+      '<div class="healing-rec-tags">' +
         '<span class="healing-rec-tag-detail">' + item.element + ' · ' + item.organ + ' · ' + item.emotion + '</span>' +
       '</div>' +
       '<div class="healing-rec-play">' +
