@@ -34,6 +34,7 @@ const MIME = {
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
   '.ico': 'image/x-icon',
   '.mp3': 'audio/mpeg',
   '.mp4': 'audio/mp4',
@@ -244,6 +245,12 @@ function sendStaticFile(req, res, filePath, stat) {
   // 是否为可流式播放的多媒体
   const isStreamable = /\.(mp3|m4a|mp4|wav|ogg|webm|jpg|jpeg|png|gif|webp)$/i.test(ext);
 
+  // 图片/字体长期缓存（文件名带 hash 或内容不变的资源可以激进缓存）
+  const isImmutableAsset = /\.(webp|png|jpg|jpeg|svg|gif|woff2?)$/i.test(ext);
+  const cacheControl = isImmutableAsset
+    ? 'public, max-age=31536000, immutable'
+    : 'no-cache';
+
   if (rangeHeader && isStreamable) {
     const range = parseRangeHeader(rangeHeader, fileSize);
     if (range) {
@@ -254,7 +261,7 @@ function sendStaticFile(req, res, filePath, stat) {
         'Content-Length': chunkSize,
         'Content-Type': contentType,
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': cacheControl
       });
       const stream = fs.createReadStream(filePath, { start: range.start, end: range.end });
       stream.on('error', function(err) {
@@ -272,7 +279,7 @@ function sendStaticFile(req, res, filePath, stat) {
     'Content-Length': fileSize,
     'Accept-Ranges': 'bytes',
     'Access-Control-Allow-Origin': '*',
-    'Cache-Control': 'no-cache'
+    'Cache-Control': cacheControl
   });
   const stream = fs.createReadStream(filePath);
   stream.on('error', function(err) {
