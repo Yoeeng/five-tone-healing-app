@@ -1,19 +1,17 @@
-/*
-  Cloudflare Pages custom response headers
-  - audio .m4a / .mp4 with proper Content-Type
-  - index.html never cached
-  - /chat no cache
-*/
+# Cloudflare Pages custom response headers
 
-/assets/audio/*
-  Content-Type: audio/mp4
-  Cache-Control: public, max-age=31536000, immutable
-  Accept-Ranges: bytes
-
+# index.html never cached (force fresh code on every visit)
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
 
+# .m4a files (audio/mp4 container)
+/assets/audio/*.m4a
+  Content-Type: audio/mp4
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
+
+# /chat Function no cache
 /chat
   Cache-Control: no-cache, no-store, must-revalidate
