@@ -1,0 +1,4 @@
+# Cloudflare Pages 路由
+# /tts 和 /health 自动映射到 functions/ 目录
+# 静态资源直接服务
+/assets/* /assets/:splat 200
