@@ -1423,6 +1423,9 @@
     }
     .phone-side-btn, .phone-notch, .phone-home-indicator { display:none; }
     .phone-screen { border-radius:0; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; }
+    .subpage-overlay { position:absolute !important; top:0 !important; left:0 !important; right:0 !important; bottom:var(--tabbar-h,90px) !important; z-index:200 !important; }
+    #subpage-player { bottom:0 !important; }
+    #tabbar { z-index:300 !important; }
   }
 
   /* ========== HEALING RECOMMENDATION CARD (in chat) ========== */
@@ -4816,8 +4819,14 @@ var SERVER_KEY_READY = false;
 (function probeServerKey() {
   try {
     fetch('/chat', { method: 'GET', cache: 'no-store' })
-      .then(function (r) { SERVER_KEY_READY = !!r.ok; console.log('[key] 服务端 Key ' + (SERVER_KEY_READY ? '已就绪' : '未配置')); })
-      .catch(function () { console.log('[key] 服务端探测失败'); });
+      .then(function (r) {
+        if (!r.ok) { SERVER_KEY_READY = false; console.warn('[key] GET /chat 状态=' + r.status); return; }
+        return r.json().then(function (d) {
+          SERVER_KEY_READY = !!(d && d.serverKeyConfigured);
+          console.log('[key] 服务端 Key ' + (SERVER_KEY_READY ? '已就绪（Cloudflare Pages env）' : '未配置'));
+        });
+      })
+      .catch(function (e) { console.warn('[key] 服务端探测失败', e); });
   } catch (e) {}
 })();
 function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
@@ -5088,6 +5097,7 @@ window.addEventListener('resize', function(){ trimMeRowOverflow(); });
 // ========== V10 设计稿 · 主页 hero-card "进入沉浸疗愈" ==========
 // 改为先进入音调介绍·选择时间界面，而不是直接开始播放
 function enterHealingFromHome() {
+  console.log('[heal] enterHealingFromHome called');
   // 关闭可能的子页
   try {
     document.getElementById('subpage-intro').classList.remove('active');
@@ -5095,8 +5105,9 @@ function enterHealingFromHome() {
   } catch(e) {}
   // 切到疗愈 tab（idx=2）
   switchTab(2);
-  // 获取今日主推荐调式，进入介绍页选时间
+  // ✅ 修复：延迟改为 0ms（之前 200ms 容易让用户觉得"点不动"），加 try/catch 避免吞错
   setTimeout(function() {
+    console.log('[heal] openIntro start');
     try {
       var rec = getTodayRecommendation();
       var primary = rec && rec.primaryItem ? rec.primaryItem : null;
@@ -5605,7 +5616,18 @@ async function callQwenAPI(userText) {
     { role: 'system', content: systemPrompt }
   ].concat(chatHistory.slice(-10));
 
+  // 等待服务端探测完成（最多 2s），避免误判未配置而弹 key 框
   if (!hasApiKey()) {
+    if (!SERVER_KEY_PROBED) {
+      // 服务端探测中，等待 2s 后重试一次
+      setTimeout(function() {
+        if (!hasApiKey()) {
+          removeTypingIndicator();
+          addBotMsg('请先在"我的"页面设置您的 API 密钥后再开始聊天哦~', 'system');
+        } else { sendChatMessage(); }
+      }, 1500);
+      return;
+    }
     removeTypingIndicator();
     addBotMsg('请先在"我的"页面设置您的 API 密钥后再开始聊天哦~', 'system');
     return;

@@ -71,8 +71,9 @@ export async function onRequestOptions() {
   });
 }
 
-export async function onRequestGet() {
-  return new Response(JSON.stringify({ ok: true, hint: 'POST {messages, model?, max_tokens?, temperature?, apiKey?}' }), {
+export async function onRequestGet({ env }) {
+  const hasKey = !!(env && env.DASHSCOPE_API_KEY);
+  return new Response(JSON.stringify({ ok: true, serverKeyConfigured: hasKey, hint: 'POST {messages, model?, max_tokens?, temperature?, apiKey?}' }), {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
