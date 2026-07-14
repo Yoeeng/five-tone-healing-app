@@ -4822,8 +4822,8 @@ var SERVER_KEY_READY = false;
   var tones = ['gong', 'shang', 'jue', 'zhi', 'yu'];
   var files = [];
   for (var i = 0; i < tones.length; i++) {
-    files.push('assets/audio/' + tones[i] + '_1.m4a');
-    files.push('assets/audio/' + tones[i] + '_2.m4a');
+    files.push('https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/' + tones[i] + '_1.m4a');
+    files.push('https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/' + tones[i] + '_2.m4a');
   }
   caches.open('wuyin-audio-v2').then(function(cache) {
     files.forEach(function(url) {
@@ -4859,11 +4859,11 @@ function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); }
 
 // ========== DATA ==========
 var WUYIN_DATA = [
-  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['assets/audio/jue_1.m4a','assets/audio/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军' },
-  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['assets/audio/zhi_1.m4a','assets/audio/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军' },
-  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['assets/audio/gong_1.m4a','assets/audio/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军' },
-  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'悲', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['assets/audio/shang_1.m4a','assets/audio/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军' },
-  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['assets/audio/yu_1.m4a','assets/audio/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军' },
+  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军' },
+  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军' },
+  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军' },
+  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'悲', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军' },
+  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军' },
 ];
 
 var WUYIN_ICONS = {
@@ -5237,6 +5237,7 @@ function openImmersiveHealing(toneId, title, meta, audioUrl, sceneImg) {
     if (!_immersiveAudio) _immersiveAudio = new Audio();
     _immersiveAudio.src = audioUrl;
     _immersiveAudio.preload = 'metadata';
+    _immersiveAudio.crossOrigin = 'anonymous';
     _immersiveAudio.addEventListener('loadedmetadata', function() {
       var durEl = document.getElementById('immersiveTimeDur');
       if (durEl) durEl.textContent = formatTime(_immersiveAudio.duration);
@@ -5253,7 +5254,7 @@ function openImmersiveHealing(toneId, title, meta, audioUrl, sceneImg) {
 function openImmersiveHealingFromCurrent() {
   var title = '角调 · 胡笳十八拍';
   var meta = '木 · 肝 · 疏肝解郁';
-  var audioUrl = 'assets/audio/jue_hujia.m4a';
+  var audioUrl = 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a';
   var sceneImg = 'assets/images/scene_jue.jpg';
   try {
     var t = document.getElementById('heroTitle');
@@ -7231,6 +7232,7 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
     hiddenAudio.preload = 'metadata';
+    hiddenAudio.crossOrigin = 'anonymous';
     hiddenAudio.setAttribute('playsinline', '');
     hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
@@ -7633,6 +7635,7 @@ function doDualSwitch(instant) {
     audio2.id = 'hiddenAudioPlayer2';
     audio2.style.display = 'none';
     audio2.preload = 'metadata';
+    audio2.crossOrigin = 'anonymous';
     audio2.loop = true;
     audio2.setAttribute('playsinline', '');
     audio2.setAttribute('webkit-playsinline', '');
