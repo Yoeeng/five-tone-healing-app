@@ -18,13 +18,20 @@ export async function onRequestPost({ request, env }) {
     catch (e) { return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }); }
 
     const envKey = (env && env.DASHSCOPE_API_KEY) || '';
-    const apiKey = (payload.apiKey || '').trim() || envKey;
-    const messages = payload.messages || [];
+    const apiKey = (payload.apiKey && payload.apiKey.trim()) || envKey;
+    // 兼容两种格式：OpenAI 兼容（payload.messages）或 DashScope 原生（payload.input.messages）
+    const messages = (payload.messages && payload.messages.length > 0)
+      ? payload.messages
+      : (payload.input && payload.input.messages ? payload.input.messages : []);
     const model = payload.model || 'qwen-plus';
-    const maxTokens = payload.max_tokens || 100;
-    const temperature = (typeof payload.temperature === 'number') ? payload.temperature : 0.7;
+    const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
+    const temperature = (typeof payload.temperature === 'number') ? payload.temperature : (payload.parameters && payload.parameters.temperature) || 0.7;
+    console.log('[chat] apiKey=' + (apiKey ? 'OK' : 'MISSING') + ' envKey=' + (envKey ? 'OK' : 'MISSING') + ' messages=' + messages.length);
 
-    if (!apiKey) return new Response(JSON.stringify({ error: '缺少 apiKey' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    if (!envKey) {
+      console.error('[chat] 缺少 env.DASHSCOPE_API_KEY');
+      return new Response(JSON.stringify({ error: '服务端未配置 DASHSCOPE_API_KEY 环境变量' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: '缺少 messages' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
@@ -35,10 +42,11 @@ export async function onRequestPost({ request, env }) {
       parameters: { max_tokens: maxTokens, temperature: temperature, result_format: 'message' }
     });
 
+    // ✅ 直接用 envKey（不再依赖前端传的 apiKey），简化调用
     const dashResp = await fetch(DASHSCOPE_CHAT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + apiKey,
+        'Authorization': 'Bearer ' + envKey,
         'Content-Type': 'application/json'
       },
       body: body
@@ -46,6 +54,7 @@ export async function onRequestPost({ request, env }) {
 
     if (!dashResp.ok) {
       const errText = await dashResp.text();
+      console.error('[chat] DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 300));
       return new Response(JSON.stringify({ error: 'DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 200) }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 

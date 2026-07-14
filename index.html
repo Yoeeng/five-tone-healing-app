@@ -5638,8 +5638,7 @@ async function callQwenAPI(userText) {
     var response = await fetch('/chat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'qwen-plus',
@@ -5671,14 +5670,13 @@ async function callQwenAPI(userText) {
         return;
       }
     }
-  } catch(err) { console.warn('DashScope API failed:', err.message); }
+  } catch(err) { console.warn('DashScope API failed:', err.message); try { showToast('AI 1: ' + err.message); } catch(_){} }
 
   try {
     var response2 = await fetch('/chat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'qwen-plus',
@@ -5710,7 +5708,7 @@ async function callQwenAPI(userText) {
         return;
       }
     }
-  } catch(err2) { console.warn('OpenAI-compatible API failed:', err2.message); }
+  } catch(err2) { console.warn('OpenAI-compatible API failed:', err2.message); try { showToast('AI 2: ' + err2.message); } catch(_){} }
 
   removeTypingIndicator();
   var fallback = getFallbackResponseWithRec(userText);
@@ -7213,7 +7211,8 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio = document.createElement('audio');
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
-    hiddenAudio.preload = 'auto';
+    hiddenAudio.preload = 'metadata';
+    hiddenAudio.setAttribute('crossorigin', 'anonymous');
     hiddenAudio.setAttribute('playsinline', '');
     hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
@@ -7615,7 +7614,8 @@ function doDualSwitch(instant) {
     audio2 = document.createElement('audio');
     audio2.id = 'hiddenAudioPlayer2';
     audio2.style.display = 'none';
-    audio2.preload = 'auto';
+    audio2.preload = 'metadata';
+    audio2.setAttribute('crossorigin', 'anonymous');
     audio2.loop = true;
     audio2.setAttribute('playsinline', '');
     audio2.setAttribute('webkit-playsinline', '');
