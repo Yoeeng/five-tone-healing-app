@@ -50,3 +50,11 @@ tts_test*.mp3
 fix_*.py
 modify_*.py
 simulate_flow.js
+
+# ========== Vercel 部署临时文件 ==========
+.vercel/
+
+# ========== 跨目录编辑脚本（不入库） ==========
+edit_*.js
+test_emotion_v1.js
+setup_vercel.js

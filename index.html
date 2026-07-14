@@ -3417,10 +3417,14 @@
   .q-paused p{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-soft);line-height:1.7;margin-bottom:24px}
 
   /* 结果页（13 号屏） */
-  .q-result{text-align:center;padding:10px 0 24px}
-  .q-result .eyebrow{font-family:var(--v10-font-serif);font-size:13px;letter-spacing:.4em;color:var(--v10-cinnabar);text-transform:uppercase;margin-bottom:10px;font-weight:600}
+  .q-result{text-align:center;padding:10px 56px 24px}
+  .q-result .eyebrow{font-family:var(--v10-font-serif);font-size:17px;letter-spacing:.4em;color:var(--v10-cinnabar);text-transform:uppercase;margin-bottom:10px;font-weight:600}
   .q-result h2{font-family:var(--v10-font-serif);font-size:30px;font-weight:600;color:var(--v10-ink);margin-bottom:8px;letter-spacing:.05em}
-  .q-result .desc{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-soft);line-height:1.7;margin-bottom:20px}
+  .q-result .desc{font-family:var(--v10-font-kai);font-size:22px;color:var(--v10-ink-soft);line-height:1.75;margin-bottom:20px}
+  /* 重新测评按钮：同色调国风墨浮样式（半透明朱砂底 + 朱砂边 + 阴影） */
+  .q-result-btn-soft{width:100%;background:rgba(192,57,43,.06);color:var(--v10-cinnabar);border:1px solid rgba(192,57,43,.28);border-radius:100px;padding:14px;font-family:var(--v10-font-serif);font-size:19px;font-weight:500;letter-spacing:.15em;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(192,57,43,.08);min-height:52px;margin-top:12px;transition:all .15s ease;cursor:pointer}
+  .q-result-btn-soft:active{background:rgba(192,57,43,.14);transform:scale(.98)}
+  .q-result-btn-soft ion-icon{font-size:20px}
 </style>
 </head>
 <body>
@@ -4701,11 +4705,6 @@
         <div class="chart-sub">分值越高，该情志表现越突出</div>
         <div id="resultsChart"></div>
       </div>
-      <div class="results-plan">
-        <h4>小五的疗愈方案</h4>
-        <ul id="resultsPlanList"></ul>
-        <div class="results-extra" id="resultsExtra"></div>
-      </div>
       <button class="q-result-btn" id="resultsStartBtn">开始今日疗愈</button>
       <button class="q-result-btn-ghost" id="resultsDetailBtn" style="display:none">查看详细报告</button>
       <!-- ✅ 重新测评按钮（不会清空数据，旧结果会归档到历史数据） -->
@@ -5834,6 +5833,14 @@ function getQuestionnaireResult() {
   }
   var maxId = maxIds[0] || 'gong';
   var wuyin = WUYIN_DATA.find(function(w) { return w.id === maxId; });
+  // 维度均分（0-4）
+  var avgScores = {};
+  ['jue','zhi','gong','shang','yu'].forEach(function(id) { avgScores[id] = Math.round((scores[id] / 10) * 10) / 10; });
+  var idToEmotion = { jue:'怒', zhi:'喜', gong:'思', shang:'忧', yu:'恐' };
+  var positiveEmotions = ['jue','zhi','gong','shang','yu'].filter(function(id) { return avgScores[id] >= 3; }).map(function(id) { return idToEmotion[id]; });
+  var maxAvg = -1;
+  ['jue','zhi','gong','shang','yu'].forEach(function(id) { if (avgScores[id] > maxAvg) maxAvg = avgScores[id]; });
+  var prominentIds = ['jue','zhi','gong','shang','yu'].filter(function(id) { return (maxAvg - avgScores[id]) <= 0.3; });
   // 躯体化系统计分
   var bodyScores = { '心血管系统':0, '脑神经系统':0, '消化系统':0, '呼吸系统':0, '泌尿系统':0, '四肢肌肉':0, '其他':0 };
   var bodyCounts = { '心血管系统':0, '脑神经系统':0, '消化系统':0, '呼吸系统':0, '泌尿系统':0, '四肢肌肉':0, '其他':0 };
@@ -5854,7 +5861,7 @@ function getQuestionnaireResult() {
       }
     }
   }
-  return { wuyinId: maxId, wuyin: wuyin, scores: scores, dominantEmotion: wuyin ? wuyin.emotion : '思', bodyScores: bodyScores, bodyCounts: bodyCounts, maxIds: maxIds };
+  return { wuyinId: maxId, wuyin: wuyin, scores: scores, avgScores: avgScores, positiveEmotions: positiveEmotions, prominentIds: prominentIds, dominantEmotion: wuyin ? wuyin.emotion : '思', bodyScores: bodyScores, bodyCounts: bodyCounts, maxIds: maxIds };
 }
 
 function getTodayRecommendation() {
@@ -8560,12 +8567,12 @@ function showQuestionnaireResults() {
   } else if (allAnswers.length >= 50) {
     emotionAnswers = allAnswers.slice(0, 50);
   }
-  // 五志情绪计分
+  // 五志情绪计分（总分 0-40）
   var scores = { 喜:0, 怒:0, 忧:0, 思:0, 恐:0 };
   var emotionIds = { 喜:[6,9,15,16,20,23,27,36,42,47], 怒:[1,2,7,11,13,17,28,29,37,43], 忧:[12,21,24,30,31,32,38,39,46,48], 思:[3,8,10,18,19,25,33,40,44,50], 恐:[4,5,14,22,26,34,35,41,45,49] };
   emotionAnswers.forEach(function(ans, idx) {
     if (typeof ans !== 'number' || ans < 0) return;
-    var qNum = idx + 1; // 情绪题编号 1-50
+    var qNum = idx + 1;
     for (var factor in emotionIds) {
       if (emotionIds[factor].indexOf(qNum) >= 0) {
         scores[factor] += ans;
@@ -8573,123 +8580,82 @@ function showQuestionnaireResults() {
       }
     }
   });
-  // 躯体化系统计分
-  var bodyCatScores = {};
-  var bodyCatNames = []; // ✅ 移到 if 外，确保始终有定义
-  if (allAnswers.length >= 78) {
-    for (var round = 0; round < 5; round++) {
-      var bOffset = round * 17 + 10;
-      var bCount = (round === 4) ? 6 : 7;
-      for (var bq = 0; bq < bCount; bq++) {
-        var bAns = allAnswers[bOffset + bq];
-        var bIdx = round * 7 + bq;
-        if (bIdx < BODY_QUESTIONS.length) {
-          var cat = BODY_QUESTIONS[bIdx].category;
-          if (typeof bAns === 'number' && bAns >= 0) {
-            bodyCatScores[cat] = (bodyCatScores[cat] || 0) + bAns;
-            if (bodyCatNames.indexOf(cat) < 0) bodyCatNames.push(cat);
-          }
-        }
-      }
-    }
-  }
-  // 找出所有最高分因子（支持并列）
-  var maxFactors = [];
-  var maxScore = -1;
-  for (var f in scores) {
-    if (scores[f] > maxScore) { maxScore = scores[f]; maxFactors = [f]; }
-    else if (scores[f] === maxScore && scores[f] > 0) { maxFactors.push(f); }
-  }
-  var maxFactor = maxFactors[0] || '喜';
+  // 维度均分（0-4），用于类型判断与前端显示
+  var avgScores = {};
+  ['喜','怒','忧','思','恐'].forEach(function(f) { avgScores[f] = Math.round((scores[f] / 10) * 10) / 10; });
+  // 阳性情志判断（均分 >= 3）
+  var positiveEmotions = ['喜','怒','忧','思','恐'].filter(function(f) { return avgScores[f] >= 3; });
+  // 相对突出情志：最高均分 - 当前均分 <= 0.3
+  var maxAvg = -1;
+  ['喜','怒','忧','思','恐'].forEach(function(f) { if (avgScores[f] > maxAvg) maxAvg = avgScores[f]; });
+  var prominent = ['喜','怒','忧','思','恐'].filter(function(f) { return (maxAvg - avgScores[f]) <= 0.3; });
+  // 调式映射
   var wuyinMap = { '怒':'jue', '喜':'zhi', '思':'gong', '忧':'shang', '恐':'yu' };
   var wuyinNameMap = { '怒':'角音', '喜':'徵音', '思':'宫音', '忧':'商音', '恐':'羽音' };
-  var wuyinOrganMap = { '怒':'肝', '喜':'心', '思':'脾', '忧':'肺', '恐':'肾' };
-  var wuyinDescMap = {
-    '怒': '您的"怒"情绪因子偏高，可能容易烦躁或感到压抑。角音（木）通于肝，可疏解肝气郁结，让心胸开阔。',
-    '喜': '您的"喜"情绪因子较为突出，近期情绪较为高涨或心情愉悦。徵音（火）通于心，可助您锦上添花、好上加好。',
-    '思': '您的"思"情绪因子偏高，可能容易多虑或思虑过度。宫音（土）通于脾，可安定心神、健脾安神。',
-    '忧': '您的"忧"情绪因子偏高，可能容易感到低落或悲观。商音（金）通于肺，可涤荡悲忧、宣发肺气。',
-    '恐': '您的"恐"情绪因子偏高，可能容易感到不安或焦虑。羽音（水）通于肾，可滋水涵木、消除恐惧。'
-  };
-  // 五音主色（与 WUYIN_ACCENT_MAP 一致）
   var colors = { '喜':'#C75A48', '怒':'#6E9356', '思':'#B8893A', '忧':'#7A8C9F', '恐':'#5680A0' };
-  // ===== 1) 顶部结论（resultsEyebrow / resultsTitle / resultsDesc）=====
-  // ✅ 修复并列 5 个（情志平衡）：不再硬拼"五脏气略有不调"，应显示"情志平衡"
-  var isAllBalanced = maxFactors.length >= 5;
-  var isDual = maxFactors.length === 2;
-  var isMulti = maxFactors.length >= 3 && !isAllBalanced; // 3 或 4 个并列（不常见但需要兼容）
+  // ===== 类型判断（V1.0：5 种结果类型）=====
+  var resultType = 1;
+  var noPositive = positiveEmotions.length === 0;
+  var allClose = prominent.length >= 5;
+  if (noPositive && allClose) {
+    resultType = 1;
+  } else if (prominent.length === 1 && prominent[0] === '喜') {
+    resultType = 5;
+  } else if (prominent.length >= 3) {
+    resultType = 4;
+  } else if (prominent.length === 2) {
+    resultType = 3;
+  } else {
+    resultType = 2;
+  }
+  console.log('[showQuestionnaireResults] avgScores=', avgScores, 'positive=', positiveEmotions, 'prominent=', prominent, 'type=', resultType);
+  // ===== 1) 顶部结论（resultsTitle / resultsDesc）=====
   var titleHtml = '';
   var descHtml = '';
-  if (isAllBalanced) {
-    titleHtml = '情志平衡';
-    descHtml = '综合 5 维情志评估，您的五情志（喜、怒、忧、思、恐）均处于均衡水平<br>建议每日聆听 10 分钟任一调式，循环五音以调和五脏。';
-  } else if (isDual) {
-    // ✅ 喜维度不参与"气略有不调"判断：喜高 = 情绪高涨（好事）
-    var factorsForTitle = maxFactors.filter(function(f){ return f !== '喜'; });
-    if (factorsForTitle.length === 0) {
-      // 极端情况：双调式中含喜，但另一个也是喜——按情志平衡处理
-      titleHtml = '情志平衡';
-      descHtml = '综合 5 维情志评估，您的情志表现较为均衡<br>建议每日聆听 10 分钟任意两调式组合，循环五音以调和五脏。';
-    } else if (factorsForTitle.length === 1) {
-      // 一个喜 + 一个其他：标题只显示"其他"，喜作为正面提示
-      var otherF = factorsForTitle[0];
-      titleHtml = wuyinOrganMap[otherF] + '气略有不调';
-      descHtml = '综合 5 维情志评估，您的"' + otherF + '"略高于健康值，而"喜"情志较为突出（情绪高涨）<br>建议每日聆听 10 分钟' + wuyinNameMap[otherF] + '+徵音组合调式，调和脏腑。';
-    } else {
-      // 两个都不含喜
-      var organPair = factorsForTitle.map(function(f){ return wuyinOrganMap[f]; }).join('与');
-      var namePair = factorsForTitle.map(function(f){ return wuyinNameMap[f]; }).join('+');
-      titleHtml = organPair + '气略有不调';
-      descHtml = '综合 5 维情志评估，您的"' + factorsForTitle.join('"与"') + '"略高于健康值<br>建议每日聆听 10 分钟' + namePair + '组合调式。';
-    }
-  } else if (isMulti) {
-    // 3-4 个并列：取前 2 个作为重点（按用户"一个卡片只支持 2 调式"要求），但告知用户其他维度也略高
-    // ✅ 喜维度不参与"气略有不调"判断
-    var factorsForMulti = maxFactors.filter(function(f){ return f !== '喜'; });
-    var top2 = factorsForMulti.slice(0, 2);
-    var organPair2 = top2.map(function(f){ return wuyinOrganMap[f]; }).join('与');
-    var namePair2 = top2.map(function(f){ return wuyinNameMap[f]; }).join('+');
-    titleHtml = top2.length > 0 ? (organPair2 + '气略有不调') : '情志平衡';
-    var hasXi = maxFactors.indexOf('喜') >= 0;
-    if (top2.length === 0) {
-      descHtml = '综合 5 维情志评估，您的"喜"情志较为突出（情绪高涨），其他维度较为均衡<br>建议每日聆听 10 分钟徵音，循环五音以调和五脏。';
-    } else if (hasXi) {
-      descHtml = '综合 5 维情志评估，您的"' + factorsForMulti.join('"与"') + '"略高于健康值，而"喜"情志较为突出（情绪高涨）<br>建议每日聆听 10 分钟' + namePair2 + '组合调式，循环五音以调和五脏。';
-    } else {
-      descHtml = '综合 5 维情志评估，您的"' + maxFactors.join('"与"') + '"均略高于健康值<br>建议每日聆听 10 分钟' + namePair2 + '组合调式，循环五音以调和五脏。';
-    }
+  if (resultType === 1) {
+    titleHtml = '您的长期情志特点较为均衡';
+    descHtml = '根据本次情志评估结果，您的五种情志维度整体较为接近，目前未发现某一种情志表现明显突出。小五将结合后续交流情况和疗愈反馈，为您动态调整适合的五音情境方案。';
+  } else if (resultType === 5) {
+    titleHtml = '您的喜情志特点较为突出';
+    descHtml = '根据本次情志评估结果，您的喜情志体验较为明显。积极情绪是维持身心平衡的重要资源，小五将结合您的整体状态，为您推荐有助于保持情绪稳定的五音情境体验。';
+  } else if (resultType === 4) {
+    titleHtml = '您的长期情志特点涉及多个维度';
+    descHtml = '根据本次评估结果，您的多个情志维度表现较为接近。由于情绪状态会受到近期生活经历影响，小五将在后续交流中进一步了解您当天的状态，为您选择更适合的疗愈方案。';
+  } else if (resultType === 3) {
+    var pairEmotions = prominent.join('、');
+    var pairEmotionsWithLabel = prominent.map(function(f){ return f + '情志'; }).join('与');
+    titleHtml = '您的长期情志特点主要涉及' + pairEmotions + '两个维度';
+    descHtml = '根据本次评估结果，您的' + pairEmotionsWithLabel + '表现较为突出。后续小五会结合您当天的情绪状态，选择更适合当前需要的五音情境。';
   } else {
-    // ✅ 喜（徵音）分数高不是坏事：显示"心情较为高涨"，听徵音是"好上加好"
-    if (maxFactor === '喜') {
-      titleHtml = '心情较为高涨';
-      descHtml = '综合 5 维情志评估，您的"喜"情志较为突出，近期情绪较为高涨或心情愉悦<br>建议每日聆听 10 分钟徵音，让愉悦的心情锦上添花、好上加好。';
-    } else {
-      titleHtml = wuyinOrganMap[maxFactor] + '气略有不舒';
-      descHtml = '综合 5 维情志评估，您的"' + maxFactor + '"略高于健康值<br>建议每日聆听 10 分钟' + wuyinNameMap[maxFactor] + '疏解。';
-    }
+    var singleF = prominent[0] || '怒';
+    var type2DescMap = {
+      '怒': '该结果提示您近期可能更容易体验到与压力、紧张相关的情绪变化。',
+      '思': '该结果提示您近期可能更容易体验到与思虑、担忧相关的情绪变化。',
+      '忧': '该结果提示您近期可能更容易体验到与低落、悲观相关的情绪变化。',
+      '恐': '该结果提示您近期可能更容易体验到与不安、焦虑相关的情绪变化。'
+    };
+    titleHtml = '您的长期情志特点以' + singleF + '情志为主';
+    descHtml = '根据本次情志评估结果，您的' + singleF + '情志维度相对突出。' + (type2DescMap[singleF] || type2DescMap['怒']) + '后续小五会结合您的当天状态，为您推荐更适合的五音情境疗愈方案。';
   }
   try { document.getElementById('resultsTitle').innerHTML = titleHtml; } catch(e) { console.error('[resultsTitle]', e); }
   try { document.getElementById('resultsDesc').innerHTML = descHtml; } catch(e) { console.error('[resultsDesc]', e); }
-  console.log('[showQuestionnaireResults] step1 done. titleHtml=', titleHtml);
+  console.log('[showQuestionnaireResults] step1 done. type=', resultType, 'title=', titleHtml);
 
-  // ===== 2) 五情志分布（横向条形图，按 design-preview-v10.html 第 13 屏 1:1）=====
-  // ✅ 五态情志每个维度最高分 = 40（10 题 × 最高 4 分）
-  var EMOTION_MAX = 40;
+  // ===== 2) 五情志分布图（均分 0-4）=====
+  var EMOTION_AVG_MAX = 4;
   var chartHtml = '';
   ['怒', '喜', '思', '忧', '恐'].forEach(function(factor) {
-    var val = scores[factor] || 0;
-    // 条形图宽度 = val / 40 × 100%，最低显示 8% 以确保有视觉
-    var pct = Math.max(8, Math.round((val / EMOTION_MAX) * 100));
+    var val = avgScores[factor] || 0;
+    var pct = Math.max(8, Math.round((val / EMOTION_AVG_MAX) * 100));
     var color = colors[factor];
     chartHtml +=
       '<div class="emo-row">' +
         '<div class="lbl" style="color:' + color + '">' + factor + '</div>' +
         '<div class="bar"><div class="fill" data-pct="' + pct + '" style="width:0%;background:linear-gradient(90deg,' + color + ',' + color + '99)"></div></div>' +
-        '<div class="val" style="color:' + color + '">' + val + '</div>' +
+        '<div class="val" style="color:' + color + '">' + val.toFixed(1) + '</div>' +
       '</div>';
   });
   document.getElementById('resultsChart').innerHTML = chartHtml;
-  // 触发条形图入场动画
   setTimeout(function() {
     try {
       var fills = document.querySelectorAll('#resultsChart .emo-row .fill');
@@ -8700,80 +8666,47 @@ function showQuestionnaireResults() {
     } catch(e) {}
   }, 50);
 
-  console.log('[showQuestionnaireResults] done. isAllBalanced=', isAllBalanced, 'maxFactors=', maxFactors, 'titleHtml=', titleHtml, 'planHtml=', planHtml);
-
-  // ===== 3) 小五的疗愈方案（resultsPlanList + resultsExtra）=====
-  var planHtml = '';
-  // ✅ 5 个并列（情志平衡）：给出循环五音的疗愈方案
-  if (isAllBalanced) {
-    ['jue','zhi','gong','shang','yu'].forEach(function(id) {
-      var w = WUYIN_DATA.find(function(x){ return x.id === id; });
-      if (w) planHtml += '<li>' + w.name + ' · ' + w.scene + ' · 每日 10 分钟</li>';
-    });
+  // ===== 3) 按钮 =====
+  var btnLabel, btnOnclick;
+  if (resultType === 1) {
+    btnLabel = '开始五音平衡体验';
+    btnOnclick = "closeQuestionnaire();enterHealingDualFromChat('jue','zhi')";
+  } else if (resultType === 5) {
+    btnLabel = '开始徵音情境体验';
+    btnOnclick = "closeQuestionnaire();enterHealingFromChat('zhi')";
+  } else if (resultType === 4) {
+    btnLabel = '去和小五聊聊';
+    btnOnclick = 'closeQuestionnaire();switchTab(1)';
+  } else if (resultType === 3) {
+    var id1 = wuyinMap[prominent[0]];
+    var id2 = wuyinMap[prominent[1]];
+    btnLabel = '开始' + wuyinNameMap[prominent[0]] + '+' + wuyinNameMap[prominent[1]] + '组合体验';
+    btnOnclick = "closeQuestionnaire();enterHealingDualFromChat('" + id1 + "','" + id2 + "')";
   } else {
-    // 单/双/3-4 个并列：按"一个推荐卡片只支持 2 调式"取前 2 个
-    var recWuyinIds = maxFactors.map(function(f){ return wuyinMap[f]; }).filter(function(id){ return !!id; });
-    var top2Ids = recWuyinIds.slice(0, 2);
-    if (isDual) {
-      var primary2 = WUYIN_DATA.find(function(w){ return w.id === top2Ids[0]; });
-      var secondary2 = WUYIN_DATA.find(function(w){ return w.id === top2Ids[1]; });
-      if (primary2) planHtml += '<li>' + primary2.name + ' · ' + primary2.scene + ' · 每日 10 分钟</li>';
-      if (secondary2) planHtml += '<li>' + secondary2.name + ' · ' + secondary2.scene + ' · 每日 10 分钟</li>';
-    } else {
-      var primary1 = WUYIN_DATA.find(function(w){ return w.id === top2Ids[0]; });
-      if (primary1) planHtml += '<li>' + primary1.name + ' · ' + primary1.scene + ' · 每日 12 分钟</li>';
-    }
+    var sid = wuyinMap[prominent[0]] || 'jue';
+    btnLabel = '开始' + wuyinNameMap[prominent[0]] + '情境体验';
+    btnOnclick = "closeQuestionnaire();enterHealingFromChat('" + sid + "')";
   }
-  // ✅ 小五的疗愈方案"最后两段"：改为更柔和、适合老年用户的养生建议
-  planHtml += '<li>晨起舒展 · 缓慢深呼吸 3 分钟，唤醒身心</li>';
-  planHtml += '<li>午后漫步 · 户外散步 15 分钟，借日光温养脏腑</li>';
-  try { document.getElementById('resultsPlanList').innerHTML = planHtml; } catch(e) { console.error('[resultsPlanList]', e); }
-  // 详细描述（保留现有分析逻辑）
-  var extraHtml = wuyinDescMap[maxFactor] || '';
-  if (isAllBalanced) {
-    extraHtml = '五情志（喜、怒、忧、思、恐）皆处于均衡状态，五脏（心、肝、脾、肺、肾）和谐。日常可循环聆听五音以维持平衡。';
-  }
-  // ✅ 躯体化评估：只在分数 > 0 时提示，0 分则告知"身体状况良好"
-  if (bodyCatNames && bodyCatNames.length > 0) {
-    var maxBodyCat = bodyCatNames[0], maxBodyScore = 0;
-    bodyCatNames.forEach(function(c) { if (bodyCatScores[c] > maxBodyScore) { maxBodyScore = bodyCatScores[c]; maxBodyCat = c; } });
-    if (maxBodyScore > 0) {
-      // 按分数区间给不同建议
-      if (maxBodyScore >= 4) {
-        extraHtml += '<br>躯体化评估：' + maxBodyCat + '方面得分偏高（' + maxBodyScore + '分），建议关注相关身体调理，必要时咨询医师。';
-      } else {
-        extraHtml += '<br>躯体化评估：' + maxBodyCat + '方面略有不适（' + maxBodyScore + '分），建议日常留意作息与饮食调养。';
-      }
-    } else {
-      extraHtml += '<br>躯体化评估：各项系统均未出现明显不适，身体状况良好，请继续保持健康的生活方式。';
-    }
-  }
-  try { document.getElementById('resultsExtra').innerHTML = extraHtml; } catch(e) { console.error('[resultsExtra]', e); }
-
-  // ===== 4) 按钮（保留原有跳转逻辑）=====
-  // ✅ 5 个并列：只取前 2 个调式（按用户"一个推荐卡片只能 2 调式"要求）
-  var btnRecIds = isAllBalanced ? ['jue','zhi'] : maxFactors.map(function(f){ return wuyinMap[f]; }).filter(function(id){ return !!id; }).slice(0, 2);
-  var btnLabel;
-  if (isAllBalanced) {
-    btnLabel = '开始五音循环疗愈';
-  } else if (isDual) {
-    btnLabel = '开始' + maxFactors.slice(0, 2).map(function(f){ return wuyinNameMap[f]; }).join('+') + '组合疗愈';
-  } else {
-    btnLabel = '开始' + wuyinNameMap[maxFactor] + '疗愈';
-  }
-  var btnOnclick = (btnRecIds.length >= 2)
-    ? "closeQuestionnaire();enterHealingDualFromChat('" + btnRecIds[0] + "','" + btnRecIds[1] + "')"
-    : "closeQuestionnaire();enterHealingFromChat('" + btnRecIds[0] + "')";
   var startBtn = document.getElementById('resultsStartBtn');
   if (startBtn) {
     startBtn.textContent = btnLabel;
     startBtn.setAttribute('onclick', btnOnclick);
   }
 
-  // 保存推荐结果到 localStorage（支持双调式）—— 5 个并列时存全部 5 个
+  // 保存推荐结果到 localStorage
   try {
-    var storedIds = isAllBalanced ? maxFactors.map(function(f){ return wuyinMap[f]; }) : btnRecIds;
+    var storedIds;
+    if (resultType === 1) {
+      storedIds = ['jue','zhi','gong','shang','yu'];
+    } else if (resultType === 4) {
+      storedIds = [];
+    } else if (resultType === 3) {
+      storedIds = [wuyinMap[prominent[0]], wuyinMap[prominent[1]]];
+    } else {
+      storedIds = [wuyinMap[prominent[0]]];
+    }
     localStorage.setItem('wuyin_recommend_ids', JSON.stringify(storedIds));
+    localStorage.setItem('wuyin_positive_emotion', JSON.stringify(positiveEmotions));
   } catch(e) {}
 }
 
@@ -10383,7 +10316,7 @@ function retakeQuestionnaire() {
       answers: JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]'),
       title: (document.getElementById('resultsTitle') || {}).textContent || '',
       desc: (document.getElementById('resultsDesc') || {}).textContent || '',
-      plan: document.getElementById('resultsPlanList') ? document.getElementById('resultsPlanList').innerHTML : '',
+      positive_emotion: JSON.parse(localStorage.getItem('wuyin_positive_emotion') || '[]'),
       scores: (function(){
         try { return getQuestionnaireResult().scores; } catch(e) { return null; }
       })()
