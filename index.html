@@ -1414,7 +1414,7 @@
   /* 移动端（手机端打开）专用：内容超 390 时按比例缩放，杜绝溢出 */
   @media (max-width:420px) {
     html, body { overflow-x:hidden; }
-    .app-wrapper { padding:0; gap:0; min-height:100vh; background:var(--paper,#FBF7EC); background-image:linear-gradient(180deg, #FBF7EC 0%, #F5F0E6 100%); }
+    .app-wrapper { padding:0 !important; gap:0; margin:0 !important; width:100vw; height:100vh; height:100dvh; position:fixed; top:0; left:0; right:0; bottom:0; background:var(--paper,#FBF7EC); background-image:linear-gradient(180deg, #FBF7EC 0%, #F5F0E6 100%); align-items:stretch !important; justify-content:flex-start; }
     .app-title-bar { display:none; }
     .phone-frame {
       width:100vw; height:100vh; max-width:100vw; max-height:100vh;
@@ -1422,7 +1422,7 @@
       transform:none !important; margin:0;
     }
     .phone-side-btn, .phone-notch, .phone-home-indicator { display:none; }
-    .phone-screen { border-radius:0; }
+    .phone-screen { border-radius:0; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; }
   }
 
   /* ========== HEALING RECOMMENDATION CARD (in chat) ========== */
@@ -4807,22 +4807,27 @@
   };
 })();
 
-// ========== API KEY 管理 (不再硬编码) ==========
+// ========== API KEY 管理 (前端 localStorage + Cloudflare Pages 环境变量双轨) ==========
+// 优先用本地 localStorage 中的 key（用户自己设置的）
+// 如果 localStorage 没有，探测 /chat 接口是否在线（说明 Cloudflare Pages 后端 env.DASHSCOPE_API_KEY 已配置）
+// 任一可用，hasApiKey() 都返回 true
 var API_KEY_STORAGE = 'wuyin_dashscope_api_key';
-function getApiKey() {
-  return localStorage.getItem(API_KEY_STORAGE) || '';
-}
+var SERVER_KEY_READY = false;
+(function probeServerKey() {
+  try {
+    fetch('/chat', { method: 'GET', cache: 'no-store' })
+      .then(function (r) { SERVER_KEY_READY = !!r.ok; console.log('[key] 服务端 Key ' + (SERVER_KEY_READY ? '已就绪' : '未配置')); })
+      .catch(function () { console.log('[key] 服务端探测失败'); });
+  } catch (e) {}
+})();
+function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
 function hasApiKey() {
   var k = getApiKey();
-  return !!k && k.indexOf('sk-') === 0;
+  if (k && k.indexOf('sk-') === 0) return true;
+  return SERVER_KEY_READY;
 }
-function setApiKey(key) {
-  if (!key || key.indexOf('sk-') !== 0) return false;
-  return localStorage.setItem(API_KEY_STORAGE, key);
-}
-function clearApiKey() {
-  localStorage.removeItem(API_KEY_STORAGE);
-}
+function setApiKey(key) { if (!key || key.indexOf('sk-') !== 0) return false; return localStorage.setItem(API_KEY_STORAGE, key); }
+function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); }
 
 // ========== DATA ==========
 var WUYIN_DATA = [
@@ -5600,12 +5605,12 @@ async function callQwenAPI(userText) {
     { role: 'system', content: systemPrompt }
   ].concat(chatHistory.slice(-10));
 
-  var apiKey = getApiKey();
-  if (!apiKey) {
+  if (!hasApiKey()) {
     removeTypingIndicator();
     addBotMsg('请先在"我的"页面设置您的 API 密钥后再开始聊天哦~', 'system');
     return;
   }
+  var apiKey = getApiKey();
 
   try {
     var response = await fetch('/chat', {
@@ -9389,17 +9394,17 @@ function testCloudTTS() {
   if (resultEl) { resultEl.style.display = 'block'; resultEl.style.color = '#9A9A9A'; resultEl.textContent = '正在测试，请稍候...'; }
   showToast('正在测试云语音...');
 
-  var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
   var steps = [];
 
-  // 步骤 1: 检查 API Key
-  if (!apiKey) {
+  // 步骤 1: 检查 API Key（本地 localStorage 或 Cloudflare Pages 环境变量）
+  if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) {
     steps.push('❌ 未设置 API Key');
-    steps.push('👉 请先在"AI 密钥设置"中填写 DashScope API Key');
+    steps.push('👉 请在 Cloudflare Pages 设置 DASHSCOPE_API_KEY 环境变量，或在"AI 密钥设置"中手动填写');
     if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
     showToast('请先设置 API Key');
     return;
   }
+  var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
   if (apiKey.indexOf('sk-') !== 0) {
     steps.push('❌ API Key 格式错误（应以 sk- 开头）');
     if (resultEl) { resultEl.innerHTML = steps.join('<br>'); resultEl.style.color = '#E06060'; }
@@ -9495,9 +9500,8 @@ function speakCosyVoice(text, emotion, volume) {
       resolveTTSProvider(true);
     }
     // 必须先有 API Key 才能调云语音
-    var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
-    if (!apiKey) {
-      console.warn('[tts] 缺少 API Key，降级到浏览器 TTS');
+    if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) {
+      console.warn('[tts] 缺少 API Key（本地+服务端均未配置），降级到浏览器 TTS');
       _ttsSpeaking = false;
       speakBrowser(text, emotion, volume);
       return;
