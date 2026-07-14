@@ -4816,6 +4816,25 @@
 // 任一可用，hasApiKey() 都返回 true
 var API_KEY_STORAGE = 'wuyin_dashscope_api_key';
 var SERVER_KEY_READY = false;
+// ✅ 进入页面立即预下载所有疗愈音频到 Cache API（第二次访问秒开）
+(function prefetchAllAudio() {
+  if (!('caches' in window)) return;
+  var tones = ['gong', 'shang', 'jue', 'zhi', 'yu'];
+  var files = [];
+  for (var i = 0; i < tones.length; i++) {
+    files.push('assets/audio/' + tones[i] + '_1.m4a');
+    files.push('assets/audio/' + tones[i] + '_2.m4a');
+  }
+  caches.open('wuyin-audio-v2').then(function(cache) {
+    files.forEach(function(url) {
+      cache.match(url).then(function(c) {
+        if (c) return;
+        fetch(url, { mode: 'no-cors' }).then(function(r) { if (r) cache.put(url, r.clone()); }).catch(function(){});
+      });
+    });
+  });
+})();
+
 (function probeServerKey() {
   try {
     fetch('/chat', { method: 'GET', cache: 'no-store' })
@@ -7212,7 +7231,6 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
     hiddenAudio.preload = 'metadata';
-    hiddenAudio.setAttribute('crossorigin', 'anonymous');
     hiddenAudio.setAttribute('playsinline', '');
     hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
@@ -7615,7 +7633,6 @@ function doDualSwitch(instant) {
     audio2.id = 'hiddenAudioPlayer2';
     audio2.style.display = 'none';
     audio2.preload = 'metadata';
-    audio2.setAttribute('crossorigin', 'anonymous');
     audio2.loop = true;
     audio2.setAttribute('playsinline', '');
     audio2.setAttribute('webkit-playsinline', '');
