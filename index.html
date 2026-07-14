@@ -5236,8 +5236,8 @@ function openImmersiveHealing(toneId, title, meta, audioUrl, sceneImg) {
     _immersiveCurrent = { url: audioUrl, toneId: toneId };
     if (!_immersiveAudio) _immersiveAudio = new Audio();
     _immersiveAudio.src = audioUrl;
-    _immersiveAudio.preload = 'metadata';
-    _immersiveAudio.crossOrigin = 'anonymous';
+    _immersiveAudio.preload = 'auto';
+    _immersiveAudio.;
     _immersiveAudio.addEventListener('loadedmetadata', function() {
       var durEl = document.getElementById('immersiveTimeDur');
       if (durEl) durEl.textContent = formatTime(_immersiveAudio.duration);
@@ -7231,8 +7231,8 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
     hiddenAudio = document.createElement('audio');
     hiddenAudio.id = 'hiddenAudioPlayer';
     hiddenAudio.style.display = 'none';
-    hiddenAudio.preload = 'metadata';
-    hiddenAudio.crossOrigin = 'anonymous';
+    hiddenAudio.preload = 'auto';
+    hiddenAudio.;
     hiddenAudio.setAttribute('playsinline', '');
     hiddenAudio.setAttribute('webkit-playsinline', '');
     document.body.appendChild(hiddenAudio);
@@ -7634,8 +7634,8 @@ function doDualSwitch(instant) {
     audio2 = document.createElement('audio');
     audio2.id = 'hiddenAudioPlayer2';
     audio2.style.display = 'none';
-    audio2.preload = 'metadata';
-    audio2.crossOrigin = 'anonymous';
+    audio2.preload = 'auto';
+    audio2.;
     audio2.loop = true;
     audio2.setAttribute('playsinline', '');
     audio2.setAttribute('webkit-playsinline', '');
