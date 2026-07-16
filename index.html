@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -3585,7 +3585,7 @@
           <div class="qingzhi-bar active" data-emotion="怒"><div class="label">怒</div><div class="track"><div class="fill" style="width:72%;background:var(--yue-jue)"></div></div></div>
           <div class="qingzhi-bar" data-emotion="喜"><div class="label">喜</div><div class="track"><div class="fill" style="width:38%;background:var(--yue-zhi)"></div></div></div>
           <div class="qingzhi-bar" data-emotion="思"><div class="label">思</div><div class="track"><div class="fill" style="width:55%;background:var(--yue-gong)"></div></div></div>
-          <div class="qingzhi-bar" data-emotion="悲"><div class="label">悲</div><div class="track"><div class="fill" style="width:30%;background:var(--yue-shang)"></div></div></div>
+          <div class="qingzhi-bar" data-emotion="忧"><div class="label">忧</div><div class="track"><div class="fill" style="width:30%;background:var(--yue-shang)"></div></div></div>
           <div class="qingzhi-bar" data-emotion="恐"><div class="label">恐</div><div class="track"><div class="fill" style="width:25%;background:var(--yue-yu)"></div></div></div>
         </div>
         <div class="qingzhi-tip" id="qingzhiTip">当前偏向<span class="accent">怒·角</span>，建议今日听角音疏肝</div>
@@ -3617,13 +3617,7 @@
         <div class="name">小五</div>
         <div class="stat" id="chatAvatarStateLabel">在线 · 随时倾听</div>
       </div>
-      <div class="more">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
-          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-          <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
-        </svg>
-      </div>
+      <div class="chat-end-btn" onclick="endChatSession('manual')" style="margin-left:auto;padding:8px 16px;background:rgba(255,255,255,0.15);border-radius:20px;font-size:16px;color:var(--yue-jue);cursor:pointer;white-space:nowrap;">结束聊天</div>
     </div>
 
     <!-- 消息滚动区（独立滚动容器） -->
@@ -3863,7 +3857,7 @@
           <div class="val" style="color:var(--v10-gong)">0</div>
         </div>
         <div class="emo-row" data-id="shang">
-          <div class="lbl" style="color:var(--v10-shang)">悲 · 金</div>
+          <div class="lbl" style="color:var(--v10-shang)">忧 · 金</div>
           <div class="bar"><div class="fill" style="width:0%;background:linear-gradient(90deg,var(--v10-shang),#96A6B8)"></div></div>
           <div class="val" style="color:var(--v10-shang)">0</div>
         </div>
@@ -3974,7 +3968,7 @@
           </div>
           <div class="data-chart-card">
             <svg id="emotionChart" viewBox="0 0 340 200" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;"></svg>
-            <div class="data-legend-hint">五志分布：赭红-怒 暖黄-喜 金色-思 灰紫-悲 青蓝-恐</div>
+            <div class="data-legend-hint">五志分布：赭红-怒 暖黄-喜 金色-思 灰紫-忧 青蓝-恐</div>
           </div>
         </div>
         <div class="data-section">
@@ -4477,7 +4471,7 @@
           <li>怒 · 木 · 肝 · 烦躁易怒</li>
           <li>喜 · 火 · 心 · 过喜亢奋</li>
           <li>思 · 土 · 脾 · 思虑过度</li>
-          <li>悲 · 金 · 肺 · 悲伤忧郁</li>
+          <li>忧 · 金 · 肺 · 悲伤忧郁</li>
           <li>恐 · 水 · 肾 · 恐惧不安</li>
         </ul>
       </div>
@@ -4862,7 +4856,7 @@ var WUYIN_DATA = [
   { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军' },
   { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军' },
   { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军' },
-  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'悲', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军' },
+  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'忧', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军' },
   { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军' },
 ];
 
@@ -4923,6 +4917,238 @@ var isLastTrial = false;
 var chatMode = 'voice'; // 'voice' or 'text'
 var isChatRecording = false;
 var isRatingRecording = false;
+// ==================== V3.0 AI对话与情志动态识别模块 ====================
+// ===== 知识库A：LLM情绪表达标准化与五态映射词典（V3.2终稿）=====
+var EMOTION_STANDARD_DICT = {
+  // 恐
+  '害怕':'恐','恐惧':'恐','畏惧':'恐','惊慌':'恐','受惊':'恐',
+  // 思
+  '反复思考':'思','想很多':'思','一直想着':'思','放不下':'思',
+  '思虑':'思','纠结':'思','犹豫':'思','反复关注身体变化':'思',
+  // 忧
+  '难过':'忧','悲伤':'忧','情绪低落':'忧','失落':'忧',
+  '压抑':'忧','崩溃':'忧','无助':'忧','孤独':'忧','消沉':'忧',
+  // 怒
+  '生气':'怒','愤怒':'怒','烦躁':'怒','急躁':'怒',
+  '不满':'怒','委屈':'怒','恼怒':'怒','抱怨':'怒','想发火':'怒',
+  // 喜
+  '开心':'喜','高兴':'喜','快乐':'喜','愉快':'喜',
+  '满足':'喜','欣慰':'喜','放松':'喜','舒心':'喜','幸福':'喜',
+};
+
+// ===== 知识库B：五态—五音—情境对应知识库（终稿）=====
+var WUTAI_WUYIN_MAP = {
+  '怒': { tone:'jue', toneName:'角调', element:'木', organ:'肝',
+          scenes:['春林','竹林','森林','山谷'],
+          goal:'疏肝理气，舒缓烦躁、急躁等情绪' },
+  '喜': { tone:'zhi', toneName:'徵调', element:'火', organ:'心',
+          scenes:['晨曦','暖阳','花海','夏日草地'],
+          goal:'愉悦身心，维持积极稳定的情绪状态' },
+  '思': { tone:'gong', toneName:'宫调', element:'土', organ:'脾',
+          scenes:['田园','草地','山野','稻田'],
+          goal:'健脾和中，缓解思虑过度、反复思考等状态' },
+  '忧': { tone:'shang', toneName:'商调', element:'金', organ:'肺',
+          scenes:['秋林','溪流','薄雾','山间小径'],
+          goal:'宣肺调气，缓解悲伤、压抑、情绪低落等状态' },
+  '恐': { tone:'yu', toneName:'羽调', element:'水', organ:'肾',
+          scenes:['夜湖','月光','静水','星空'],
+          goal:'补肾安神，缓解害怕、恐惧、不安等状态' },
+};
+
+// ===== Session 管理 =====
+var chatSession = {
+  active: false,
+  startTime: null,
+  idleTimer: null,
+  exitTimer: null,
+};
+
+function startChatSession() {
+  chatSession.active = true;
+  chatSession.startTime = Date.now();
+  chatHistory = [];
+  window._hasRecommendedThisSession = false;
+  console.log('[Session] Started');
+  resetIdleTimer();
+}
+
+function endChatSession(reason) {
+  if (!chatSession.active) return;
+  chatSession.active = false;
+  if (chatSession.idleTimer) { clearTimeout(chatSession.idleTimer); chatSession.idleTimer = null; }
+  if (chatSession.exitTimer) { clearTimeout(chatSession.exitTimer); chatSession.exitTimer = null; }
+  console.log('[Session] Ended:', reason || 'manual');
+  var userMsgs = chatHistory.filter(function(m) { return m.role === 'user'; });
+  if (userMsgs.length >= 2) {
+    showToast('正在分析您的聊天内容...');
+    analyzeChatSession();
+  }
+}
+
+function resetIdleTimer() {
+  if (chatSession.idleTimer) clearTimeout(chatSession.idleTimer);
+  chatSession.idleTimer = setTimeout(function() {
+    endChatSession('idle_10min');
+  }, 10 * 60 * 1000);
+}
+
+// ===== LLM 情绪分析（Session结束后调用）=====
+async function analyzeChatSession() {
+  var analysisPrompt = '请分析以下用户聊天记录，输出标准化情绪表达。\n\n'
+    + '【任务】\n'
+    + '1. 理解用户整轮对话表达的情绪\n'
+    + '2. 将用户自然语言表达归一化为标准化情绪表达\n'
+    + '3. 保留原始表达作为证据\n\n'
+    + '【标准化情绪表达词典】\n'
+    + '恐类：害怕、恐惧、畏惧、惊慌、受惊\n'
+    + '思类：反复思考、想很多、一直想着、放不下、思虑、纠结、犹豫、反复关注身体变化\n'
+    + '忧类：难过、悲伤、情绪低落、失落、压抑、崩溃、无助、孤独、消沉\n'
+    + '怒类：生气、愤怒、烦躁、急躁、不满、委屈、恼怒、抱怨、想发火\n'
+    + '喜类：开心、高兴、快乐、愉快、满足、欣慰、放松、舒心、幸福\n\n'
+    + '【输出格式（严格按此格式）】\n'
+    + '摘要：[一句话摘要]\n'
+    + '主要表达：[标准化情绪表达]\n'
+    + '伴随表达：[标准化情绪表达或无]\n'
+    + '原始证据1：[用户原始表达]\n'
+    + '原始证据2：[用户原始表达，无则不输出]\n\n'
+    + '【禁止】不要输出五态名称(怒喜思忧恐)、评分、百分比、权重、诊断结论\n\n'
+    + '【聊天记录】\n';
+
+  chatHistory.forEach(function(m) {
+    if (m.role === 'user') analysisPrompt += '用户：' + m.content + '\n';
+    else if (m.role === 'assistant') analysisPrompt += '小五：' + m.content + '\n';
+  });
+
+  try {
+    var response = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen-plus',
+        messages: [
+          { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
+          { role: 'user', content: analysisPrompt }
+        ],
+        max_tokens: 300,
+        temperature: 0.3
+      })
+    });
+    if (response.ok) {
+      var data = await response.json();
+      var text = data.choices && data.choices[0] && data.choices[0].message
+        ? data.choices[0].message.content : '';
+      var result = parseAnalysisResult(text);
+      if (result && result.primaryEmotion) {
+        var primaryWutai = EMOTION_STANDARD_DICT[result.primaryEmotion] || null;
+        var secondaryWutai = result.secondaryEmotion ? (EMOTION_STANDARD_DICT[result.secondaryEmotion] || null) : null;
+        if (primaryWutai) {
+          var rec = generateTodayRecommendation(primaryWutai, secondaryWutai, result);
+          saveTodayRecommendation(rec);
+          showSessionRecommendation(rec);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[Session] Analysis failed:', e);
+  }
+}
+
+function parseAnalysisResult(text) {
+  var result = {};
+  var m;
+  m = text.match(/摘要[：:]\s*([^\n]+)/); if (m) result.summary = m[1].trim();
+  m = text.match(/主要表达[：:]\s*([^\n]+)/); if (m) result.primaryEmotion = m[1].trim();
+  m = text.match(/伴随表达[：:]\s*([^\n]+)/);
+  if (m) { var s = m[1].trim(); if (s && s !== '无') result.secondaryEmotion = s; }
+  result.evidence = [];
+  var evMatches = text.match(/原始证据\d[：:]\s*([^\n]+)/g);
+  if (evMatches) evMatches.forEach(function(m2) {
+    var ev = m2.replace(/原始证据\d[：:]\s*/, '').trim();
+    if (ev) result.evidence.push(ev);
+  });
+  return result;
+}
+
+function generateTodayRecommendation(primaryWutai, secondaryWutai, analysisResult) {
+  var rec = {
+    date: new Date().toISOString().split('T')[0],
+    source: 'ai_chat',
+    summary: analysisResult.summary || '',
+    primaryEmotion: analysisResult.primaryEmotion,
+    secondaryEmotion: analysisResult.secondaryEmotion || null,
+    primaryWutai: primaryWutai,
+    secondaryWutai: secondaryWutai,
+    evidence: analysisResult.evidence || [],
+    timestamp: Date.now()
+  };
+  var pt = WUTAI_WUYIN_MAP[primaryWutai];
+  if (pt) { rec.primaryTone = pt.tone; rec.primaryToneName = pt.toneName; rec.primaryGoal = pt.goal; }
+  if (secondaryWutai) {
+    var st = WUTAI_WUYIN_MAP[secondaryWutai];
+    if (st) { rec.secondaryTone = st.tone; rec.secondaryToneName = st.toneName; rec.secondaryGoal = st.goal; }
+    rec.duration = 20; rec.primaryDuration = 10; rec.secondaryDuration = 10;
+  } else {
+    rec.duration = 20; rec.primaryDuration = 20;
+  }
+  return rec;
+}
+
+function saveTodayRecommendation(rec) {
+  localStorage.setItem('wuyin_today_recommendation', JSON.stringify(rec));
+  var history = JSON.parse(localStorage.getItem('wuyin_ai_chat_history') || '[]');
+  history.push(rec);
+  var threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+  history = history.filter(function(r) { return r.timestamp > threeDaysAgo; });
+  localStorage.setItem('wuyin_ai_chat_history', JSON.stringify(history));
+}
+
+function getAIRecommendation() {
+  var rec = localStorage.getItem('wuyin_today_recommendation');
+  if (rec) {
+    var parsed = JSON.parse(rec);
+    var today = new Date().toISOString().split('T')[0];
+    if (parsed.date === today) return parsed;
+  }
+  var history = JSON.parse(localStorage.getItem('wuyin_ai_chat_history') || '[]');
+  if (history.length > 0) return history[history.length - 1];
+  return null;
+}
+
+function showSessionRecommendation(rec) {
+  var container = document.getElementById('chatMessages');
+  if (!container) return;
+  var row = document.createElement('div');
+  row.className = 'msg-row';
+  var html = '<div class="msg-avatar"><ion-icon name="heart"></ion-icon></div>';
+  html += '<div class="healing-rec-msg">';
+  html += '<div class="healing-rec-msg-info">';
+  html += '<div class="healing-rec-msg-name">今日建议</div>';
+  if (rec.summary) html += '<div style="font-size:14px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
+  html += '<div class="healing-rec-msg-desc">主要情志：' + rec.primaryWutai;
+  if (rec.secondaryWutai) html += ' + ' + rec.secondaryWutai;
+  html += '</div>';
+  if (rec.primaryTone) {
+    var item = WUYIN_DATA.find(function(w) { return w.id === rec.primaryTone; });
+    if (item) {
+      html += '<div class="healing-rec-msg-action" onclick="enterHealingFromChat(\'' + item.id + '\')">';
+      html += rec.primaryToneName + (rec.secondaryWutai ? '（10分钟）' : '（20分钟）');
+      html += ' - 点击开始 →</div>';
+    }
+  }
+  if (rec.secondaryTone) {
+    var item2 = WUYIN_DATA.find(function(w) { return w.id === rec.secondaryTone; });
+    if (item2) {
+      html += '<div class="healing-rec-msg-action" onclick="enterHealingFromChat(\'' + item2.id + '\')">';
+      html += rec.secondaryToneName + '（10分钟） - 点击开始 →</div>';
+    }
+  }
+  html += '</div></div>';
+  row.innerHTML = html;
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  showToast('已为您生成今日疗愈建议');
+}
+
 var chatHistory = [];
 var selectedIntroIdx = 0;
 var currentWuyinItem = null;
@@ -5082,6 +5308,10 @@ function switchTab(idx) {
   document.getElementById('subpage-intro').classList.remove('active');
   document.getElementById('subpage-player').classList.remove('active');
   // 切换到我的 tab 时检查 me-row 文字是否溢出，溢出则隐藏右侧 val/arrow
+    // V3.0: 切换到聊天页面时启动 Session
+  if (idx === 1) {
+    if (typeof startChatSession === 'function') startChatSession();
+  }
   if (idx === 4) {
     setTimeout(function(){ trimMeRowOverflow(); }, 60);
   }
@@ -5384,7 +5614,7 @@ function updateHomeV10() {
 
   // 4) 情志档案（5 条 bar）+ 推荐色
   try {
-    var emos = ['怒','喜','思','悲','恐'];
+    var emos = ['怒','喜','思','忧','恐'];
     var colors = ['var(--yue-jue)','var(--yue-zhi)','var(--yue-gong)','var(--yue-shang)','var(--yue-yu)'];
     var stored = null;
     try { stored = JSON.parse(localStorage.getItem('wuyin_qingzhi') || 'null'); } catch(e) {}
@@ -5401,7 +5631,7 @@ function updateHomeV10() {
       if (vals[i] > maxVal) { maxVal = vals[i]; maxIdx = i; }
       bar.classList.toggle('active', i === maxIdx);
     });
-    var accentMap = {0:'怒·角',1:'喜·徵',2:'思·宫',3:'悲·商',4:'恐·羽'};
+    var accentMap = {0:'怒·角',1:'喜·徵',2:'思·宫',3:'忧·商',4:'恐·羽'};
     var tipEl = document.getElementById('qingzhiTip');
     if (tipEl) {
       var acc = accentMap[maxIdx] || accentMap[0];
@@ -5553,6 +5783,7 @@ function sendChatMessage(text) {
   }
   addUserMsg(text);
   chatHistory.push({ role: 'user', content: text });
+  if (typeof resetIdleTimer === 'function') resetIdleTimer();
   updateAvatarState();
   switchHomeBackgroundByEmotion();
 
@@ -5604,32 +5835,36 @@ async function callQwenAPI(userText) {
   var today = new Date();
   var todayStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
   var isCantonese = (ttsConfig.language === 'cantonese');
-  var systemPrompt = '你是"' + avatarName + '"，一位温暖亲切的AI五音疗愈伙伴，同时具备专业心理疏导师的技能。你的服务对象主要是中老年人。\n\n'
+  var systemPrompt = '你是"' + avatarName + '"，一位温暖亲切的AI陪伴伙伴。你的服务对象主要是中老年人。\n\n'
     + '【绝对真实信息，严禁编造】\n'
     + '今天是' + todayStr + '。\n'
     + '当前节气：' + termInfo.current.name + '已过，' + termInfo.next.name + '将至。' + getSolarTermDetailAdvice(termInfo.current.name) + '\n'
     + '以上日期和节气信息是系统提供的真实数据，你必须严格依据这些信息回答，绝对不可以编造或猜测今天的日期。\n\n'
-    + '【心理疏导师技能——每次回复必须体现】\n'
-    + '你受过认知行为疗法（CBT）和人本主义心理学的基础训练。每次回复都要让用户感受到被理解和被关心：\n'
-    + '1. 先共情：用"我理解""我听到您说""您现在感觉..."开头，让用户感到被倾听\n'
-    + '2. 再反映情感：直接说出用户的情绪（如"您现在一定很焦虑/难过/委屈"）\n'
-    + '3. 给具体建议：不说"放松心情"这种空话，而是说"我们一起深呼吸三次""去阳台晒晒太阳"等可操作的行动\n'
-    + '4. 鼓励表达：常说"跟我说说""我在听""没关系慢慢来"，邀请用户继续说下去\n'
-    + '5. 结尾温暖：每次回复结尾都要有一句关心的话，如"我一直陪着您""您不孤单"\n\n'
-    + '【核心知识】\n'
-    + '1. 五音疗愈：角音(木/肝/怒)、徵音(火/心/喜)、宫音(土/脾/思)、商音(金/肺/悲)、羽音(水/肾/恐)\n'
-    + '2. 中医养生：五志（喜怒思悲恐）与五脏（心肝脾肺肾）的对应关系\n'
-    + '3. 情志调理：通过倾听、共情、引导，帮助用户缓解情绪\n\n'
+    + '【你的职责——陪伴与倾听】\n'
+    + '你只负责陪伴用户聊天，倾听他们的心声：\n'
+    + '1. 倾听：认真听用户说的每一句话，让用户感受到被关注\n'
+    + '2. 陪伴：像朋友一样和用户聊天，关心他们的日常生活\n'
+    + '3. 回应：用温暖的话语回应用户，让用户不感到孤单\n'
+    + '4. 引导表达：鼓励用户多说一些，如"跟我说说""我在听呢""然后呢"\n'
+    + '5. 接纳情绪：遇到负面情绪先倾听接纳，不说大道理\n'
+    + '【禁止事项——必须严格遵守】\n'
+    + '1. 你不是心理医生，不做心理诊断、评估或治疗\n'
+    + '2. 你不做中医辨证，不判断用户体质或情志类型\n'
+    + '3. 不使用"焦虑""抑郁"等心理学术语给用户贴标签\n'
+    + '【背景知识——仅供参考，不可在回复中提及】\n'
+    + '1. 五音疗愈：角音(木/肝/怒)、徵音(火/心/喜)、宫音(土/脾/思)、商音(金/肺/忧)、羽音(水/肾/恐)\n'
+    + '2. 中医养生：五志（喜怒思忧恐）与五脏（心肝脾肺肾）的对应关系\n'
+    + '\n'
     + '【说话风格】\n'
     + '- 温暖亲切，像晚辈关心长辈\n'
     + '- 用语简单易懂，避免过于专业的术语\n'
     + '- 适当使用语气词（呀、呢、哦、~）\n'
     + '- 经常关心用户的身体和情绪状态\n'
-    + '- 不要主动推荐五音疗愈，也不要在回复中提及任何音调名称（如"角音"、"徵音"、"宫音"、"商音"、"羽音"等）\n'
+    + '- 不在回复中提及任何音调名称（角音、徵音、宫音、商音、羽音），不主动推荐疗愈\n'
     + (isCantonese ? '- 【重要】当前使用粤语语音，你的文字回复必须使用粤语书面语（如用"係"代替"是"，用"嘅"代替"的"，用"咁"代替"这么"，用"唔"代替"不"，用"仲"代替"还"，用"得闲"代替"有空"，用"饮茶"代替"喝茶"等）\n' : '')
     + '\n'
     + '你的回复必须简洁，每次回复不超过50个中文字，方便老年人阅读。\n\n'
-    + '重要：你绝对不可以在回复中提及任何五音名称。系统会根据对话内容自动判断是否需要推荐，你只需要做好心理疏导和陪伴即可。';
+    + '重要：你绝对不可以在回复中提及任何五音名称。系统会在聊天结束后自动分析并推荐疗愈方案。';
 
   var messages = [
     { role: 'system', content: systemPrompt }
@@ -5677,15 +5912,7 @@ async function callQwenAPI(userText) {
         addBotMsg(aiText, 'chat');
         // 检测是否需要推荐疗愈（前3轮对话不推荐，先建立信任）
         var userMsgCount = chatHistory.filter(function(m) { return m.role === 'user'; }).length;
-        var wuyinKeywords = { '角音':'jue', '徵音':'zhi', '宫音':'gong', '商音':'shang', '羽音':'yu' };
-        var detectedWuyin = null;
-        for (var kw in wuyinKeywords) {
-          if (aiText.indexOf(kw) >= 0) { detectedWuyin = wuyinKeywords[kw]; break; }
-        }
-        if (detectedWuyin && userMsgCount >= 5 && !window._hasRecommendedThisSession) {
-          window._hasRecommendedThisSession = true;
-          setTimeout(function() { addHealingRecommendation(detectedWuyin); }, 500);
-        }
+        // [V3.0] keyword detection removed
         return;
       }
     }
@@ -5715,15 +5942,7 @@ async function callQwenAPI(userText) {
         addBotMsg(aiText2, 'chat');
         // 检测是否需要推荐疗愈（前3轮对话不推荐）
         var userMsgCount2 = chatHistory.filter(function(m) { return m.role === 'user'; }).length;
-        var wuyinKeywords2 = { '角音':'jue', '徵音':'zhi', '宫音':'gong', '商音':'shang', '羽音':'yu' };
-        var detectedWuyin2 = null;
-        for (var kw2 in wuyinKeywords2) {
-          if (aiText2.indexOf(kw2) >= 0) { detectedWuyin2 = wuyinKeywords2[kw2]; break; }
-        }
-        if (detectedWuyin2 && userMsgCount2 >= 5 && !window._hasRecommendedThisSession) {
-          window._hasRecommendedThisSession = true;
-          setTimeout(function() { addHealingRecommendation(detectedWuyin2); }, 500);
-        }
+        // [V3.0] keyword detection removed
         return;
       }
     }
@@ -5733,10 +5952,7 @@ async function callQwenAPI(userText) {
   var fallback = getFallbackResponseWithRec(userText);
   addBotMsg(fallback.text, 'chat');
   // 每轮APP会话仅推荐一次（通过推荐卡片），不通过文字提及音调
-  if (fallback.recommendWuyin && fbUserCount >= 5 && !window._hasRecommendedThisSession) {
-    window._hasRecommendedThisSession = true;
-    setTimeout(function() { addHealingRecommendation(fallback.recommendWuyin); }, 500);
-  }
+    // [V3.0] fallback recommend trigger removed
 }
 
 // ========== EMOTION CAPTURE & RECOMMENDATION SYSTEM ==========
@@ -5744,7 +5960,7 @@ var EMOTION_TO_WUYIN = {
   '怒': 'jue', '烦躁': 'jue', '生气': 'jue', '愤怒': 'jue', '恼火': 'jue',
   '喜': 'zhi', '开心': 'zhi', '高兴': 'zhi', '快乐': 'zhi', '愉快': 'zhi',
   '思': 'gong', '焦虑': 'gong', '担心': 'gong', '紧张': 'gong', '不安': 'gong', '失眠': 'gong', '头痛': 'gong', '头晕': 'gong',
-  '悲': 'shang', '难过': 'shang', '悲伤': 'shang', '伤心': 'shang', '失落': 'shang', '哭': 'shang',
+  '忧': 'shang', '难过': 'shang', '悲伤': 'shang', '伤心': 'shang', '失落': 'shang', '哭': 'shang',
   '恐': 'yu', '害怕': 'yu', '恐惧': 'yu', '噩梦': 'yu'
 };
 
@@ -5779,7 +5995,7 @@ function renderEmotionCloud() {
   var emotionConfig = {
     '焦虑': {color:'#D4A03A', icon:'😰', size:'small'},
     '怒': {color:'#C85A3D', icon:'😤', size:'small'},
-    '悲': {color:'#6E7A8F', icon:'😢', size:'small'},
+    '忧': {color:'#6E7A8F', icon:'😢', size:'small'},
     '恐': {color:'#4A7FA5', icon:'😨', size:'small'},
     '喜': {color:'#5A8E5A', icon:'😊', size:'small'},
     '思': {color:'#8A7A3A', icon:'🤔', size:'small'},
@@ -6049,7 +6265,7 @@ function updateRecordsHero() {
   var dominantSource = null;
   var dominantWuyin = null;
   if (qResult && qResult.wuyin) {
-    dominantEmotion = qResult.wuyin.emotion;   // 怒/喜/思/悲/恐
+    dominantEmotion = qResult.wuyin.emotion;   // 怒/喜/思/忧/恐
     dominantWuyin = qResult.wuyin;
     dominantSource = 'questionnaire';
   } else if (chatDom && chatDom.wuyinId) {
@@ -6183,7 +6399,7 @@ function getFallbackResponseWithRec(userText) {
   } else if (t.match(/生气|愤怒|烦躁|恼火/)) {
     response = '老朋友消消气哦~ 生气的时候喝杯温水，闭眼休息一下会好很多。是什么事让您这么生气呀？'; recId = 'jue'; detectedEmotion = '怒';
   } else if (t.match(/难过|悲伤|哭|伤心|失落/)) {
-    response = '老朋友难过就哭出来哦~ 哭出来心里会舒服很多。有什么心事跟我说说吧，说出来会好受一些。'; recId = 'shang'; detectedEmotion = '悲';
+    response = '老朋友难过就哭出来哦~ 哭出来心里会舒服很多。有什么心事跟我说说吧，说出来会好受一些。'; recId = 'shang'; detectedEmotion = '忧';
   } else if (t.match(/害怕|恐惧|噩梦/)) {
     response = '老朋友不要怕呀~ 您不是一个人，我陪着您呢。是什么让您害怕呀？跟我说说吧。'; recId = 'yu'; detectedEmotion = '恐';
   } else if (t.match(/开心|高兴|快乐|愉快/)) {
