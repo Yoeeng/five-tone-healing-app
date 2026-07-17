@@ -696,7 +696,8 @@
     padding:3px 10px;border-radius:6px;
   }
   .healing-rec-source.shichen{background:rgba(200,170,100,.22);color:var(--gold);border:1px solid rgba(200,170,100,.4)}
-  .healing-rec-source.chat{background:rgba(192,57,43,.15);color:#9E2A22;border:1px solid rgba(192,57,43,.35)}
+  .healing-rec-source.chat,
+  .healing-rec-source.ai_chat{background:rgba(192,57,43,.15);color:#9E2A22;border:1px solid rgba(192,57,43,.35)}
   .healing-rec-source.questionnaire{background:rgba(91,138,90,.18);color:#3B6E3F;border:1px solid rgba(91,138,90,.35)}
   .healing-rec-name{font-family:var(--font-serif);font-size:22px;font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:6px}
   /* ✅ 描述字号放大4个字号：15px → 19px；最多3行省略 */
@@ -4850,6 +4851,41 @@ function hasApiKey() {
 }
 function setApiKey(key) { if (!key || key.indexOf('sk-') !== 0) return false; return localStorage.setItem(API_KEY_STORAGE, key); }
 function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); }
+// V3.0 unified chat API: try /chat proxy first, fallback to direct DashScope API
+async function callChatAPI(body) {
+  var apiKey = getApiKey();
+  try {
+    var resp = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (resp.ok) return await resp.json();
+  } catch(e) { }
+  if (!apiKey || apiKey.indexOf('sk-') !== 0) throw new Error('No API Key');
+  var directResp = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: body.model || 'qwen-plus',
+      messages: body.messages || (body.input && body.input.messages) || [],
+      max_tokens: body.max_tokens || (body.parameters && body.parameters.max_tokens) || 100,
+      temperature: body.temperature || (body.parameters && body.parameters.temperature) || 0.7
+    })
+  });
+  if (!directResp.ok) throw new Error('DashScope API error: ' + directResp.status);
+  return await directResp.json();
+}
+
+function parseAIResponse(data) {
+  if (data.choices && data.choices[0] && data.choices[0].message) return data.choices[0].message.content;
+  if (data.output && data.output.choices && data.output.choices[0] && data.output.choices[0].message) return data.output.choices[0].message.content;
+  return null;
+}
+
 
 // ========== DATA ==========
 var WUYIN_DATA = [
@@ -4966,22 +5002,30 @@ var chatSession = {
 function startChatSession() {
   chatSession.active = true;
   chatSession.startTime = Date.now();
-  chatHistory = [];
+  // ✅ V3.0 修复：不清空 chatHistory，保留本次会话新增的消息（用于 endChatSession 分析）
+  // chatHistory 在 initChat 时已通过 renderChatHistory 加载历史，这里保留即可
   window._hasRecommendedThisSession = false;
   console.log('[Session] Started');
   resetIdleTimer();
 }
 
 function endChatSession(reason) {
-  if (!chatSession.active) return;
+  // ✅ V3.0 修复：即使 session 未激活（如未调用 startChatSession），只要有聊天记录也允许分析
+  var wasActive = chatSession.active;
   chatSession.active = false;
   if (chatSession.idleTimer) { clearTimeout(chatSession.idleTimer); chatSession.idleTimer = null; }
   if (chatSession.exitTimer) { clearTimeout(chatSession.exitTimer); chatSession.exitTimer = null; }
-  console.log('[Session] Ended:', reason || 'manual');
+  console.log('[Session] Ended:', reason || 'manual', '(wasActive:', wasActive, ')');
+  // 即使 session 未正式激活，只要有 >=2 条用户消息也触发分析
   var userMsgs = chatHistory.filter(function(m) { return m.role === 'user'; });
   if (userMsgs.length >= 2) {
     showToast('正在分析您的聊天内容...');
     analyzeChatSession();
+  } else if (wasActive) {
+    showToast('聊天已结束');
+  } else {
+    // 非激活且无足够消息：静默结束
+    console.log('[Session] No enough messages to analyze');
   }
 }
 
@@ -4998,7 +5042,8 @@ async function analyzeChatSession() {
     + '【任务】\n'
     + '1. 理解用户整轮对话表达的情绪\n'
     + '2. 将用户自然语言表达归一化为标准化情绪表达\n'
-    + '3. 保留原始表达作为证据\n\n'
+    + '3. 生成一句话情境概括（保护隐私，不直接引用原话）\n'
+    + '4. 保留原始表达作为证据\n\n'
     + '【标准化情绪表达词典】\n'
     + '恐类：害怕、恐惧、畏惧、惊慌、受惊\n'
     + '思类：反复思考、想很多、一直想着、放不下、思虑、纠结、犹豫、反复关注身体变化\n'
@@ -5006,12 +5051,15 @@ async function analyzeChatSession() {
     + '怒类：生气、愤怒、烦躁、急躁、不满、委屈、恼怒、抱怨、想发火\n'
     + '喜类：开心、高兴、快乐、愉快、满足、欣慰、放松、舒心、幸福\n\n'
     + '【输出格式（严格按此格式）】\n'
-    + '摘要：[一句话摘要]\n'
+    + '摘要：[一句话情境概括，20-40字，描述用户的整体情境和情绪背景，不得直接引用用户原话，需用第三人称客观转述，例如"用户表达了近期工作压力较大，伴有焦虑情绪"]\n'
     + '主要表达：[标准化情绪表达]\n'
     + '伴随表达：[标准化情绪表达或无]\n'
     + '原始证据1：[用户原始表达]\n'
     + '原始证据2：[用户原始表达，无则不输出]\n\n'
-    + '【禁止】不要输出五态名称(怒喜思忧恐)、评分、百分比、权重、诊断结论\n\n'
+    + '【禁止】\n'
+    + '- 不要输出五态名称(怒喜思忧恐)、评分、百分比、权重、诊断结论\n'
+    + '- 摘要中不要出现"用户说""用户表示"等引用语，要客观转述情境\n'
+    + '- 摘要中不要包含可能识别个人身份的具体信息（姓名、地点、日期等）\n\n'
     + '【聊天记录】\n';
 
   chatHistory.forEach(function(m) {
@@ -5020,34 +5068,41 @@ async function analyzeChatSession() {
   });
 
   try {
-    var response = await fetch('/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen-plus',
-        messages: [
-          { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
-          { role: 'user', content: analysisPrompt }
-        ],
-        max_tokens: 300,
-        temperature: 0.3
-      })
+    var data = await callChatAPI({
+      model: 'qwen-plus',
+      messages: [
+        { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
+        { role: 'user', content: analysisPrompt }
+      ],
+      max_tokens: 300,
+      temperature: 0.3
     });
-    if (response.ok) {
-      var data = await response.json();
-      var text = data.choices && data.choices[0] && data.choices[0].message
-        ? data.choices[0].message.content : '';
+    var text = parseAIResponse(data) || '';
       var result = parseAnalysisResult(text);
       if (result && result.primaryEmotion) {
         var primaryWutai = EMOTION_STANDARD_DICT[result.primaryEmotion] || null;
         var secondaryWutai = result.secondaryEmotion ? (EMOTION_STANDARD_DICT[result.secondaryEmotion] || null) : null;
+        // ✅ V3.0: 将 AI 分析提取的情绪词汇同步到档案页情绪关键词库
+        try {
+          if (typeof logChatEmotion === 'function') {
+            // 写入主要情绪表达（映射到对应五音，附带情境概括用于追溯展示）
+            var primaryWuyinId = primaryWutai ? (WUTAI_WUYIN_MAP[primaryWutai] && WUTAI_WUYIN_MAP[primaryWutai].tone) : null;
+            if (result.primaryEmotion) {
+              logChatEmotion(result.primaryEmotion, primaryWuyinId, 'ai_chat', result.evidence || [], result.summary || '');
+            }
+            // 写入伴随情绪表达
+            if (result.secondaryEmotion) {
+              var secondaryWuyinId = secondaryWutai ? (WUTAI_WUYIN_MAP[secondaryWutai] && WUTAI_WUYIN_MAP[secondaryWutai].tone) : null;
+              logChatEmotion(result.secondaryEmotion, secondaryWuyinId, 'ai_chat', result.evidence || [], result.summary || '');
+            }
+          }
+        } catch(e) { console.warn('[Session] logChatEmotion sync failed:', e); }
         if (primaryWutai) {
           var rec = generateTodayRecommendation(primaryWutai, secondaryWutai, result);
           saveTodayRecommendation(rec);
           showSessionRecommendation(rec);
         }
       }
-    }
   } catch (e) {
     console.error('[Session] Analysis failed:', e);
   }
@@ -5083,11 +5138,15 @@ function generateTodayRecommendation(primaryWutai, secondaryWutai, analysisResul
   };
   var pt = WUTAI_WUYIN_MAP[primaryWutai];
   if (pt) { rec.primaryTone = pt.tone; rec.primaryToneName = pt.toneName; rec.primaryGoal = pt.goal; }
-  if (secondaryWutai) {
+  // ✅ V3.0 修复：主次情志映射到同一五态时（如"难过+悲伤"都映射"忧"），不生成组合调式，按单调式处理
+  if (secondaryWutai && secondaryWutai !== primaryWutai) {
     var st = WUTAI_WUYIN_MAP[secondaryWutai];
     if (st) { rec.secondaryTone = st.tone; rec.secondaryToneName = st.toneName; rec.secondaryGoal = st.goal; }
     rec.duration = 20; rec.primaryDuration = 10; rec.secondaryDuration = 10;
   } else {
+    // 无次要情志，或主次情志相同 → 单调式
+    rec.secondaryWutai = null;
+    rec.secondaryEmotion = null;
     rec.duration = 20; rec.primaryDuration = 20;
   }
   return rec;
@@ -5311,6 +5370,21 @@ function switchTab(idx) {
     // V3.0: 切换到聊天页面时启动 Session
   if (idx === 1) {
     if (typeof startChatSession === 'function') startChatSession();
+    // ✅ V3.0 修复：如果聊天容器为空（initChat 未成功渲染历史），重新渲染
+    var chatContainer = document.getElementById('chatMessages');
+    if (chatContainer && chatContainer.children.length === 0) {
+      var hasHist = false;
+      try { hasHist = renderChatHistory(); } catch(e) {}
+      if (hasHist) {
+        var sepRow = document.createElement('div');
+        sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:12px;opacity:0.6;';
+        sepRow.textContent = '—— 以上为历史记录 ——';
+        chatContainer.appendChild(sepRow);
+        addBotMsg('欢迎回来，老朋友~ 有什么想跟我聊聊的吗？', 'welcome');
+      } else {
+        addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
+      }
+    }
   }
   if (idx === 4) {
     setTimeout(function(){ trimMeRowOverflow(); }, 60);
@@ -5369,7 +5443,7 @@ function enterHealingFromHome() {
       // ✅ 仅情志问卷推荐 / AI对话推荐 默认组成组合调式；时辰推荐不组合
       // 主推荐来源 = primarySource（'questionnaire' / 'chat' / 'shichen'）
       var primarySource = rec && rec.primarySource ? rec.primarySource : '';
-      var allowDual = (primarySource === 'questionnaire' || primarySource === 'chat');
+      var allowDual = (primarySource === 'questionnaire' || primarySource === 'chat' || primarySource === 'ai_chat');
       if (allowDual && rec && rec.questionnaireRecIds && rec.questionnaireRecIds.length >= 2) {
         var id1 = rec.questionnaireRecIds[0];
         var id2 = rec.questionnaireRecIds[1];
@@ -5696,13 +5770,26 @@ function showToast(msg, duration) {
 // ========== CHAT ==========
 function initChat() {
   var container = document.getElementById('chatMessages');
-  // Welcome message 1
-  addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
-  // 3 seconds later, second message
-  setTimeout(function() {
-    var msg = CARE_MESSAGES[Math.floor(Math.random() * CARE_MESSAGES.length)];
-    addBotMsg(msg, 'chat');
-  }, 3000);
+  // ✅ V3.0: 先加载历史聊天记录（支持上滑找回）
+  var hasHistory = false;
+  try { hasHistory = renderChatHistory(); } catch(e) { console.warn('[initChat] renderChatHistory:', e); }
+  if (hasHistory) {
+    // 有历史记录：添加分隔线，不再重复欢迎语
+    var sepRow = document.createElement('div');
+    sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:12px;opacity:0.6;';
+    sepRow.textContent = '—— 以上为历史记录 ——';
+    container.appendChild(sepRow);
+    // 仅显示一条简短问候
+    addBotMsg('欢迎回来，老朋友~ 有什么想跟我聊聊的吗？', 'welcome');
+  } else {
+    // 无历史记录：显示完整欢迎语
+    addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
+    // 3 seconds later, second message
+    setTimeout(function() {
+      var msg = CARE_MESSAGES[Math.floor(Math.random() * CARE_MESSAGES.length)];
+      addBotMsg(msg, 'chat');
+    }, 3000);
+  }
 }
 
 function addBotMsg(text, emotion) {
@@ -5716,7 +5803,9 @@ function addBotMsg(text, emotion) {
   // 滚动到 .chat-scroll 容器底部
   var scrollContainer = document.querySelector('.chat-scroll');
   if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  // ✅ V3.0: 持久化聊天记录（welcome/system 不保存）
   if (emotion !== 'welcome' && emotion !== 'system') {
+    try { saveChatMessage('bot', text); } catch(e) {}
     clearTimeout(window._speakTimer);
     window._speakTimer = setTimeout(function() {
       var cleanText = filterWuyinNames(text);
@@ -5724,6 +5813,45 @@ function addBotMsg(text, emotion) {
     }, 200);
   }
   updateAvatarState();
+}
+
+// ✅ V3.0: 聊天记录持久化（支持上滑找回历史）
+function saveChatMessage(role, text) {
+  var msgs = JSON.parse(localStorage.getItem('wuyin_chat_messages') || '[]');
+  msgs.push({ role: role, text: text, time: Date.now() });
+  // 只保留最近 200 条
+  if (msgs.length > 200) msgs = msgs.slice(-200);
+  localStorage.setItem('wuyin_chat_messages', JSON.stringify(msgs));
+}
+
+function loadChatMessages() {
+  var msgs = JSON.parse(localStorage.getItem('wuyin_chat_messages') || '[]');
+  return msgs;
+}
+
+function renderChatHistory() {
+  var container = document.getElementById('chatMessages');
+  if (!container) return;
+  var msgs = loadChatMessages();
+  if (msgs.length === 0) return false;
+  // 渲染历史消息
+  msgs.forEach(function(m) {
+    var row = document.createElement('div');
+    var date = new Date(m.time);
+    var timeStr = date.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+    if (m.role === 'user') {
+      row.className = 'bubble user';
+      row.innerHTML = '<div class="av-sm"></div><div><div class="b">' + m.text + '</div><div class="t">' + timeStr + '</div></div>';
+    } else {
+      row.className = 'bubble';
+      row.innerHTML = '<div class="av-sm"></div><div><div class="b">' + m.text + '</div><div class="t">小五 · ' + timeStr + '</div></div>';
+    }
+    container.appendChild(row);
+  });
+  // 滚动到底部
+  var scrollContainer = document.querySelector('.chat-scroll');
+  if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  return true;
 }
 
 function addUserMsg(text) {
@@ -5736,6 +5864,8 @@ function addUserMsg(text) {
   container.appendChild(row);
   var scrollContainer = document.querySelector('.chat-scroll');
   if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  // ✅ V3.0: 持久化用户消息
+  try { saveChatMessage('user', text); } catch(e) {}
 }
 
 function addTypingIndicator() {
@@ -5789,7 +5919,34 @@ function sendChatMessage(text) {
 
   var t = text.toLowerCase();
   var termNames = '小寒|大寒|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至';
-  if (t.match(/今天|今日|几号|日期|几月几日|星期几|周几|礼拜|时间|节气|什么节气|当前节气|什么时候|哪天|几月几号|year|month|day|date/) || t.match(new RegExp(termNames))) {
+  // ✅ V3.0 修复：仅在用户明确询问日期/时间时才走本地日期回复，避免"我今天心情不好"等误触发
+  // 判断条件：句子较短（<=12字）且包含日期疑问词，或明确询问节气
+  var isAskingDate = false;
+  // 短句 + 日期疑问词
+  if (t.length <= 12 && t.match(/几号|几月几日|几月几号|星期几|周几|礼拜几|礼拜天|礼拜日|哪天|什么时候/)) {
+    isAskingDate = true;
+  }
+  // 明确询问"今天/今日" + 日期/星期 关键词
+  if (t.match(/今天(是|几|日期|星期|周几|礼拜)|今日(是|几|日期|星期|周几|礼拜)/)) {
+    isAskingDate = true;
+  }
+  // 明确询问"时间"
+  if (t.match(/现在(几点|什么时间)|几点了|什么时间|当前时间/)) {
+    isAskingDate = true;
+  }
+  // 询问节气（需同时包含"节气"和疑问/询问语境）
+  if (t.match(/什么节气|当前节气|今天.*节气|今日.*节气|节气.*什么|节气.*几号|节气.*哪天/)) {
+    isAskingDate = true;
+  }
+  // 询问具体节气日期
+  if (t.match(new RegExp('(' + termNames + ').*(几号|哪天|什么时候|时间)')) || t.match(new RegExp('(几号|哪天|什么时候|时间).*(' + termNames + ')'))) {
+    isAskingDate = true;
+  }
+  // 纯英文 date/time 关键词
+  if (t.match(/^(what|whats|today|date|time|day) /) || t === 'date' || t === 'time' || t === 'today') {
+    isAskingDate = true;
+  }
+  if (isAskingDate) {
     addTypingIndicator();
     setTimeout(function() {
       removeTypingIndicator();
@@ -5889,21 +6046,13 @@ async function callQwenAPI(userText) {
   var apiKey = getApiKey();
 
   try {
-    var response = await fetch('/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'qwen-plus',
-        input: { messages: messages },
-        parameters: { max_tokens: 100, temperature: 0.7, result_format: 'message' }
-      })
+    var data = await callChatAPI({
+      model: 'qwen-plus',
+      messages: messages,
+      max_tokens: 100,
+      temperature: 0.7
     });
-    if (response.ok) {
-      var data = await response.json();
-      var aiText = data.output && data.output.choices && data.output.choices[0] && data.output.choices[0].message
-        ? data.output.choices[0].message.content : null;
+    var aiText = parseAIResponse(data);
       removeTypingIndicator();
       if (aiText) {
         // 过滤AI回复中的五音名称（由系统推荐卡片负责展示）
@@ -5915,26 +6064,16 @@ async function callQwenAPI(userText) {
         // [V3.0] keyword detection removed
         return;
       }
-    }
   } catch(err) { console.warn('DashScope API failed:', err.message); try { showToast('AI 1: ' + err.message); } catch(_){} }
 
   try {
-    var response2 = await fetch('/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'qwen-plus',
-        messages: messages,
-        max_tokens: 100,
-        temperature: 0.7
-      })
+    var data2 = await callChatAPI({
+      model: 'qwen-plus',
+      messages: messages,
+      max_tokens: 100,
+      temperature: 0.7
     });
-    if (response2.ok) {
-      var data2 = await response2.json();
-      var aiText2 = data2.choices && data2.choices[0] && data2.choices[0].message
-        ? data2.choices[0].message.content : null;
+    var aiText2 = parseAIResponse(data2);
       removeTypingIndicator();
       if (aiText2) {
         aiText2 = filterWuyinNames(aiText2);
@@ -5945,7 +6084,6 @@ async function callQwenAPI(userText) {
         // [V3.0] keyword detection removed
         return;
       }
-    }
   } catch(err2) { console.warn('OpenAI-compatible API failed:', err2.message); try { showToast('AI 2: ' + err2.message); } catch(_){} }
 
   removeTypingIndicator();
@@ -5964,13 +6102,15 @@ var EMOTION_TO_WUYIN = {
   '恐': 'yu', '害怕': 'yu', '恐惧': 'yu', '噩梦': 'yu'
 };
 
-function logChatEmotion(emotionLabel, wuyinId, source) {
+function logChatEmotion(emotionLabel, wuyinId, source, evidence, summary) {
   var log = JSON.parse(localStorage.getItem('wuyin_chat_emotion_log') || '[]');
   log.push({
     time: Date.now(),
     emotion: emotionLabel,
     wuyinId: wuyinId,
-    source: source || 'chat_fallback'
+    source: source || 'chat_fallback',
+    evidence: evidence || null,
+    summary: summary || null
   });
   // 只保留最近100条
   if (log.length > 100) log = log.slice(-100);
@@ -5992,14 +6132,49 @@ function renderEmotionCloud() {
   }
   // 统计每种情绪出现次数
   var counts = {};
+  // ✅ V3.0: 补充知识库 A 中的标准化情绪表达配色（按五态分组）
   var emotionConfig = {
-    '焦虑': {color:'#D4A03A', icon:'😰', size:'small'},
-    '怒': {color:'#C85A3D', icon:'😤', size:'small'},
-    '忧': {color:'#6E7A8F', icon:'😢', size:'small'},
-    '恐': {color:'#4A7FA5', icon:'😨', size:'small'},
-    '喜': {color:'#5A8E5A', icon:'😊', size:'small'},
-    '思': {color:'#8A7A3A', icon:'🤔', size:'small'},
-    '怒': {color:'#C85A3D', icon:'😤', size:'small'}
+    // 思类（脾/宫音 - 土黄）
+    '焦虑': {color:'#D4A03A', icon:'😰'},
+    '思': {color:'#8A7A3A', icon:'🤔'},
+    '反复思考': {color:'#8A7A3A', icon:'🤔'},
+    '想很多': {color:'#8A7A3A', icon:'🤔'},
+    '放不下': {color:'#8A7A3A', icon:'🤔'},
+    '纠结': {color:'#8A7A3A', icon:'🤔'},
+    '犹豫': {color:'#8A7A3A', icon:'🤔'},
+    // 怒类（肝/角音 - 青绿）
+    '怒': {color:'#C85A3D', icon:'😤'},
+    '烦躁': {color:'#C85A3D', icon:'😤'},
+    '生气': {color:'#C85A3D', icon:'😤'},
+    '愤怒': {color:'#C85A3D', icon:'😤'},
+    '恼火': {color:'#C85A3D', icon:'😤'},
+    '委屈': {color:'#C85A3D', icon:'😤'},
+    '不满': {color:'#C85A3D', icon:'😤'},
+    '抱怨': {color:'#C85A3D', icon:'😤'},
+    // 喜类（心/徵音 - 红）
+    '喜': {color:'#5A8E5A', icon:'😊'},
+    '开心': {color:'#5A8E5A', icon:'😊'},
+    '高兴': {color:'#5A8E5A', icon:'😊'},
+    '快乐': {color:'#5A8E5A', icon:'😊'},
+    '愉快': {color:'#5A8E5A', icon:'😊'},
+    '满足': {color:'#5A8E5A', icon:'😊'},
+    '放松': {color:'#5A8E5A', icon:'😊'},
+    '舒心': {color:'#5A8E5A', icon:'😊'},
+    // 忧类（肺/商音 - 白灰）
+    '忧': {color:'#6E7A8F', icon:'😢'},
+    '难过': {color:'#6E7A8F', icon:'😢'},
+    '悲伤': {color:'#6E7A8F', icon:'😢'},
+    '失落': {color:'#6E7A8F', icon:'😢'},
+    '压抑': {color:'#6E7A8F', icon:'😢'},
+    '孤独': {color:'#6E7A8F', icon:'😢'},
+    '无助': {color:'#6E7A8F', icon:'😢'},
+    '消沉': {color:'#6E7A8F', icon:'😢'},
+    // 恐类（肾/羽音 - 深蓝）
+    '恐': {color:'#4A7FA5', icon:'😨'},
+    '害怕': {color:'#4A7FA5', icon:'😨'},
+    '恐惧': {color:'#4A7FA5', icon:'😨'},
+    '惊慌': {color:'#4A7FA5', icon:'😨'},
+    '畏惧': {color:'#4A7FA5', icon:'😨'}
   };
   log.forEach(function(entry) {
     if (entry.emotion) {
@@ -6019,7 +6194,7 @@ function renderEmotionCloud() {
     var fontSize = Math.max(12, Math.min(22, 12 + pct / 10));
     var padSize = Math.max(6, Math.min(14, 6 + pct / 15));
     var opa = Math.max(0.5, Math.min(1, 0.5 + pct / 100));
-    html += '<div style="display:inline-flex;align-items:center;gap:4px;padding:' + padSize + 'px 12px;background:' + cfg.color + '22;border:1px solid ' + cfg.color + '44;border-radius:20px;font-size:' + fontSize + 'px;opacity:' + opa + ';cursor:default;transition:transform .2s;" onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+    html += '<div onclick="showEmotionDetail(decodeURIComponent(\'' + encodeURIComponent(name) + '\'))" style="display:inline-flex;align-items:center;gap:4px;padding:' + padSize + 'px 12px;background:' + cfg.color + '22;border:1px solid ' + cfg.color + '44;border-radius:20px;font-size:' + fontSize + 'px;opacity:' + opa + ';cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">';
     html += '<span>' + cfg.icon + '</span>';
     html += '<span style="color:' + cfg.color + ';">' + name + '</span>';
     html += '<span style="color:#9A9A9A;font-size:11px;">' + count + '次</span>';
@@ -6029,8 +6204,55 @@ function renderEmotionCloud() {
   // 底部时间范围
   var firstTime = log[0].time;
   var days = Math.max(1, Math.ceil((Date.now() - firstTime) / 86400000));
-  html += '<div style="text-align:center;margin-top:10px;font-size:11px;color:#9A9A9A;">近' + days + '天共记录' + log.length + '条情绪</div>';
+  html += '<div style="text-align:center;margin-top:10px;font-size:11px;color:#9A9A9A;">近' + days + '天共记录' + log.length + '条情绪 · 点击关键词查看详情</div>';
   container.innerHTML = html;
+}
+
+// V3.0: 情绪关键词详情弹窗
+function showEmotionDetail(emotionName) {
+  var log = JSON.parse(localStorage.getItem('wuyin_chat_emotion_log') || '[]');
+  var records = log.filter(function(e) { return e.emotion === emotionName; });
+  if (records.length === 0) return;
+  records.sort(function(a, b) { return b.time - a.time; });
+  var srcMap = { 'ai_chat': 'AI对话分析', 'chat_fallback': '对话识别' };
+  var lines = '<div style="max-height:60vh;overflow-y:auto;">';
+  lines += '<div style="margin-bottom:12px;color:var(--ink-faint);font-size:14px;">共 ' + records.length + ' 条记录</div>';
+  records.forEach(function(r) {
+    var d = new Date(r.time);
+    var ts = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    var sl = srcMap[r.source] || r.source || '未知';
+    var wn = '';
+    if (r.wuyinId) { var wi = WUYIN_DATA.find(function(w){return w.id===r.wuyinId;}); if (wi) wn = wi.name; }
+    lines += '<div style="padding:10px 12px;margin-bottom:8px;background:rgba(0,0,0,0.03);border-radius:8px;border-left:3px solid var(--gold);">';
+    lines += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
+    lines += '<span style="font-size:13px;color:var(--ink);font-weight:600;">' + ts + '</span>';
+    lines += '<span style="font-size:12px;color:var(--gold);background:rgba(200,170,100,0.15);padding:2px 8px;border-radius:4px;">' + sl + '</span>';
+    lines += '</div>';
+    if (wn) lines += '<div style="font-size:13px;color:var(--ink-faint);margin-bottom:4px;">推荐调式：' + wn + '</div>';
+    // ✅ V3.0: 显示一句话情境概括（保护隐私，不显示原话）
+    if (r.summary) {
+      lines += '<div style="font-size:13px;color:var(--ink);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;line-height:1.5;">' + r.summary + '</div>';
+    } else if (r.evidence && r.evidence.length > 0) {
+      // 兼容旧数据：无 summary 时回退到 evidence，但做脱敏处理（只显示首条，并加省略号）
+      var ev = r.evidence[0];
+      if (ev.length > 30) ev = ev.substring(0, 30) + '...';
+      lines += '<div style="font-size:13px;color:var(--ink-faint);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;font-style:italic;">' + ev + '</div>';
+    } else {
+      lines += '<div style="font-size:13px;color:var(--ink-faint);margin-top:6px;font-style:italic;">暂无情境描述</div>';
+    }
+    lines += '</div>';
+  });
+  lines += '</div>';
+  var m = document.getElementById('emotionDetailModal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'emotionDetailModal';
+    m.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    m.onclick = function(e) { if (e.target === m) m.style.display = 'none'; };
+  }
+  m.innerHTML = '<div style="background:#F5F0E8;border-radius:16px;max-width:500px;width:100%;padding:20px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,0.1);"><h3 style="font-family:var(--font-serif);font-size:22px;color:var(--ink);margin:0;">情绪追溯 · ' + emotionName + '</h3><button onclick="document.getElementById(\'emotionDetailModal\').style.display=\'none\'" style="background:none;border:none;font-size:24px;color:var(--ink-faint);cursor:pointer;padding:4px 8px;line-height:1;">&times;</button></div>' + lines + '</div>';
+  m.style.display = 'flex';
+  if (!m.parentNode) document.body.appendChild(m);
 }
 
 function getRecentChatEmotions(hours) {
@@ -6145,9 +6367,10 @@ function getTodayRecommendation() {
         wuyinId: aiRec.primaryTone,
         wuyin: aiItem,
         reason: aiReason,
-        maxIds: aiRec.secondaryTone ? [aiRec.primaryTone, aiRec.secondaryTone] : null
+        // ✅ V3.0 修复：primaryTone === secondaryTone 时不生成组合调式
+        maxIds: (aiRec.secondaryTone && aiRec.secondaryTone !== aiRec.primaryTone) ? [aiRec.primaryTone, aiRec.secondaryTone] : null
       });
-      if (aiRec.secondaryTone) {
+      if (aiRec.secondaryTone && aiRec.secondaryTone !== aiRec.primaryTone) {
         var aiItem2 = WUYIN_DATA.find(function(w) { return w.id === aiRec.secondaryTone; });
         if (aiItem2) {
           sources[sources.length - 1].dualPair = [aiItem, aiItem2];
@@ -6784,27 +7007,39 @@ function openIntro(idx) {
   startBtn.style.border = '1px solid #B83A2E';
 
   // Other modes with recommendation labels
+  // ✅ V3.0: 改用 todayRec.cards 结构，正确识别 ai_chat / questionnaire / shichen 三种来源
   var todayRec = getTodayRecommendation();
-  // 为每个音调收集所有推荐来源
   var recSources = {};
-  // 情志问卷推荐（支持双推荐）
-  if (todayRec.questionnaireRecIds && todayRec.questionnaireRecIds.length >= 2) {
-    todayRec.questionnaireRecIds.forEach(function(id) {
-      if (!recSources[id]) recSources[id] = [];
-      recSources[id].push({ source: 'questionnaire', label: '情志推荐' });
+  if (todayRec.cards && todayRec.cards.length > 0) {
+    todayRec.cards.forEach(function(card) {
+      if (!card || !card.wuyinId) return;
+      var src = card.tags[0];
+      var label = tagToShortLabel(src);
+      // 主调式
+      if (!recSources[card.wuyinId]) recSources[card.wuyinId] = [];
+      recSources[card.wuyinId].push({ source: src, label: label });
+      // 双调式组合：第二个调式也打上同一来源标签
+      if (card.maxIds && card.maxIds.length >= 2) {
+        var secondId = card.maxIds[1];
+        if (secondId && secondId !== card.wuyinId) {
+          if (!recSources[secondId]) recSources[secondId] = [];
+          recSources[secondId].push({ source: src, label: label });
+        }
+      }
     });
-  } else if (todayRec.questionnaireRec) {
-    if (!recSources[todayRec.questionnaireRec]) recSources[todayRec.questionnaireRec] = [];
-    recSources[todayRec.questionnaireRec].push({ source: 'questionnaire', label: '情志推荐' });
   }
-  if (todayRec.chatRec) {
-    if (!recSources[todayRec.chatRec]) recSources[todayRec.chatRec] = [];
-    recSources[todayRec.chatRec].push({ source: 'chat', label: '对话推荐' });
+  // ✅ 时辰推荐兜底：仅当 cards 中没有 shichen 来源时才添加，避免重复标签
+  var hasShichenSource = false;
+  if (todayRec.cards && todayRec.cards.length > 0) {
+    todayRec.cards.forEach(function(card) {
+      if (card.tags && card.tags.indexOf('shichen') >= 0) hasShichenSource = true;
+    });
   }
-  // 时辰推荐始终添加
-  var scNow = getCurrentShichen();
-  if (!recSources[scNow.wuyinId]) recSources[scNow.wuyinId] = [];
-  recSources[scNow.wuyinId].push({ source: 'shichen', label: '时辰推荐' });
+  if (!hasShichenSource) {
+    var scNow = getCurrentShichen();
+    if (!recSources[scNow.wuyinId]) recSources[scNow.wuyinId] = [];
+    recSources[scNow.wuyinId].push({ source: 'shichen', label: '时辰推荐' });
+  }
 
   var modesHtml = '';
   WUYIN_DATA.forEach(function(m, mi) {
@@ -6815,16 +7050,25 @@ function openIntro(idx) {
     var badge = '';
     var srcs = recSources[m.id];
     if (srcs && srcs.length > 0) {
-      // 排序：情志 > 对话 > 时辰
-      var order = { 'questionnaire': 0, 'chat': 1, 'shichen': 2 };
+      // ✅ V3.0 排序：AI对话 > 情志问卷 > 时辰
+      var order = { 'ai_chat': 0, 'chat': 0, 'questionnaire': 1, 'shichen': 2 };
       srcs.sort(function(a, b) { return order[a.source] - order[b.source]; });
       // ✅ 标签改为垂直堆叠（flex-direction:column），让左侧文字同一行显示
+      // ✅ V3.0: 根据 source 使用不同配色（与卡片标签样式一致）
+      var srcColorMap = {
+        'ai_chat':   { bg: 'rgba(192,57,43,0.15)',  border: 'rgba(192,57,43,0.35)',  color: '#9E2A22' },
+        'chat':      { bg: 'rgba(192,57,43,0.15)',  border: 'rgba(192,57,43,0.35)',  color: '#9E2A22' },
+        'questionnaire': { bg: 'rgba(91,138,90,0.18)', border: 'rgba(91,138,90,0.35)', color: '#3B6E3F' },
+        'shichen':   { bg: 'rgba(200,170,100,0.22)', border: 'rgba(200,170,100,0.4)', color: 'var(--gold)' }
+      };
       badge = '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;">';
       srcs.forEach(function(s, si) {
+        var cfg = srcColorMap[s.source] || srcColorMap.shichen;
         var isPrimary = (m.id === todayRec.primaryRec);
-        var bg = isPrimary && si === 0 ? 'rgba(200,170,100,0.25)' : 'rgba(200,170,100,0.12)';
-        var color = isPrimary && si === 0 ? 'var(--gold)' : '#8a7340';
-        badge += '<span class="intro-mode-badge" style="background:' + bg + ';color:' + color + ';">' + s.label + '</span>';
+        // 主推荐稍深一些
+        var bg = isPrimary && si === 0 ? cfg.bg : cfg.bg.replace(/0.d+/, function(m) { return (parseFloat(m) * 0.7).toFixed(2); });
+        var color = isPrimary && si === 0 ? cfg.color : cfg.color;
+        badge += '<span class="intro-mode-badge" style="background:' + bg + ';color:' + color + ';border:1px solid ' + cfg.border + ';">' + s.label + '</span>';
       });
       badge += '</div>';
     }
@@ -11191,7 +11435,7 @@ function updateHealingRecommendation() {
       });
     });
   }
-  var orderedSources = ['questionnaire', 'chat', 'shichen'];
+  var orderedSources = ['ai_chat', 'chat', 'questionnaire', 'shichen'];
   var sortedTags = orderedSources.filter(function(s) { return allTags.indexOf(s) >= 0; });
 
   // 顶部"今日推荐"标题旁的徽标（老人能看清的大字号）
@@ -11206,14 +11450,15 @@ function updateHealingRecommendation() {
 // 内部 source key → 用户可见的推荐标签文字
 function tagToSourceLabel(t) {
   if (t === 'shichen') return '时辰推荐';
-  if (t === 'chat') return '对话情绪推荐';
+  if (t === 'ai_chat' || t === 'chat') return 'AI对话推荐';
   return '情志问卷推荐';
 }
 
 // source key → 简短标签（用于卡片上 + 右上角紧凑显示）
 function tagToShortLabel(t) {
   if (t === 'shichen') return '时辰推荐';
-  if (t === 'chat') return '对话推荐';
+  if (t === 'ai_chat' || t === 'chat') return 'AI对话推荐';
+  if (t === 'questionnaire') return '情志问卷推荐';
   return '情志推荐';
 }
 
@@ -11272,7 +11517,7 @@ function renderHealingRecCards() {
     var idx = WUYIN_DATA.indexOf(card.wuyin);
 
     // ✅ 双调式组合（仅情志问卷 / AI对话 来源）：上下两张情境图
-    var isDual = card.maxIds && card.maxIds.length >= 2 && (card.tags[0] === 'questionnaire' || card.tags[0] === 'chat');
+    var isDual = card.maxIds && card.maxIds.length >= 2 && (card.tags[0] === 'questionnaire' || card.tags[0] === 'chat' || card.tags[0] === 'ai_chat');
     if (isDual) {
       // ✅ 双调式：器官标签合并显示（如"肝·心"）
       var organ1h = (WUYIN_ACCENT_MAP[card.maxIds[0]] || WUYIN_ACCENT_MAP.jue).organ;
