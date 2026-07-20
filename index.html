@@ -1082,7 +1082,7 @@
 
   /* rating overlay */
   .rating-overlay {
-    position:absolute; top:0; left:0; right:0; bottom:0; z-index:10;
+    position:absolute; top:0; left:0; right:0; bottom:0; z-index:2000;
     display:none; flex-direction:column; align-items:center; justify-content:center;
     padding:40px; animation:fadeIn .3s ease;
   }
@@ -3911,6 +3911,9 @@
       <!-- 近期日记（动态填充 from healingRecordsContainer） -->
       <div class="section-eyebrow">近期日记</div>
       <div id="healingRecordsContainer"></div>
+      <div id="diaryViewAllBtn" style="display:none;text-align:center;margin-top:12px;">
+        <button onclick="viewAllDiaries()" style="padding:10px 24px;background:transparent;border:1.5px solid var(--cinnabar);border-radius:10px;color:var(--cinnabar);font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;cursor:pointer;">查看更多</button>
+      </div>
 
       <!-- 兼容保留：旧 JS 节点（折线图 / 时长统计 / 画卷拼图 / 签到信息） -->
       <div style="display:none" aria-hidden="true">
@@ -4596,7 +4599,7 @@
   </div>
 
   <!-- ==================== 疗愈语音日记详情页（V10 第 8 屏 · 按设计稿） ==================== -->
-  <div id="subpage-diary-detail" class="subpage-overlay" style="z-index:300;">
+  <div id="subpage-diary-detail" class="subpage-overlay" style="z-index:300;padding-top:0;">
     <div class="subpage-overlay-content" style="background:var(--paper);position:relative;width:100%;height:100%;overflow:hidden;">
       <!-- 顶部 Hero：背景图 + 渐变遮罩 + 返回按钮 + eyebrow + 大标题 -->
       <div class="diary-hero" id="diaryHeroBg" style="background:url('assets/images/bg_diary_detail_v2.jpg') center/cover no-repeat;">
@@ -4609,7 +4612,7 @@
         </div>
       </div>
       <!-- 下方内容区 -->
-      <div id="diaryDetailContainer" class="diary-content" style="position:relative;z-index:2;padding:24px 20px 100px;overflow-y:auto;height:calc(100% - 240px);background:var(--paper);"></div>
+      <div id="diaryDetailContainer" class="diary-content" style="position:relative;z-index:2;padding:16px 20px 100px;overflow-y:auto;height:calc(100% - 240px);background:var(--paper);"></div>
     </div>
   </div>
 
@@ -4889,11 +4892,46 @@ function parseAIResponse(data) {
 
 // ========== DATA ==========
 var WUYIN_DATA = [
-  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军' },
-  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军' },
-  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军' },
-  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'忧', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军' },
-  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军' },
+  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军',
+    sceneList:[
+      {sceneId:'jue_s1', name:'翠竹林',     img:'scene_jue.jpg'},
+      {sceneId:'jue_s2', name:'春日山谷',   img:'scene_jue.jpg'},
+      {sceneId:'jue_s3', name:'柳岸溪畔',   img:'scene_jue.jpg'},
+      {sceneId:'jue_s4', name:'森林晨曦',   img:'scene_jue.jpg'},
+      {sceneId:'jue_s5', name:'梅花小径',   img:'scene_jue.jpg'}
+    ] },
+  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军',
+    sceneList:[
+      {sceneId:'zhi_s1', name:'阳光草地',   img:'scene_zhi.jpg'},
+      {sceneId:'zhi_s2', name:'花海田园',   img:'scene_zhi.jpg'},
+      {sceneId:'zhi_s3', name:'夏日荷塘',   img:'scene_zhi.jpg'},
+      {sceneId:'zhi_s4', name:'朝霞山巅',   img:'scene_zhi.jpg'},
+      {sceneId:'zhi_s5', name:'晚霞湖畔',   img:'scene_zhi.jpg'}
+    ] },
+  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军',
+    sceneList:[
+      {sceneId:'gong_s1', name:'田园麦田',   img:'scene_gong.jpg'},
+      {sceneId:'gong_s2', name:'秋收田野',   img:'scene_gong.jpg'},
+      {sceneId:'gong_s3', name:'山间村落',   img:'scene_gong.jpg'},
+      {sceneId:'gong_s4', name:'古寺禅院',   img:'scene_gong.jpg'},
+      {sceneId:'gong_s5', name:'黄土高原',   img:'scene_gong.jpg'}
+    ] },
+  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'忧', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军',
+    sceneList:[
+      {sceneId:'shang_s1', name:'秋日晴空',   img:'scene_shang.jpg'},
+      {sceneId:'shang_s2', name:'月夜竹林',   img:'scene_shang.jpg'},
+      {sceneId:'shang_s3', name:'清晨薄雾',   img:'scene_shang.jpg'},
+      {sceneId:'shang_s4', name:'雪山之巅',   img:'scene_shang.jpg'},
+      {sceneId:'shang_s5', name:'银色湖畔',   img:'scene_shang.jpg'}
+    ] },
+  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军',
+    sceneList:[
+      {sceneId:'yu_s1', name:'宁静湖面',   img:'scene_yu.jpg'},
+      {sceneId:'yu_s2', name:'月下江流',   img:'scene_yu.jpg'},
+      {sceneId:'yu_s3', name:'深海幽蓝',   img:'scene_yu.jpg'},
+      {sceneId:'yu_s4', name:'雨夜窗前',   img:'scene_yu.jpg'},
+      {sceneId:'yu_s5', name:'冬日雪原',   img:'scene_yu.jpg'}
+    ] },
 ];
 
 var WUYIN_ICONS = {
@@ -7519,30 +7557,88 @@ function togglePlay() {
 var realAudioPlayer = null;
 
 // 获取该调式下应播放的曲目（基于个性化权重随机选择）
-function selectWeightedTrack(wuyinId) {
+// V3.0 疗愈反馈模块：等概率随机 + 排除原则（规则驱动，非权重计算）
+// 查询该调式下用户明确要求调整的曲目 musicId 列表（按时间顺序，最后一次操作决定状态）
+function getExcludedMusicIds(wuyinId) {
+  var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  // 收集所有相关记录，按时间正序
+  var relevant = log.filter(function(r) {
+    return r.toneId === wuyinId && r.musicId;
+  }).sort(function(a, b) { return (a.timestamp || 0) - (b.timestamp || 0); });
+  // 按时间顺序处理，最后一条操作决定状态
+  var blockedIds = {};
+  relevant.forEach(function(r) {
+    if (r.action === 'unblock') {
+      delete blockedIds[r.musicId];
+    } else if (r.needChangeMusic) {
+      blockedIds[r.musicId] = true;
+    }
+  });
+  return Object.keys(blockedIds);
+}
+
+// 查询该调式下用户明确要求调整的情境 sceneId 列表（按时间顺序，最后一次操作决定状态）
+function getExcludedSceneIds(wuyinId) {
+  var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  var relevant = log.filter(function(r) {
+    return r.toneId === wuyinId && r.sceneId;
+  }).sort(function(a, b) { return (a.timestamp || 0) - (b.timestamp || 0); });
+  var blockedIds = {};
+  relevant.forEach(function(r) {
+    if (r.action === 'unblock') {
+      delete blockedIds[r.sceneId];
+    } else if (r.needChangeScene) {
+      blockedIds[r.sceneId] = true;
+    }
+  });
+  return Object.keys(blockedIds);
+}
+
+// 等概率随机选择曲目（排除用户明确要求调整的曲目）
+function selectRandomTrack(wuyinId) {
   var wuyin = WUYIN_DATA.find(function(w) { return w.id === wuyinId; });
   if (!wuyin || !wuyin.audioTracks || wuyin.audioTracks.length === 0) return null;
   var tracks = wuyin.audioTracks;
-  if (tracks.length === 1) return tracks[0];
-  var scores = JSON.parse(localStorage.getItem('wuyin_track_scores_' + wuyinId) || '{}');
-  var weights = tracks.map(function(t, idx) {
-    var s = scores[idx];
-    if (typeof s === 'number') {
-      if (s <= 1) return 40;
-      if (s <= 2) return 70;
-      if (s >= 4) return 150;
-      return 100;
-    }
-    return 100;
-  });
-  var total = weights.reduce(function(a, b) { return a + b; }, 0);
-  var rnd = Math.random() * total;
-  var cum = 0;
-  for (var i = 0; i < tracks.length; i++) {
-    cum += weights[i];
-    if (rnd <= cum) return tracks[i];
+  if (tracks.length === 1) {
+    window._currentMusicId = wuyinId + '_m1';
+    window._currentTrackIndex = 0;
+    return tracks[0];
   }
-  return tracks[tracks.length - 1];
+  // 构造稳定的 musicId 列表：wuyinId + '_m' + (index+1)
+  var musicIds = tracks.map(function(t, idx) { return wuyinId + '_m' + (idx + 1); });
+  var excluded = getExcludedMusicIds(wuyinId);
+  // 过滤掉被排除的曲目
+  var available = [];
+  tracks.forEach(function(t, idx) {
+    if (excluded.indexOf(musicIds[idx]) < 0) available.push({track: t, musicId: musicIds[idx], index: idx});
+  });
+  // 如果全部被排除（极端情况），回退到全部曲目
+  if (available.length === 0) {
+    available = tracks.map(function(t, idx) { return {track: t, musicId: musicIds[idx], index: idx}; });
+  }
+  // 等概率随机选择
+  var pick = available[Math.floor(Math.random() * available.length)];
+  window._currentMusicId = pick.musicId;
+  window._currentTrackIndex = pick.index;
+  return pick.track;
+}
+
+// 等概率随机选择自然情境（排除用户明确要求调整的情境）
+function selectRandomScene(wuyinId) {
+  var wuyin = WUYIN_DATA.find(function(w) { return w.id === wuyinId; });
+  if (!wuyin || !wuyin.sceneList || wuyin.sceneList.length === 0) {
+    return { sceneId: wuyinId + '_s1', name: wuyin ? wuyin.scene : '', img: wuyin ? wuyin.img : '' };
+  }
+  var excluded = getExcludedSceneIds(wuyinId);
+  var available = wuyin.sceneList.filter(function(s) { return excluded.indexOf(s.sceneId) < 0; });
+  if (available.length === 0) available = wuyin.sceneList.slice();
+  var pick = available[Math.floor(Math.random() * available.length)];
+  return pick;
+}
+
+// 兼容旧调用：selectWeightedTrack 重定向到 selectRandomTrack
+function selectWeightedTrack(wuyinId) {
+  return selectRandomTrack(wuyinId);
 }
 
 // 获取音频的备选源（m4a → mp3 → 备选轨道）
@@ -7637,6 +7733,9 @@ function startPlay() {
 function startDualPlay() {
   var ids = window._dualHealingIds;
   var halfDuration = Math.floor(playerDuration / 2);
+  // V3.0: 初始化组合调式的 musicId/sceneId 数组
+  window._dualMusicIds = [null, null];
+  window._dualSceneIds = [null, null];
   // 启动进度条
   window._dualSwitched = false;
   if (playTimer) clearInterval(playTimer);
@@ -7694,10 +7793,19 @@ function updatePlayerContent(wuyinId) {
 }
 
 function playDualTrack(wuyinId, startOffset, duration, onDone) {
-  var audioSrc = selectWeightedTrack(wuyinId);
+  // V3.0: 等概率随机选择曲目 + 记录 musicId/sceneId（组合调式）
+  var audioSrc = selectRandomTrack(wuyinId);
   if (!audioSrc) { if (onDone) onDone(); return; }
   var wuyin = WUYIN_DATA.find(function(w) { return w.id === wuyinId; });
-  window._currentTrackIndex = wuyin && wuyin.audioTracks ? wuyin.audioTracks.indexOf(audioSrc) : -1;
+  // V3.0: 记录当前调式的 musicId 和 sceneId 到 _dualMusicIds/_dualSceneIds
+  if (!window._dualMusicIds) window._dualMusicIds = [null, null];
+  if (!window._dualSceneIds) window._dualSceneIds = [null, null];
+  var dualIdx = window._dualHealingIds ? window._dualHealingIds.indexOf(wuyinId) : -1;
+  if (dualIdx >= 0) {
+    window._dualMusicIds[dualIdx] = window._currentMusicId || null;
+    var sceneObj = selectRandomScene(wuyinId);
+    window._dualSceneIds[dualIdx] = sceneObj ? sceneObj.sceneId : null;
+  }
   var hiddenAudio = document.getElementById('hiddenAudioPlayer');
   if (!hiddenAudio) {
     hiddenAudio = document.createElement('audio');
@@ -7794,11 +7902,15 @@ function playDualTrack(wuyinId, startOffset, duration, onDone) {
 }
 
 function startSinglePlay() {
-  // 基于个性化权重选择曲目
-  var audioSrc = currentWuyinItem ? selectWeightedTrack(currentWuyinItem.id) : null;
+  // V3.0: 等概率随机选择曲目（排除已调整的）+ 选择自然情境
+  var audioSrc = currentWuyinItem ? selectRandomTrack(currentWuyinItem.id) : null;
+  // V3.0: 随机选择自然情境并记录 sceneId
+  if (currentWuyinItem) {
+    var sceneObj = selectRandomScene(currentWuyinItem.id);
+    window._currentSceneId = sceneObj ? sceneObj.sceneId : null;
+  }
   if (audioSrc) {
     var wuyin = currentWuyinItem;
-    window._currentTrackIndex = wuyin.audioTracks ? wuyin.audioTracks.indexOf(audioSrc) : -1;
     var hiddenAudio = document.getElementById('hiddenAudioPlayer');
     if (!hiddenAudio) {
       hiddenAudio = document.createElement('audio');
@@ -8248,46 +8360,428 @@ function toggleRatingVoice(btn) {
   }
 }
 
+// V3.0 疗愈反馈模块：保存疗愈记录（按文档格式）
+function saveHealingRecord(record) {
+  var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  log.push(record);
+  if (log.length > 200) log = log.slice(-200);
+  localStorage.setItem('wuyin_healing_records', JSON.stringify(log));
+}
+
+// V3.0: 识别自由反馈中的明确调整请求（关键词匹配）
+function parseExplicitAdjustmentRequest(text) {
+  if (!text || typeof text !== 'string') return { changeMusic: false, changeScene: false, reason: '' };
+  var t = text.toLowerCase();
+  var changeMusic = false;
+  var changeScene = false;
+  var reason = '';
+  var musicReqPatterns = [
+    /换一首音乐/, /换音乐/, /换个音乐/, /换首歌/, /换一首歌/,
+    /不要这首/, /别放这首/, /不想听这首/, /不要这个音乐/,
+    /下次换.*音乐/, /以后别放.*音乐/, /下次换.*歌/, /以后别放.*歌/,
+    /音乐.*换/, /歌曲.*换/, /换.*曲目/
+  ];
+  var sceneReqPatterns = [
+    /换一个自然情境/, /换一个情境/, /换情境/, /换个情境/, /换个场景/, /换场景/,
+    /不要.*竹林/, /不要.*溪流/, /不要.*大海/, /不要.*湖/, /不要.*山/, /不要.*雪/,
+    /别用.*竹林/, /别用.*溪流/, /别用.*场景/, /不要这个场景/, /不喜欢这个场景/,
+    /下次换.*场景/, /以后别用.*场景/, /下次换.*情境/, /以后别用.*情境/,
+    /场景.*换/, /情境.*换/
+  ];
+  for (var i = 0; i < musicReqPatterns.length; i++) {
+    if (musicReqPatterns[i].test(t)) { changeMusic = true; reason = '用户在自由反馈中明确要求更换音乐'; break; }
+  }
+  for (var j = 0; j < sceneReqPatterns.length; j++) {
+    if (sceneReqPatterns[j].test(t)) { changeScene = true; reason = '用户在自由反馈中明确要求更换自然情境'; break; }
+  }
+  return { changeMusic: changeMusic, changeScene: changeScene, reason: reason };
+}
+
 function submitRating() {
   var btn = document.getElementById('ratingSubmitBtn');
-  btn.textContent = '感谢您的反馈！';
-  btn.style.background = '#999';
-  // 记录拼图收集
-  if (currentWuyinItem) recordPuzzleCollection(currentWuyinItem.id);
-  // 获取用户评价文字
   var voiceText = document.getElementById('ratingVoiceText') ? document.getElementById('ratingVoiceText').value : '';
-  // 停止语音录制
   if (isRatingRecording) {
     isRatingRecording = false;
     if (window._ratingRecognition) { try { window._ratingRecognition.stop(); } catch(e) {} window._ratingRecognition = null; }
   }
-  if (currentWuyinItem && currentRating > 0) {
-    saveVoiceDiary(currentWuyinItem.id, currentWuyinItem.name, currentRating, voiceText);
-    // 记录曲目个性化反馈
-    var trackIdx = window._currentTrackIndex;
-    if (typeof trackIdx === 'number' && trackIdx >= 0) {
-      recordTrackFeedback(currentWuyinItem.id, trackIdx, currentRating);
-    }
+  if (!currentWuyinItem || currentRating <= 0) {
+    showToast('请先选择星级评分');
+    return;
   }
+  recordPuzzleCollection(currentWuyinItem.id);
+  saveVoiceDiary(currentWuyinItem.id, currentWuyinItem.name, currentRating, voiceText);
+  // V3.0: 按文档格式保存疗愈记录
+  // 注意：stopPlay() 会清除 _isDualMode 但保留 _dualHealingIds，所以这里直接检查 _dualHealingIds
+  var isDual = window._dualHealingIds && window._dualHealingIds.length >= 2;
+  var dualIds = isDual ? window._dualHealingIds.slice() : null;
+  var emotionName = currentWuyinItem.emotion || '';
+  var toneName = currentWuyinItem.name || '';
+  var today = new Date();
+  var dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  window._pendingFeedback = {
+    rating: currentRating,
+    comment: voiceText || '',
+    isDual: isDual,
+    dualIds: dualIds,
+    currentToneId: currentWuyinItem.id,
+    currentToneName: toneName,
+    currentEmotion: emotionName,
+    date: dateStr,
+    timestamp: Date.now(),
+    tones: isDual ? [
+      { toneId: dualIds[0], musicId: window._dualMusicIds ? window._dualMusicIds[0] : null, sceneId: window._dualSceneIds ? window._dualSceneIds[0] : null },
+      { toneId: dualIds[1], musicId: window._dualMusicIds ? window._dualMusicIds[1] : null, sceneId: window._dualSceneIds ? window._dualSceneIds[1] : null }
+    ] : [
+      { toneId: currentWuyinItem.id, musicId: window._currentMusicId || null, sceneId: window._currentSceneId || null }
+    ]
+  };
+  window._pendingFeedback.tones.forEach(function(toneInfo) {
+    var record = {
+      date: dateStr,
+      emotion: emotionName,
+      tone: toneName,
+      toneId: toneInfo.toneId,
+      musicId: toneInfo.musicId,
+      sceneId: toneInfo.sceneId,
+      rating: currentRating,
+      comment: voiceText || '',
+      needChangeMusic: false,
+      needChangeScene: false,
+      isDual: isDual,
+      timestamp: window._pendingFeedback.timestamp
+    };
+    saveHealingRecord(record);
+  });
+  var trackIdx = window._currentTrackIndex;
+  if (typeof trackIdx === 'number' && trackIdx >= 0) {
+    recordTrackFeedback(currentWuyinItem.id, trackIdx, currentRating);
+  }
+  // V3.0: 保存评分到临时变量（currentRating 后续会重置）
+  var savedRating = currentRating;
+  btn.textContent = '感谢您的反馈！';
+  btn.style.background = '#999';
   setTimeout(function() {
     document.getElementById('ratingOverlay').classList.remove('active');
     btn.textContent = '提交评价';
     btn.style.background = 'var(--green)';
-    // 隐藏文字框
     if (document.getElementById('ratingVoiceText')) document.getElementById('ratingVoiceText').style.display = 'none';
-    
-    if (isQuestionnaireTrial) {
-      // 问卷试听模式：关闭播放器，弹出继续问卷还是休息选项
+    // V3.0: 重置星级状态，避免下次疗愈出现上次的评星
+    currentRating = 0;
+    document.querySelectorAll('#ratingStars .rating-star').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('ratingLabel').textContent = '';
+    if (document.getElementById('ratingVoiceText')) document.getElementById('ratingVoiceText').value = '';
+    // V3.0: 评分 ≤2 星 → 先弹出优化建议页（覆盖在疗愈界面上），用户操作后再关闭播放器
+    if (savedRating <= 2 && !isQuestionnaireTrial) {
+      showOptimizationSuggestion();
+      // 不立即关闭播放器，等用户在优化建议页操作后再关闭
+      // closePlayer() 会在 handleOptimizationAction / closeOptimizationOverlay 中调用
+    } else if (isQuestionnaireTrial) {
       playerDuration = savedPlayerDuration;
       isQuestionnaireTrial = false;
       closePlayer();
-      // 弹出选项
       showRoundComplete();
     } else {
       closePlayer();
       showToast('疗愈记录已保存');
     }
   }, 1500);
+}
+
+// V3.0: 低评分（≤2星）优化建议页
+function showOptimizationSuggestion() {
+  var fb = window._pendingFeedback;
+  if (!fb) { closePlayer(); return; }
+  var overlay = document.getElementById('optimizationOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'optimizationOverlay';
+    overlay.className = 'rating-overlay';
+    overlay.innerHTML =
+      '<div class="rating-overlay-bg"></div>' +
+      '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-height:82vh;overflow-y:auto;padding:16px 12px;z-index:2001;box-sizing:border-box;">' +
+        '<h3 style="font-size:18px;color:#fff;font-weight:700;margin-bottom:6px;line-height:1.4;text-align:center;">为了让下次疗愈更适合您</h3>' +
+        '<p style="font-size:14px;color:rgba(255,255,255,.7);margin-bottom:12px;text-align:center;">您希望调整哪一项？</p>' +
+        '<div id="optToneSelector" style="display:none;margin-bottom:12px;"></div>' +
+        '<div id="optButtons" style="display:flex;flex-direction:column;gap:8px;"></div>' +
+      '</div>';
+    document.getElementById('phoneScreen').appendChild(overlay);
+  }
+  var toneSelector = overlay.querySelector('#optToneSelector');
+  var buttonsContainer = overlay.querySelector('#optButtons');
+  if (fb.isDual && fb.dualIds && fb.dualIds.length >= 2) {
+    var item1 = WUYIN_DATA.find(function(w) { return w.id === fb.dualIds[0]; });
+    var item2 = WUYIN_DATA.find(function(w) { return w.id === fb.dualIds[1]; });
+    toneSelector.style.display = 'block';
+    toneSelector.innerHTML =
+      '<div style="font-size:15px;color:rgba(255,255,255,.85);margin-bottom:12px;font-weight:600;text-align:center;">请先选择要调整的调式</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="opt-tone-btn" data-tone-idx="0" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item1 ? item1.name : '') + '（前半段）</button>' +
+        '<button class="opt-tone-btn" data-tone-idx="1" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item2 ? item2.name : '') + '（后半段）</button>' +
+        '<button class="opt-tone-btn" data-tone-idx="2" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">两个都调</button>' +
+      '</div>';
+    var toneSelected = false;
+    var selectedToneIdx = -1;
+    function updateToneSelection() {
+      toneSelector.querySelectorAll('.opt-tone-btn').forEach(function(b, i) {
+        if (i === selectedToneIdx) {
+          b.style.background = 'rgba(200,170,100,.35)';
+          b.style.borderColor = 'rgba(200,170,100,.8)';
+          b.style.boxShadow = '0 0 12px rgba(200,170,100,.4)';
+          b.setAttribute('data-selected', 'true');
+        } else {
+          b.style.background = 'rgba(255,255,255,.1)';
+          b.style.borderColor = 'rgba(255,255,255,.25)';
+          b.style.boxShadow = 'none';
+          b.setAttribute('data-selected', 'false');
+        }
+      });
+      // 更新换音乐/换情境按钮的可用状态
+      updateActionButtonsState();
+    }
+    function updateActionButtonsState() {
+      var actionBtns = buttonsContainer.querySelectorAll('.opt-btn[data-action="music"], .opt-btn[data-action="scene"]');
+      actionBtns.forEach(function(b) {
+        if (toneSelected) {
+          b.style.opacity = '1';
+          b.style.pointerEvents = 'auto';
+        } else {
+          b.style.opacity = '0.35';
+          b.style.pointerEvents = 'none';
+        }
+      });
+    }
+    // 初始状态：未选择调式，禁用换音乐/换情境按钮
+    updateActionButtonsState();
+    toneSelector.querySelectorAll('.opt-tone-btn').forEach(function(b) {
+      b.onclick = function() {
+        selectedToneIdx = parseInt(this.getAttribute('data-tone-idx'));
+        toneSelected = true;
+        updateToneSelection();
+      };
+    });
+    window._optSelectedToneIdx = function() { return selectedToneIdx; };
+    window._optToneSelected = function() { return toneSelected; };
+  } else {
+    toneSelector.style.display = 'none';
+    window._optSelectedToneIdx = function() { return 0; };
+    window._optToneSelected = function() { return true; };
+  }
+  // 按钮基础样式（显眼国风设计：半透明渐变背景 + 边框 + 阴影）
+  var btnBaseStyle = 'padding:13px 14px;border-radius:12px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s;width:100%;box-sizing:border-box;text-align:left;';
+  buttonsContainer.innerHTML =
+    '<button class="opt-btn" data-action="music" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(90,142,90,.35),rgba(90,142,90,.15));border:1.5px solid rgba(150,200,150,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
+      '<span style="font-size:26px;min-width:32px;text-align:center;">🎵</span>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一首音乐</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这首音乐不太适合我</div></div>' +
+    '</button>' +
+    '<button class="opt-btn" data-action="scene" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(74,127,165,.35),rgba(74,127,165,.15));border:1.5px solid rgba(120,180,220,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
+      '<span style="font-size:26px;min-width:32px;text-align:center;">🌿</span>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一个自然情境</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这个自然场景不太适合我</div></div>' +
+    '</button>' +
+    '<button class="opt-btn" data-action="keep" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,170,100,.3),rgba(200,170,100,.12));border:1.5px solid rgba(220,190,130,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
+      '<span style="font-size:26px;min-width:32px;text-align:center;">🙂</span>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">保持现在就好</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">今天只是状态不好，不需要调整</div></div>' +
+    '</button>' +
+    '<button class="opt-btn" data-action="feedback" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,90,61,.3),rgba(200,90,61,.12));border:1.5px solid rgba(230,130,100,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
+      '<span style="font-size:26px;min-width:32px;text-align:center;">🎤</span>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">告诉我们您的想法</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">您觉得哪里还可以改进？</div></div>' +
+    '</button>';
+  overlay.classList.add('active');
+  buttonsContainer.querySelectorAll('.opt-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      var action = this.getAttribute('data-action');
+      handleOptimizationAction(action);
+    };
+  });
+  // V3.0: 组合疗愈时，对调式选择器添加波纹动画提示
+  if (fb.isDual && fb.dualIds && fb.dualIds.length >= 2) {
+    var rippleStyle = document.getElementById('_optRippleStyle');
+    if (!rippleStyle) {
+      rippleStyle = document.createElement('style');
+      rippleStyle.id = '_optRippleStyle';
+      rippleStyle.textContent =
+        '@keyframes optRipple { 0%,100% { box-shadow: 0 0 0 0 rgba(200,170,100,.5); } 50% { box-shadow: 0 0 0 10px rgba(200,170,100,0); } }' +
+        '.opt-tone-btn:not([data-selected="true"]) { animation: optRipple 1.8s ease-in-out infinite; }' +
+        '.opt-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.25) !important; }' +
+        '.opt-btn:active { transform: translateY(0); }';
+      document.head.appendChild(rippleStyle);
+    }
+  }
+}
+
+// V3.0: 处理优化建议页按钮点击
+function handleOptimizationAction(action) {
+  var fb = window._pendingFeedback;
+  if (!fb) { closeOptimizationOverlay(); closePlayer(); return; }
+  if (action === 'keep') {
+    closeOptimizationOverlay();
+    closePlayer();
+    showToast('已保存您的反馈');
+    return;
+  }
+  if (action === 'music' || action === 'scene') {
+    // V3.0: 组合疗愈必须先选择调式
+    if (fb.isDual && !window._optToneSelected()) {
+      showToast('请先选择要调整的调式');
+      return;
+    }
+    var toneIdx = fb.isDual ? window._optSelectedToneIdx() : 0;
+    var tonesToUpdate = (toneIdx === 2) ? [0, 1] : [toneIdx];
+    var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+    tonesToUpdate.forEach(function(ti) {
+      for (var i = log.length - 1; i >= 0; i--) {
+        if (log[i].timestamp === fb.timestamp && fb.tones[ti] &&
+            log[i].toneId === fb.tones[ti].toneId &&
+            log[i].musicId === fb.tones[ti].musicId) {
+          if (action === 'music') log[i].needChangeMusic = true;
+          if (action === 'scene') log[i].needChangeScene = true;
+          break;
+        }
+      }
+    });
+    localStorage.setItem('wuyin_healing_records', JSON.stringify(log));
+    closeOptimizationOverlay();
+    closePlayer();
+    showToast(action === 'music' ? '已记录，下次将避免推荐此曲目' : '已记录，下次将避免推荐此情境');
+    return;
+  }
+  if (action === 'feedback') {
+    showFreeFeedbackInput();
+    return;
+  }
+}
+
+// V3.0: 自由反馈输入弹窗
+function showFreeFeedbackInput() {
+  var overlay = document.getElementById('freeFeedbackOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'freeFeedbackOverlay';
+    overlay.className = 'rating-overlay';
+    overlay.innerHTML =
+      '<div class="rating-overlay-bg"></div>' +
+      '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-height:82vh;overflow-y:auto;padding:16px 12px;z-index:2001;box-sizing:border-box;">' +
+        '<div style="display:flex;align-items:center;margin-bottom:12px;">' +
+          '<button onclick="closeFreeFeedbackOverlay()" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;padding:6px 12px;border-radius:8px;cursor:pointer;margin-right:10px;">← 返回</button>' +
+          '<h3 style="font-size:18px;color:#fff;font-weight:700;flex:1;">告诉我们您的想法</h3>' +
+        '</div>' +
+        '<p style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:14px;">您觉得哪里还可以改进？</p>' +
+        '<button class="rating-voice-btn" id="freeFeedbackVoiceBtn" onclick="toggleFreeFeedbackVoice(this)" style="margin-bottom:8px;">' +
+          '<ion-icon name="mic-outline"></ion-icon><span>点击语音说出想法</span>' +
+        '</button>' +
+        '<textarea id="freeFeedbackText" placeholder="例如：音乐太快、更喜欢流水、今天只是没心情..." style="width:100%;min-height:80px;max-height:120px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:#fff;font-size:15px;resize:none;margin:6px 0;" oninput="updateFreeFeedbackSubmitBtn()"></textarea>' +
+        '<button class="rating-submit-btn" id="freeFeedbackSubmitBtn" onclick="submitFreeFeedback()" style="opacity:0.4;pointer-events:none;">提交反馈</button>' +
+      '</div>';
+    document.getElementById('phoneScreen').appendChild(overlay);
+  }
+  var ta = overlay.querySelector('#freeFeedbackText');
+  if (ta) ta.value = '';
+  overlay.classList.add('active');
+  // 初始化提交按钮状态（空内容禁用）
+  setTimeout(function() { updateFreeFeedbackSubmitBtn(); }, 50);
+}
+
+// V3.0: 自由反馈语音录制
+var isFreeFeedbackRecording = false;
+function toggleFreeFeedbackVoice(btn) {
+  var spanEl = btn.querySelector('span');
+  var textArea = document.getElementById('freeFeedbackText');
+  if (!isFreeFeedbackRecording) {
+    isFreeFeedbackRecording = true;
+    spanEl.textContent = '正在记录，点击结束';
+    btn.style.background = 'rgba(255,100,100,.3)';
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        var recognition = new SpeechRecognition();
+        recognition.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onresult = function(event) {
+          var t = '';
+          for (var i = 0; i < event.results.length; i++) t += event.results[i][0].transcript;
+          if (textArea) textArea.value = t;
+        };
+        recognition.onerror = function() { if (textArea && textArea.value === '正在聆听...') textArea.value = ''; };
+        recognition.onend = function() { if (isFreeFeedbackRecording) { try { recognition.start(); } catch(e) {} } };
+        window._freeFeedbackRecognition = recognition;
+        recognition.start();
+      } catch(e) {
+        isFreeFeedbackRecording = false;
+        spanEl.textContent = '点击语音说出想法';
+        showToast('语音识别不可用，请手动输入');
+      }
+    } else {
+      isFreeFeedbackRecording = false;
+      spanEl.textContent = '点击语音说出想法';
+      showToast('浏览器不支持语音转文字，请手动输入');
+    }
+  } else {
+    isFreeFeedbackRecording = false;
+    spanEl.textContent = '点击语音说出想法';
+    btn.style.background = 'rgba(255,255,255,.15)';
+    if (window._freeFeedbackRecognition) { try { window._freeFeedbackRecognition.stop(); } catch(e) {} window._freeFeedbackRecognition = null; }
+  }
+}
+
+// V3.0: 根据输入内容更新提交按钮状态（空内容禁用）
+function updateFreeFeedbackSubmitBtn() {
+  var ta = document.getElementById('freeFeedbackText');
+  var btn = document.getElementById('freeFeedbackSubmitBtn');
+  if (!ta || !btn) return;
+  var val = (ta.value || '').trim();
+  if (val.length > 0) {
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  } else {
+    btn.style.opacity = '0.4';
+    btn.style.pointerEvents = 'none';
+  }
+}
+
+// V3.0: 提交自由反馈
+function submitFreeFeedback() {
+  var text = document.getElementById('freeFeedbackText') ? document.getElementById('freeFeedbackText').value : '';
+  if (isFreeFeedbackRecording) {
+    isFreeFeedbackRecording = false;
+    if (window._freeFeedbackRecognition) { try { window._freeFeedbackRecognition.stop(); } catch(e) {} window._freeFeedbackRecognition = null; }
+  }
+  var fb = window._pendingFeedback;
+  if (!fb) { closeFreeFeedbackOverlay(); closePlayer(); return; }
+  var adjustment = parseExplicitAdjustmentRequest(text);
+  if (adjustment.changeMusic || adjustment.changeScene) {
+    var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+    var toneIdx = fb.isDual ? window._optSelectedToneIdx() : 0;
+    var tonesToUpdate = (toneIdx === 2) ? [0, 1] : [toneIdx];
+    tonesToUpdate.forEach(function(ti) {
+      for (var i = log.length - 1; i >= 0; i--) {
+        if (log[i].timestamp === fb.timestamp && fb.tones[ti] &&
+            log[i].toneId === fb.tones[ti].toneId &&
+            log[i].musicId === fb.tones[ti].musicId) {
+          if (adjustment.changeMusic) log[i].needChangeMusic = true;
+          if (adjustment.changeScene) log[i].needChangeScene = true;
+          log[i].comment = text;
+          break;
+        }
+      }
+    });
+    localStorage.setItem('wuyin_healing_records', JSON.stringify(log));
+    showToast('已记录您的调整意愿');
+  } else {
+    showToast('已保存您的反馈');
+  }
+  closeFreeFeedbackOverlay();
+  closeOptimizationOverlay();
+  closePlayer();
+}
+
+function closeOptimizationOverlay() {
+  var overlay = document.getElementById('optimizationOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function closeFreeFeedbackOverlay() {
+  var overlay = document.getElementById('freeFeedbackOverlay');
+  if (overlay) overlay.classList.remove('active');
 }
 
 // ========== VOICE SETTINGS ==========
@@ -10690,7 +11184,8 @@ function recordPuzzleCollection(wuyinId) {
 
 // ========== FEATURE 9: VOICE DIARY ==========
 function loadVoiceDiary() {
-  var container = document.getElementById('voiceDiaryContainer');
+  // 兼容两种容器 ID：healingRecordsContainer（档案页近期日记）和 voiceDiaryContainer
+  var container = document.getElementById('healingRecordsContainer') || document.getElementById('voiceDiaryContainer');
   if (!container) return;
   var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
   var viewAllBtn = document.getElementById('diaryViewAllBtn');
@@ -10702,7 +11197,7 @@ function loadVoiceDiary() {
   // 只显示最近3条
   var recent = diaries.slice().reverse().slice(0, 3);
   container.innerHTML = recent.map(renderDiaryCard).join('');
-  if (viewAllBtn) viewAllBtn.style.display = diaries.length > 3 ? 'inline' : 'none';
+  if (viewAllBtn) viewAllBtn.style.display = diaries.length > 3 ? 'block' : 'none';
 }
 
 function renderDiaryCard(d) {
@@ -10776,6 +11271,31 @@ function renderDiaryDetail(d) {
     stars += s <= (d.rating || 0) ? '★' : '☆';
   }
 
+  // V3.0: 先查询疗愈反馈记录（评分/曲目/情境放在日记正文之前）
+  var healingRecords = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  var matchingRecords = healingRecords.filter(function(r) {
+    return r.date === (d.date || '').replace(/\//g, '-') && r.toneId === d.wuyinId;
+  }).sort(function(a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+
+  // 按时间顺序判断规避状态（最后一次操作决定最终状态）
+  // 场景：block → unblock → block = 最终 blocked（用户第二次低评分换歌，应重新规避）
+  var musicBlockedFinal = false, sceneBlockedFinal = false;
+  if (matchingRecords.length > 0) {
+    var lr0 = matchingRecords[0];
+    // 按时间正序处理（旧→新），最后一条操作决定状态
+    var timeSorted = matchingRecords.slice().sort(function(a, b) { return (a.timestamp || 0) - (b.timestamp || 0); });
+    timeSorted.forEach(function(r) {
+      if (r.musicId && r.musicId === lr0.musicId) {
+        if (r.action === 'unblock') musicBlockedFinal = false;
+        else if (r.needChangeMusic) musicBlockedFinal = true;
+      }
+      if (r.sceneId && r.sceneId === lr0.sceneId) {
+        if (r.action === 'unblock') sceneBlockedFinal = false;
+        else if (r.needChangeScene) sceneBlockedFinal = true;
+      }
+    });
+  }
+
   var html = '<div class="diary-meta">'
     + '<div class="av"></div>'
     + '<div class="info">'
@@ -10784,6 +11304,59 @@ function renderDiaryDetail(d) {
     + '</div>'
     + '<div class="tag" style="background:' + wuyinColor.color + '22;color:' + wuyinColor.color + ';">' + (emotionTag || '疗愈') + '</div>'
     + '</div>';
+
+  // V3.0: 评分/曲目/情境信息（放在日记正文之前，字号与正文一致 16px）
+  // 注意：action 记录（unblock/reblock）rating=0 且 needChangeMusic/Scene=false
+  // 需过滤掉 action 记录，只取有实际评分/资源的疗愈记录
+  if (matchingRecords.length > 0) {
+    // 取有评分的最新疗愈记录（排除 action 记录）
+    var lrRated = null;
+    for (var ri = 0; ri < matchingRecords.length; ri++) {
+      var r = matchingRecords[ri];
+      if (!r.action && r.rating > 0) { lrRated = r; break; }
+    }
+    // 取有曲目/情境的最新疗愈记录（排除 action 记录）
+    var lrResource = null;
+    for (var ri2 = 0; ri2 < matchingRecords.length; ri2++) {
+      var r2 = matchingRecords[ri2];
+      if (!r2.action && (r2.musicId || r2.sceneId)) { lrResource = r2; break; }
+    }
+    // lr 取有调整意愿的最新记录（用于底部按钮）
+    var lr = null;
+    for (var ri3 = 0; ri3 < matchingRecords.length; ri3++) {
+      var r3 = matchingRecords[ri3];
+      if (r3.needChangeMusic || r3.needChangeScene) { lr = r3; break; }
+    }
+    if (!lr) lr = lrResource || lrRated || matchingRecords[0];
+    html += '<div style="margin-top:12px;margin-bottom:14px;padding:14px 16px;background:rgba(' + wuyinColor.r + ',' + wuyinColor.g + ',' + wuyinColor.b + ',.04);border-radius:10px;border:1px solid rgba(' + wuyinColor.r + ',' + wuyinColor.g + ',' + wuyinColor.b + ',.12);">';
+    // 星级评分（字号与正文一致）
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
+    html += '<span style="font-size:16px;color:var(--ink-faint);font-weight:600;">评分</span>';
+    var displayRating = lrRated ? lrRated.rating : 0;
+    for (var s = 1; s <= 5; s++) {
+      html += s <= displayRating ? '<span style="color:#F39C12;font-size:22px;">★</span>' : '<span style="color:rgba(0,0,0,.1);font-size:22px;">★</span>';
+    }
+    html += '</div>';
+    // 曲目
+    if (lrResource && lrResource.musicId) {
+      var musicIdx = lrResource.musicId.split('_m')[1] || '?';
+      html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+      html += '<span style="color:var(--ink-faint);">曲目</span> ' + (wuyin ? wuyin.name : '') + '·曲目' + musicIdx;
+      html += '</div>';
+    }
+    // 情境
+    if (lrResource && lrResource.sceneId) {
+      var sceneName = '';
+      if (wuyin && wuyin.sceneList) {
+        var scene = wuyin.sceneList.find(function(s) { return s.sceneId === lrResource.sceneId; });
+        sceneName = scene ? scene.name : lrResource.sceneId;
+      }
+      html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+      html += '<span style="color:var(--ink-faint);">情境</span> ' + sceneName;
+      html += '</div>';
+    }
+    html += '</div>';
+  }
 
   html += '<p class="diary-text">' + firstPara + '</p>';
   if (secondPara) {
@@ -10812,7 +11385,212 @@ function renderDiaryDetail(d) {
   html += '<div class="diary-btn-like" onclick="showToastDiary()">'
     + '<ion-icon name="heart"></ion-icon>为这条日记点赞</div>';
 
+  // V3.0: 疗愈反馈底部区域（只要历史上曾有过调整意愿就始终显示）
+  if (matchingRecords.length > 0) {
+    var lr = matchingRecords[0];
+    var musicBlocked = musicBlockedFinal;
+    var sceneBlocked = sceneBlockedFinal;
+    // 检查所有记录中是否曾有过调整意愿（而非仅最新一条）
+    var anyAdjustmentEver = false;
+    matchingRecords.forEach(function(r) {
+      if (r.needChangeMusic || r.needChangeScene) anyAdjustmentEver = true;
+    });
+
+    if (anyAdjustmentEver) {
+      html += '<div style="margin-top:16px;">';
+      if (!musicBlocked && !sceneBlocked) {
+        // 已全部取消规避（显示提示 + 重新规避按钮）
+        html += '<div style="padding:12px 14px;border-radius:12px;background:rgba(90,142,90,.06);border:1px solid rgba(90,142,90,.15);margin-bottom:12px;">';
+        html += '<div style="font-size:15px;color:#5A8E5A;line-height:1.5;"> 已取消规避（用户已自行取消规避）</div>';
+        html += '</div>';
+        html += '<button onclick="confirmReblockResource(\'' + lr.toneId + '\', \'' + (lr.musicId || lrResource.musicId || '') + '\', \'' + (lr.sceneId || lrResource.sceneId || '') + '\', ' + (lr.timestamp || 0) + ')" style="width:100%;padding:14px;border-radius:12px;background:rgba(200,90,61,.12);border:1.5px solid rgba(200,90,61,.3);color:#C85A3D;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 2px 8px rgba(200,90,61,.1);">';
+        html += '<ion-icon name="lock-closed-outline" style="font-size:18px;"></ion-icon>重新规避，不再推荐</button>';
+      } else {
+        // 仍有规避中的资源（红色提示 + 取消规避按钮）
+        html += '<div style="padding:12px 14px;border-radius:12px;background:rgba(200,90,61,.06);border:1px solid rgba(200,90,61,.15);margin-bottom:12px;">';
+        if (musicBlocked) {
+          html += '<div style="font-size:15px;color:#C85A3D;line-height:1.5;margin-bottom:4px;"> 已规避：该曲目（原因：换一首音乐）</div>';
+        }
+        if (sceneBlocked) {
+          html += '<div style="font-size:15px;color:#C85A3D;line-height:1.5;"> 已规避：该情境（原因：换一个自然情境）</div>';
+        }
+        html += '</div>';
+        // 取消规避按钮（与 diary-btn-like 风格一致：全宽、圆角、阴影）
+        html += '<button onclick="confirmUnblockResource(\'' + lr.toneId + '\', \'' + (lr.musicId || '') + '\', \'' + (lr.sceneId || '') + '\', ' + lr.timestamp + ')" style="width:100%;padding:14px;border-radius:12px;background:rgba(90,142,90,.15);border:1.5px solid rgba(90,142,90,.35);color:#5A8E5A;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 2px 8px rgba(90,142,90,.12);">';
+        html += '<ion-icon name="refresh-outline" style="font-size:18px;"></ion-icon>取消规避，恢复推荐</button>';
+      }
+      html += '</div>';
+    }
+  }
+
   return html;
+}
+
+// V3.0: 重新规避确认弹窗
+function confirmReblockResource(toneId, musicId, sceneId, timestamp) {
+  var overlay = document.createElement('div');
+  overlay.className = 'rating-overlay';
+  overlay.innerHTML =
+    '<div class="rating-overlay-bg"></div>' +
+    '<div class="rating-overlay-content" style="max-width:85vw;">' +
+      '<div style="text-align:center;padding:10px 0;">' +
+        '<div style="font-size:20px;font-weight:700;color:var(--ink);font-family:\'Noto Serif SC\',serif;margin-bottom:12px;">确定重新规避吗？</div>' +
+        '<div style="font-size:15px;color:var(--ink-faint);line-height:1.6;">该曲目/情境将重新从推荐池中排除</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;margin-top:8px;">' +
+        '<button onclick="this.closest(\'.rating-overlay\').remove()" style="flex:1;padding:14px;border-radius:12px;background:rgba(0,0,0,.04);border:1.5px solid rgba(0,0,0,.1);color:var(--ink-faint);font-family:\'Noto Serif SC\',serif;font-size:16px;font-weight:600;cursor:pointer;">取消</button>' +
+        '<button id="reblockConfirmBtn" style="flex:1;padding:14px;border-radius:12px;background:rgba(200,90,61,.15);border:1.5px solid rgba(200,90,61,.35);color:#C85A3D;font-family:\'Noto Serif SC\',serif;font-size:16px;font-weight:600;cursor:pointer;">确定重新规避</button>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('phoneScreen').appendChild(overlay);
+  setTimeout(function() { overlay.classList.add('active'); }, 10);
+  document.getElementById('reblockConfirmBtn').onclick = function() {
+    executeReblockResource(toneId, musicId, sceneId);
+    overlay.remove();
+  };
+}
+
+// V3.0: 执行重新规避（新增一条 needChangeMusic/needChangeScene=true 的记录）
+function executeReblockResource(toneId, musicId, sceneId) {
+  var records = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  var now = Date.now();
+  var reblockRecord = {
+    date: new Date().toISOString().split('T')[0],
+    toneId: toneId,
+    musicId: musicId || '',
+    sceneId: sceneId || '',
+    needChangeMusic: !!musicId,
+    needChangeScene: !!sceneId,
+    action: 'reblock',
+    timestamp: now
+  };
+  records.push(reblockRecord);
+  localStorage.setItem('wuyin_healing_records', JSON.stringify(records));
+  showToast('已重新规避，该资源将不再推荐');
+  // 刷新日记详情
+  setTimeout(function() {
+    var diaryDetail = document.getElementById('subpage-diary-detail');
+    if (diaryDetail && diaryDetail.classList.contains('active')) {
+      var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+      document.getElementById('diaryDetailContainer').innerHTML = diaries.slice().reverse().map(renderDiaryDetail).join('');
+    }
+  }, 300);
+}
+
+// V3.0: 取消规避确认弹窗
+function confirmUnblockResource(toneId, musicId, sceneId, timestamp) {
+  var overlay = document.getElementById('unblockConfirmOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'unblockConfirmOverlay';
+    overlay.className = 'rating-overlay';
+    overlay.innerHTML =
+      '<div class="rating-overlay-bg"></div>' +
+      '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;padding:20px;z-index:2001;">' +
+        '<h3 style="font-size:18px;color:#fff;font-weight:700;margin-bottom:12px;text-align:center;">确定恢复该曲目的推荐吗？</h3>' +
+        '<p style="font-size:14px;color:rgba(255,255,255,.7);margin-bottom:20px;text-align:center;">恢复后，该曲目将重新进入随机推荐池</p>' +
+        '<div style="display:flex;gap:10px;">' +
+          '<button onclick="closeUnblockConfirm()" style="flex:1;padding:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:15px;cursor:pointer;">取消</button>' +
+          '<button id="confirmUnblockBtn" style="flex:1;padding:12px;background:rgba(90,142,90,.4);border:1px solid rgba(90,142,90,.6);border-radius:8px;color:#fff;font-size:15px;cursor:pointer;">确定恢复</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('phoneScreen').appendChild(overlay);
+  }
+  // 保存参数到 window
+  window._unblockParams = { toneId: toneId, musicId: musicId, sceneId: sceneId, timestamp: timestamp };
+  // 绑定确定按钮
+  var btn = overlay.querySelector('#confirmUnblockBtn');
+  btn.onclick = function() { executeUnblockResource(); };
+  overlay.classList.add('active');
+}
+
+// V3.0: 执行取消规避（新增记录保留历史）
+function executeUnblockResource() {
+  var params = window._unblockParams;
+  if (!params) { closeUnblockConfirm(); return; }
+
+  var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+  // 新增一条"取消规避"记录
+  var unblockRecord = {
+    date: new Date().toISOString().slice(0, 10),
+    emotion: '',
+    tone: '',
+    toneId: params.toneId,
+    musicId: params.musicId,
+    sceneId: params.sceneId,
+    rating: 0,
+    comment: '',
+    needChangeMusic: false,
+    needChangeScene: false,
+    isDual: false,
+    timestamp: Date.now(),
+    action: 'unblock'  // 标记为取消规避操作
+  };
+  log.push(unblockRecord);
+  if (log.length > 200) log = log.slice(-200);
+  localStorage.setItem('wuyin_healing_records', JSON.stringify(log));
+
+  closeUnblockConfirm();
+  showToast('已恢复该曲目的推荐');
+
+  // 刷新日记详情（如果当前在日记页）
+  setTimeout(function() {
+    var container = document.getElementById('diaryDetailContainer');
+    if (container && container.innerHTML.length > 0) {
+      // 重新渲染当前日记
+      var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+      var currentDiary = diaries.find(function(d) {
+        return d.date === unblockRecord.date.replace(/-/g, '/') && d.wuyinId === params.toneId;
+      });
+      if (currentDiary) {
+        container.innerHTML = renderDiaryDetail(currentDiary);
+      }
+    }
+  }, 300);
+}
+
+function closeUnblockConfirm() {
+  var overlay = document.getElementById('unblockConfirmOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+// V3.0: 查看更多日记（打开日记列表子页面）
+function viewAllDiaries() {
+  var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+  if (diaries.length === 0) {
+    showToast('暂无日记记录');
+    return;
+  }
+  // 打开日记列表子页面
+  var container = document.getElementById('diaryListContainer');
+  if (!container) {
+    // 动态创建日记列表子页面
+    var overlay = document.createElement('div');
+    overlay.id = 'subpage-diary-list';
+    overlay.className = 'subpage-overlay';
+    overlay.style.cssText = 'z-index:200;';
+    overlay.innerHTML =
+      '<div class="subpage-overlay-content" style="background:var(--paper);position:relative;width:100%;height:100%;">' +
+        '<div class="subpage-overlay-header" style="background:rgba(45,35,25,.9);padding:14px 16px;display:flex;align-items:center;gap:10px;">' +
+          '<ion-icon name="arrow-back" style="font-size:22px;color:var(--gold);cursor:pointer;" onclick="closeDiaryList()"></ion-icon>' +
+          '<span style="font-size:17px;font-weight:600;color:var(--gold);font-family:\'Noto Serif SC\',serif;">全部日记</span>' +
+        '</div>' +
+        '<div id="diaryListContainer" style="padding:16px;overflow-y:auto;height:calc(100% - 50px);"></div>' +
+      '</div>';
+    document.getElementById('phoneScreen').appendChild(overlay);
+    container = document.getElementById('diaryListContainer');
+  }
+  // 渲染全部日记（按时间倒序）
+  var sorted = diaries.slice().reverse();
+  container.innerHTML = sorted.map(function(d) {
+    return renderDiaryCard(d);
+  }).join('');
+  document.getElementById('subpage-diary-list').classList.add('active');
+}
+
+function closeDiaryList() {
+  var overlay = document.getElementById('subpage-diary-list');
+  if (overlay) overlay.classList.remove('active');
 }
 
 // ✅ 日记详情页的提示（统一处理特殊字符问题）
