@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -5432,6 +5432,7 @@ function switchTab(idx) {
     try { updateRecordsHero(); } catch(e) {}
     try { updateRecordsStats(); } catch(e) {}
     try { renderQuestionnaireHistory(); } catch(e) {}
+    try { loadVoiceDiary(); } catch(e) {}
   }
 }
 
@@ -6314,7 +6315,8 @@ function getDominantChatEmotion(hours) {
 }
 
 function getQuestionnaireResult() {
-  if (localStorage.getItem('wuyin_questionnaire_completed') !== 'true') return null;
+  var completedFlag = localStorage.getItem('wuyin_questionnaire_completed');
+  if (completedFlag !== 'true' && completedFlag !== '1') return null;
   var answers = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]');
   var emotionAnswers = [];
   // 新格式：每轮17/16题混合，情绪题在每轮前10个位置，总共需要78个答案
@@ -6622,6 +6624,7 @@ function updateRecordsStats() {
   // 1. 五情志分布（条形图）—— 取自 getQuestionnaireResult().scores
   var qResult = getQuestionnaireResult();
   var scores = (qResult && qResult.scores) ? qResult.scores : { jue:0, zhi:0, gong:0, shang:0, yu:0 };
+  var hasData = qResult && qResult.scores;
   var EMOTION_MAX = 40; // 与 showQuestionnaireResults 中保持一致
   var emotionGradient = {
     jue:   'linear-gradient(90deg,var(--v10-jue),#8FAF76)',
@@ -6632,15 +6635,26 @@ function updateRecordsStats() {
   };
   ['jue','zhi','gong','shang','yu'].forEach(function(id) {
     var val = scores[id] || 0;
-    var pct = Math.max(3, Math.round((val / EMOTION_MAX) * 100));
+    var pct = hasData ? Math.max(3, Math.round((val / EMOTION_MAX) * 100)) : 0;
     var row = document.querySelector('.emo-bar .emo-row[data-id="' + id + '"]');
     if (row) {
       var fill = row.querySelector('.bar .fill');
       var valEl = row.querySelector('.val');
       if (fill) { fill.style.width = pct + '%'; fill.style.background = emotionGradient[id]; }
-      if (valEl) valEl.textContent = val;
+      if (valEl) valEl.textContent = hasData ? val : '—';
     }
   });
+  // 如果问卷数据不存在，在 emo-sub 显示提示
+  var emoSub = document.querySelector('.emo-bar .emo-sub');
+  if (emoSub) {
+    if (!hasData) {
+      emoSub.innerHTML = '暂无问卷数据，请先完成<a href="#" onclick="startQuestionnaire();return false;" style="color:var(--v10-cinnabar);font-weight:600;">情志问卷评估</a>';
+      emoSub.style.fontSize = '15px';
+    } else {
+      emoSub.innerHTML = '分值越高，该情志表现越突出（最高 40 分）';
+      emoSub.style.fontSize = '';
+    }
+  }
 
   // 2. 统计三宫格 —— 聆听次数 / 日记条数 / 连续天数（全部 localStorage 真实数据）
   try {
@@ -9932,6 +9946,7 @@ function buildHealingRecords() {
 
 // ✅ 直接根据一条日记记录打开详情页（绕过 openDiaryDetail 全列表渲染）
 function openDiaryDetailByRecord(d) {
+  window._currentDiaryRecord = d; // 保存当前查看的日记记录（用于重新规避后单条刷新）
   var container = document.getElementById('diaryDetailContainer');
   container.innerHTML = renderDiaryDetail(d);
   // 同步顶部 hero
@@ -11196,17 +11211,19 @@ function loadVoiceDiary() {
   }
   // 只显示最近3条
   var recent = diaries.slice().reverse().slice(0, 3);
-  container.innerHTML = recent.map(renderDiaryCard).join('');
+  // 保存全局引用供卡片点击使用
+  window._diaryCards = recent;
+  container.innerHTML = recent.map(function(d, i) { return renderDiaryCard(d, i); }).join('');
   if (viewAllBtn) viewAllBtn.style.display = diaries.length > 3 ? 'block' : 'none';
 }
 
-function renderDiaryCard(d) {
+function renderDiaryCard(d, idx) {
   var stars = '';
   for (var s = 1; s <= 5; s++) {
     stars += s <= d.rating ? '&#9733;' : '&#9734;';
   }
   var nameDisplay = d.isDual ? d.wuyinName : (d.wuyinName + ' · ' + (d.wuyinId ? (WUYIN_DATA.find(function(w){return w.id===d.wuyinId;})||{}).scene || '' : ''));
-  return '<div class="diary-card">'
+  return '<div class="diary-card" style="cursor:pointer;" onclick="openDiaryDetailByIndex(' + (idx !== undefined ? idx : -1) + ')">'
     + '<div class="diary-card-top">'
     + '<ion-icon class="diary-card-mic" name="mic"></ion-icon>'
     + '<span class="diary-card-date">' + d.date + (d.time ? ' ' + d.time : '') + '</span>'
@@ -11215,6 +11232,13 @@ function renderDiaryCard(d) {
     + '</div>'
     + '<div class="diary-card-text">' + (d.text || '无语音内容') + '</div>'
     + '</div>';
+}
+
+// 通过索引打开日记详情（供卡片点击使用）
+function openDiaryDetailByIndex(idx) {
+  if (window._diaryCards && idx >= 0 && idx < window._diaryCards.length) {
+    openDiaryDetailByRecord(window._diaryCards[idx]);
+  }
 }
 
 function openDiaryDetail() {
@@ -11432,14 +11456,14 @@ function confirmReblockResource(toneId, musicId, sceneId, timestamp) {
   overlay.className = 'rating-overlay';
   overlay.innerHTML =
     '<div class="rating-overlay-bg"></div>' +
-    '<div class="rating-overlay-content" style="max-width:85vw;">' +
-      '<div style="text-align:center;padding:10px 0;">' +
-        '<div style="font-size:20px;font-weight:700;color:var(--ink);font-family:\'Noto Serif SC\',serif;margin-bottom:12px;">确定重新规避吗？</div>' +
-        '<div style="font-size:15px;color:var(--ink-faint);line-height:1.6;">该曲目/情境将重新从推荐池中排除</div>' +
+    '<div class="rating-overlay-content" style="position:relative;z-index:2;max-width:85vw;padding:24px 28px;background:rgba(255,255,255,0.97);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);">' +
+      '<div style="text-align:center;padding:6px 0 10px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#2C2C2C;font-family:\'Noto Serif SC\',serif;margin-bottom:14px;">确定重新规避吗？</div>' +
+        '<div style="font-size:17px;color:#444;line-height:1.6;">该曲目/情境将重新从推荐池中排除</div>' +
       '</div>' +
-      '<div style="display:flex;gap:12px;margin-top:8px;">' +
-        '<button onclick="this.closest(\'.rating-overlay\').remove()" style="flex:1;padding:14px;border-radius:12px;background:rgba(0,0,0,.04);border:1.5px solid rgba(0,0,0,.1);color:var(--ink-faint);font-family:\'Noto Serif SC\',serif;font-size:16px;font-weight:600;cursor:pointer;">取消</button>' +
-        '<button id="reblockConfirmBtn" style="flex:1;padding:14px;border-radius:12px;background:rgba(200,90,61,.15);border:1.5px solid rgba(200,90,61,.35);color:#C85A3D;font-family:\'Noto Serif SC\',serif;font-size:16px;font-weight:600;cursor:pointer;">确定重新规避</button>' +
+      '<div style="display:flex;gap:12px;margin-top:14px;">' +
+        '<button onclick="this.closest(\'.rating-overlay\').remove()" style="flex:1;padding:15px;border-radius:12px;background:#F5F2EC;border:1.5px solid #D4CFC4;color:#333;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;cursor:pointer;">取消</button>' +
+        '<button id="reblockConfirmBtn" style="flex:1;padding:15px;border-radius:12px;background:rgba(200,90,61,.18);border:1.5px solid rgba(200,90,61,.4);color:#A04528;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;cursor:pointer;">确定重新规避</button>' +
       '</div>' +
     '</div>';
   document.getElementById('phoneScreen').appendChild(overlay);
@@ -11455,7 +11479,7 @@ function executeReblockResource(toneId, musicId, sceneId) {
   var records = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
   var now = Date.now();
   var reblockRecord = {
-    date: new Date().toISOString().split('T')[0],
+    date: (window._currentDiaryRecord ? window._currentDiaryRecord.date.replace(/\//g, '-') : new Date().toISOString().split('T')[0]),
     toneId: toneId,
     musicId: musicId || '',
     sceneId: sceneId || '',
@@ -11467,12 +11491,11 @@ function executeReblockResource(toneId, musicId, sceneId) {
   records.push(reblockRecord);
   localStorage.setItem('wuyin_healing_records', JSON.stringify(records));
   showToast('已重新规避，该资源将不再推荐');
-  // 刷新日记详情
+  // 刷新日记详情（只刷新当前查看的单条日记，不渲染全部）
   setTimeout(function() {
     var diaryDetail = document.getElementById('subpage-diary-detail');
-    if (diaryDetail && diaryDetail.classList.contains('active')) {
-      var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
-      document.getElementById('diaryDetailContainer').innerHTML = diaries.slice().reverse().map(renderDiaryDetail).join('');
+    if (diaryDetail && diaryDetail.classList.contains('active') && window._currentDiaryRecord) {
+      document.getElementById('diaryDetailContainer').innerHTML = renderDiaryDetail(window._currentDiaryRecord);
     }
   }, 300);
 }
@@ -11512,7 +11535,7 @@ function executeUnblockResource() {
   var log = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
   // 新增一条"取消规避"记录
   var unblockRecord = {
-    date: new Date().toISOString().slice(0, 10),
+    date: (window._currentDiaryRecord ? window._currentDiaryRecord.date.replace(/\//g, '-') : new Date().toISOString().slice(0, 10)),
     emotion: '',
     tone: '',
     toneId: params.toneId,
@@ -11533,18 +11556,11 @@ function executeUnblockResource() {
   closeUnblockConfirm();
   showToast('已恢复该曲目的推荐');
 
-  // 刷新日记详情（如果当前在日记页）
+  // 刷新日记详情（使用 window._currentDiaryRecord 避免日期不匹配问题）
   setTimeout(function() {
     var container = document.getElementById('diaryDetailContainer');
-    if (container && container.innerHTML.length > 0) {
-      // 重新渲染当前日记
-      var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
-      var currentDiary = diaries.find(function(d) {
-        return d.date === unblockRecord.date.replace(/-/g, '/') && d.wuyinId === params.toneId;
-      });
-      if (currentDiary) {
-        container.innerHTML = renderDiaryDetail(currentDiary);
-      }
+    if (container && container.innerHTML.length > 0 && window._currentDiaryRecord) {
+      container.innerHTML = renderDiaryDetail(window._currentDiaryRecord);
     }
   }, 300);
 }
@@ -11552,6 +11568,31 @@ function executeUnblockResource() {
 function closeUnblockConfirm() {
   var overlay = document.getElementById('unblockConfirmOverlay');
   if (overlay) overlay.classList.remove('active');
+}
+
+// 渲染日记卡片（用于"查看更多"全部列表页面）
+function renderDiaryCardAll(d, idx) {
+  var stars = '';
+  for (var s = 1; s <= 5; s++) {
+    stars += s <= d.rating ? '&#9733;' : '&#9734;';
+  }
+  return '<div class="diary-card" style="cursor:pointer;margin-bottom:12px;" onclick="openDiaryDetailByIndexAll(' + (idx !== undefined ? idx : -1) + ')">'
+    + '<div class="diary-card-top">'
+    + '<ion-icon class="diary-card-mic" name="mic"></ion-icon>'
+    + '<span class="diary-card-date">' + d.date + (d.time ? ' ' + d.time : '') + '</span>'
+    + '<span class="diary-card-wuyin">' + (d.isDual ? '组合' : '') + d.wuyinName + '</span>'
+    + '<span class="diary-card-stars">' + stars + '</span>'
+    + '</div>'
+    + '<div class="diary-card-text">' + (d.text || '无语音内容') + '</div>'
+    + '</div>';
+}
+
+function openDiaryDetailByIndexAll(idx) {
+  if (window._diaryCardsAll && idx >= 0 && idx < window._diaryCardsAll.length) {
+    openDiaryDetailByRecord(window._diaryCardsAll[idx]);
+    // 关闭列表子页面
+    closeDiaryList();
+  }
 }
 
 // V3.0: 查看更多日记（打开日记列表子页面）
@@ -11582,8 +11623,9 @@ function viewAllDiaries() {
   }
   // 渲染全部日记（按时间倒序）
   var sorted = diaries.slice().reverse();
-  container.innerHTML = sorted.map(function(d) {
-    return renderDiaryCard(d);
+  window._diaryCardsAll = sorted;
+  container.innerHTML = sorted.map(function(d, i) {
+    return renderDiaryCardAll(d, i);
   }).join('');
   document.getElementById('subpage-diary-list').classList.add('active');
 }
@@ -11839,7 +11881,7 @@ function viewHistoryRecord(historyId) {
     try {
       localStorage.setItem('wuyin_questionnaire_answers', JSON.stringify(rec.answers));
       localStorage.setItem('wuyin_questionnaire_round', '5');
-      localStorage.setItem('wuyin_questionnaire_completed', '1');
+      localStorage.setItem('wuyin_questionnaire_completed', 'true');
       if (questionnaireState) {
         questionnaireState.answers = rec.answers.slice();
         questionnaireState.currentRound = 5;
