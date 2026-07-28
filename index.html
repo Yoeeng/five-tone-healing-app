@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -22,6 +22,8 @@
       // 显示底部导航栏
       var tabbar = document.getElementById('tabbar');
       if (tabbar) tabbar.style.display = 'flex';
+      // 清除自动跳转计时器，防止 goOnboardNow 再次触发隐藏导航栏
+      if (typeof autoTimer !== 'undefined' && autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
       // 自动弹出五态情志测评弹窗（如果用户未完成测评）
       setTimeout(function() {
         try {
@@ -13365,9 +13367,9 @@ setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
   // 全局函数：手动跳到 onboard
   window.goOnboardNow = function() {
     if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
-    if (!splash || !onboard) {
-      // 兜底：直接跳到主页
-      if (onboard) { onboard.classList.remove('active'); onboard.style.display = 'none'; }
+    // 如果 splash/onboard DOM 已被移除，直接返回
+    if (!splash || !onboard || !document.body.contains(splash)) {
+      if (onboard && document.body.contains(onboard)) { onboard.classList.remove('active'); onboard.style.display = 'none'; }
       return;
     }
     splash.classList.add('fade-out');

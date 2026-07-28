@@ -16,6 +16,8 @@ const PORT = process.env.PORT || 8080;
 // 阿里云 DashScope CosyVoice 端点
 const DASHSCOPE_TTS_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2audio/audio-generation';
 
+const DASHSCOPE_CHAT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+
 // 支持的 CosyVoice 音色（按"语言+性别"映射）
 const COSY_VOICE_MAP = {
   'mandarin_female': 'longxiaochun',   // 温柔女声
@@ -205,6 +207,61 @@ async function handleTTS(req, res) {
   }
 }
 
+async function handleChat(req, res) {
+  try {
+    const raw = await readBody(req);
+    let payload = {};
+    try { payload = JSON.parse(raw); }
+    catch (e) { return sendJSON(res, 400, { error: 'Invalid JSON body' }); }
+
+    const envKey = process.env.DASHSCOPE_API_KEY || '';
+    const apiKey = (payload.apiKey && payload.apiKey.trim()) || envKey;
+    const messages = (payload.messages && payload.messages.length > 0)
+      ? payload.messages
+      : (payload.input && payload.input.messages ? payload.input.messages : []);
+    const model = payload.model || 'qwen-plus';
+    const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
+    const temperature = (typeof payload.temperature === 'number') ? payload.temperature : (payload.parameters && payload.parameters.temperature) || 0.7;
+
+    console.log('[chat] apiKey=' + (apiKey ? 'OK' : 'MISSING') + ' messages=' + messages.length);
+
+    if (!apiKey || !apiKey.startsWith('sk-')) {
+      return sendJSON(res, 400, { error: '缺少 apiKey（请先在"我的"页设置 DashScope API Key）' });
+    }
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return sendJSON(res, 400, { error: '缺少 messages' });
+    }
+
+    const body = JSON.stringify({
+      model: model,
+      messages: messages,
+      max_tokens: maxTokens,
+      temperature: temperature
+    });
+
+    const dashResp = await fetch(DASHSCOPE_CHAT_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: body
+    });
+
+    if (!dashResp.ok) {
+      const errText = await dashResp.text();
+      console.error('[chat] DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 300));
+      return sendJSON(res, 500, { error: 'DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 200) });
+    }
+
+    const data = await dashResp.json();
+    sendJSON(res, 200, data);
+  } catch (e) {
+    console.error('[chat] error:', e.message);
+    sendJSON(res, 500, { error: e.message || 'Chat failed' });
+  }
+}
+
 // 解析 Range 头，返回 { start, end } 或 null
 function parseRangeHeader(rangeHeader, fileSize) {
   if (!rangeHeader || typeof rangeHeader !== 'string') return null;
@@ -249,7 +306,7 @@ function sendStaticFile(req, res, filePath, stat) {
   const isImmutableAsset = /\.(webp|png|jpg|jpeg|svg|gif|woff2?)$/i.test(ext);
   const cacheControl = isImmutableAsset
     ? 'public, max-age=31536000, immutable'
-    : 'no-cache';
+    : 'no-store, no-cache, must-revalidate';
 
   if (rangeHeader && isStreamable) {
     const range = parseRangeHeader(rangeHeader, fileSize);
@@ -317,6 +374,14 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { ok: true, hint: 'POST {apiKey, text, voice?, language?, gender?}' });
   }
 
+  // Chat 代理（DashScope qwen-plus）
+  if (urlPath === '/chat' && req.method === 'POST') {
+    return handleChat(req, res);
+  }
+  if (urlPath === '/chat') {
+    return sendJSON(res, 200, { ok: true, hint: 'POST {messages, model?, max_tokens?, temperature?, apiKey?}' });
+  }
+
   // 静态文件
   if (urlPath === '/') urlPath = '/index.html';
   const filePath = path.join(ROOT, urlPath);
@@ -338,6 +403,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('[server] http://localhost:' + PORT + '/');
   console.log('[tts]    POST http://localhost:' + PORT + '/tts');
   console.log('[health] GET  http://localhost:' + PORT + '/health');
+  console.log('[chat]   POST http://localhost:' + PORT + '/chat');
   console.log('[range]  HTTP Range requests supported ✓ (mobile audio fix)');
   console.log('=========================================');
 });
