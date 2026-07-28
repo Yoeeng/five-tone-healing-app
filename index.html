@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -2099,7 +2099,7 @@
   .questionnaire-progress-fill {
     height: 100%; background: var(--gold); border-radius: 5px; transition: width 0.3s ease;
   }
-  .questionnaire-body { flex: 1; padding: 24px 20px; overflow-y: auto; }
+  .questionnaire-body { flex: 1; padding: 24px 20px; overflow-y: auto; min-height: 0; }
   .questionnaire-question-num { font-size: 15px; color: #9A9A9A; margin-bottom: 10px; }
   .questionnaire-question-text { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.6; margin-bottom: 24px; }
   .questionnaire-options { display: flex; flex-direction: column; gap: 12px; }
@@ -2168,7 +2168,7 @@
   .round-complete-feeling-btn.selected { border-color: var(--gold); background: rgba(201,169,78,0.1); }
 
   .questionnaire-results {
-    display: none; flex-direction: column; padding: 20px 20px 24px; flex: 1; overflow-y: auto;
+    display: none; flex-direction: column; padding: 20px 20px 24px; flex: 1; overflow-y: auto; min-height: 0;
     position: relative;
   }
   .questionnaire-results.active { display: flex; }
