@@ -4481,7 +4481,7 @@
   <div id="subpage-qi-intro" class="subpage-overlay" style="z-index:150;">
     <div class="qi-intro-content stagger">
       <div class="qi-intro-top">
-        <button class="close" onclick="closeQiIntro()" aria-label="关闭">
+        <button class="close" onclick="closeQiIntro();var t=document.getElementById('tabbar');if(t)t.style.display='flex';" aria-label="关闭">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 6l12 12M6 18L18 6" stroke-linecap="round"/></svg>
         </button>
         <div class="step">五态情志评估</div>
@@ -4514,7 +4514,7 @@
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         <span>开始评估</span>
       </div>
-      <div class="btn-ghost" style="margin-top:10px" onclick="closeQiIntro()">下次再说</div>
+      <div class="btn-ghost" style="margin-top:10px" onclick="closeQiIntro();var t=document.getElementById('tabbar');if(t)t.style.display='flex';">下次再说</div>
     </div>
   </div>
 
@@ -9755,9 +9755,6 @@ function closeQiIntro(){
     el.classList.remove('active');
     el.style.display = 'none';
   }
-  // ✅ 恢复底部导航栏
-  var tabbar = document.getElementById('tabbar');
-  if (tabbar) tabbar.style.display = 'flex';
 }
 function startQiTest(){
   try {
