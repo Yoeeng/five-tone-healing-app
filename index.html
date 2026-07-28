@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -4893,7 +4893,7 @@ async function callChatAPI(body) {
     var resp = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(Object.assign({}, body, { apiKey: apiKey }))
     });
     if (resp.ok) return await resp.json();
   } catch(e) { }
@@ -5175,6 +5175,12 @@ async function analyzeChatSession() {
       }
   } catch (e) {
     console.error('[Session] Analysis failed:', e);
+    var apiKey = getApiKey();
+    if (!apiKey || apiKey.indexOf('sk-') !== 0) {
+      showToast('请先在“我的”页面设置 DashScope API Key');
+    } else {
+      showToast('分析失败，请稍后重试');
+    }
   }
 }
 
