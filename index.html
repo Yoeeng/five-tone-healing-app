@@ -16,6 +16,21 @@
       var o = document.getElementById('v10Onboard');
       if (s) { s.style.display = 'none'; s.style.visibility = 'hidden'; s.remove && s.remove(); }
       if (o) { o.style.display = 'none'; o.style.visibility = 'hidden'; o.classList && o.classList.remove('active'); }
+      // 激活主页（点击 splash 跳过时，需手动激活 #page-home）
+      var home = document.getElementById('page-home');
+      if (home) home.classList.add('active');
+      // 显示底部导航栏
+      var tabbar = document.getElementById('tabbar');
+      if (tabbar) tabbar.style.display = 'flex';
+      // 自动弹出五态情志测评弹窗（如果用户未完成测评）
+      setTimeout(function() {
+        try {
+          var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
+          if (!completed && home && home.classList.contains('active')) {
+            if (typeof openQzModal === 'function') openQzModal('first');
+          }
+        } catch(e) {}
+      }, 1500);
     } catch(e) { console.error('[splash] dismiss error', e); }
   };
   // 极端兜底：10 秒后还没跳过，自动消失
@@ -154,7 +169,7 @@
   }
   .app-title-bar { text-align:center; }
   .app-title-bar h1 { font-size:22px; font-weight:700; color:#2c2c2c; letter-spacing:2px; }
-  .app-title-bar p { font-size:13px; color:#7a7a7a; margin-top:4px; }
+  .app-title-bar p { font-size:16px; color:#7a7a7a; margin-top:4px; }
 
   /* Phone frame */
   .phone-frame {
@@ -218,7 +233,7 @@
   }
   .tab-item {
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; cursor:pointer; transition:all .2s; color:#999; font-size:11px;
+    gap:2px; cursor:pointer; transition:all .2s; color:#999; font-size:17px;
     border:none; background:none; padding:4px 0;
   }
   .tab-item ion-icon { font-size:22px; transition:all .2s; }
@@ -248,7 +263,7 @@
   }
   /* V10：主标题用衬线字 + 朱砂红重彩 */
   .home-title { font-family:var(--v10-font-serif); font-size:22px; font-weight:700; color:var(--v10-ink); letter-spacing:3px; }
-  .home-subtitle { color:var(--v10-ink-soft); font-size:14px; margin-top:10px; letter-spacing:1.5px; font-family:var(--v10-font-kai); }
+  .home-subtitle { color:var(--v10-ink-soft); font-size:17px; margin-top:10px; letter-spacing:1.5px; font-family:var(--v10-font-kai); }
   /* V10：问候卡片 · 暖白宣纸 + 朱砂红细边 + 暖色阴影 */
   .home-greeting {
     margin-top:18px; background:rgba(251,247,236,.92); border-radius:18px;
@@ -358,7 +373,7 @@
   .chat-voice .wave-bar:nth-child(5){height:18px;animation-delay:0.15s}
   .chat-voice .wave-bar:nth-child(6){height:12px;animation-delay:0.25s}
   .chat-voice .wave-bar:nth-child(7){height:20px;animation-delay:0.05s}
-  .chat-voice .dur{margin-left:8px;font-family:var(--font-en);font-size:13px;color:var(--ink-faint)}
+  .chat-voice .dur{margin-left:8px;font-family:var(--font-en);font-size:16px;color:var(--ink-faint)}
   @keyframes waveAnim{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1)}}
 
   /* 建议标签：字号 +3px（17→20） */
@@ -497,14 +512,14 @@
   .player-top .more svg{width:20px;height:20px}
   .player-top .name{flex:1;text-align:center}
   .player-top .name .cn{font-family:var(--font-serif);font-size:21px;font-weight:600;letter-spacing:.08em;text-shadow:0 2px 6px rgba(0,0,0,.5)}
-  .player-top .name .sub{font-family:var(--font-en);font-size:12px;letter-spacing:.4em;color:rgba(255,255,255,.7);margin-top:3px}
+  .player-top .name .sub{font-family:var(--font-en);font-size:15px;letter-spacing:.4em;color:rgba(255,255,255,.7);margin-top:3px}
 
   /* 左右 SLIDE 360° 提示 — 半透明 */
   .player-pano-hint{
     position:absolute;top:48%;transform:translateY(-50%);
     left:18px;z-index:2;
     display:flex;align-items:center;gap:6px;
-    color:rgba(255,255,255,.55);font-family:var(--font-en);font-size:12px;letter-spacing:.3em;
+    color:rgba(255,255,255,.55);font-family:var(--font-en);font-size:15px;letter-spacing:.3em;
     pointer-events:none;user-select:none;
     animation:hintPulse 2.4s ease-in-out infinite;
   }
@@ -529,7 +544,7 @@
   /* 中央状态文字 */
   .player-state{text-align:center;margin-bottom:24px}
   .player-state .eyebrow{
-    font-family:var(--font-en);font-size:13px;letter-spacing:.4em;
+    font-family:var(--font-en);font-size:16px;letter-spacing:.4em;
     color:var(--yue-jue);font-weight:600;
     text-shadow:0 1px 4px rgba(0,0,0,.6);
   }
@@ -558,7 +573,7 @@
   }
   .player-progress .time{
     display:flex;justify-content:space-between;margin-top:8px;
-    font-family:var(--font-en);font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.1em;
+    font-family:var(--font-en);font-size:15px;color:rgba(255,255,255,.7);letter-spacing:.1em;
   }
 
   /* 控制按钮 */
@@ -591,13 +606,13 @@
   .player-actions .act:active{transform:scale(.92)}
   .player-actions .act svg{width:22px;height:22px;stroke-width:1.6}
   .player-actions .act.on svg{fill:#E07B5B;stroke:#E07B5B}
-  .player-actions .act .l{font-family:var(--font-kai);font-size:14px;letter-spacing:.05em}
+  .player-actions .act .l{font-family:var(--font-kai);font-size:17px;letter-spacing:.05em}
 
   .chat-switch-btn {
     display:flex; align-items:center; gap:5px;
     padding:7px 16px; border-radius:20px;
     background:rgba(255,255,255,.6); border:1px solid var(--border);
-    cursor:pointer; font-family:inherit; font-size:13px; color:#7A7A7A;
+    cursor:pointer; font-family:inherit; font-size:16px; color:#7A7A7A;
     transition:all .2s;
   }
   .chat-switch-btn ion-icon { font-size:16px; }
@@ -632,7 +647,7 @@
   .healing-today:active{transform:scale(.99)}
   /* 艺术字（脏腑）由 --accent-organ 决定 */
   .healing-today::after{content:var(--accent-organ,'肝');position:absolute;bottom:-12px;right:14px;font-family:var(--font-serif);font-size:140px;font-weight:700;color:rgba(255,255,255,.08);line-height:1}
-  .healing-today .eyebrow{font-family:var(--font-en);font-size:12px;letter-spacing:.3em;opacity:.85;margin-bottom:8px;text-transform:uppercase;font-weight:600}
+  .healing-today .eyebrow{font-family:var(--font-en);font-size:15px;letter-spacing:.3em;opacity:.85;margin-bottom:8px;text-transform:uppercase;font-weight:600}
   .healing-today h2{font-family:var(--font-serif);font-size:30px;font-weight:600;margin-bottom:6px;letter-spacing:.05em;line-height:1.3}
   .healing-today p{font-family:var(--font-kai);font-size:18px;opacity:.92;line-height:1.7;margin-bottom:14px}
   .healing-today .play-btn{
@@ -652,7 +667,7 @@
     background:rgba(255,255,255,.18);color:#fff;
     border:1px solid rgba(255,255,255,.4);
     padding:4px 10px;border-radius:100px;
-    font-family:var(--font-kai);font-size:13px;letter-spacing:.05em;
+    font-family:var(--font-kai);font-size:16px;letter-spacing:.05em;
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   }
 
@@ -675,7 +690,7 @@
     position:absolute;left:12px;top:12px;display:flex;gap:6px;
   }
   .healing-rec-img-group .rec-img-label .lbl-tag{
-    font-family:var(--v10-font-kai);font-size:13px;color:#fff;
+    font-family:var(--v10-font-kai);font-size:16px;color:#fff;
     padding:2px 8px;border-radius:6px;letter-spacing:.05em;
   }
   .healing-rec-body{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
@@ -730,14 +745,14 @@
   .journey-steps .step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1}
   .journey-steps .step::after{content:'';position:absolute;top:14px;left:60%;right:-40%;height:1px;background:var(--paper-edge)}
   .journey-steps .step:last-child::after{display:none}
-  .journey-steps .dot{width:30px;height:30px;border-radius:50%;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:14px;font-weight:600;color:var(--ink-faint);border:2px solid var(--paper-warm)}
+  .journey-steps .dot{width:30px;height:30px;border-radius:50%;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:17px;font-weight:600;color:var(--ink-faint);border:2px solid var(--paper-warm)}
   .journey-steps .step.done .dot{background:var(--yue-jue);color:var(--paper);border-color:var(--yue-jue)}
   .journey-steps .step.active .dot{background:var(--cinnabar);color:var(--paper);border-color:var(--cinnabar);box-shadow:0 0 0 4px rgba(192,57,43,.18)}
-  .journey-steps .step .lbl{font-family:var(--font-kai);font-size:14px;color:var(--ink-soft);text-align:center;line-height:1.2}
+  .journey-steps .step .lbl{font-family:var(--font-kai);font-size:17px;color:var(--ink-soft);text-align:center;line-height:1.2}
 
   /* 五音 · FIVE TONES 小标 */
   .section-eyebrow{
-    font-family:var(--font-en);font-size:13px;letter-spacing:.3em;
+    font-family:var(--font-en);font-size:16px;letter-spacing:.3em;
     color:var(--ink-faint);margin-bottom:12px;font-weight:600;
     text-transform:uppercase;display:flex;align-items:center;gap:8px;
   }
@@ -862,7 +877,7 @@
   /* ✅ 描述字号放大4个字号：16px → 20px；不放省略号，自然换行 */
   .intro-mode-desc { font-size:20px; color:#6A6A6A; margin-top:4px; display:block;overflow:visible; }
   .intro-mode-badge {
-    background:var(--gold); color:#fff; font-size:12px;
+    background:var(--gold); color:#fff; font-size:15px;
     padding:2px 8px; border-radius:8px; font-weight:500;
   }
   .intro-mode-check {
@@ -900,7 +915,7 @@
     box-shadow:0 2px 6px rgba(0,0,0,.04);
   }
   .duration-circle .num{ font-size:24px; font-weight:700; line-height:1; }
-  .duration-circle .unit{ font-size:12px; margin-top:2px; letter-spacing:.05em; }
+  .duration-circle .unit{ font-size:15px; margin-top:2px; letter-spacing:.05em; }
   .duration-circle:hover{ border-color:var(--gold); color:var(--ink); }
   .duration-circle.active{
     background:var(--cinnabar); color:#fff; border-color:var(--cinnabar);
@@ -911,7 +926,7 @@
   /* 旧 .duration-opt 保留兼容样式（如有旧 JS 引用） */
   .duration-opt {
     background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-    border-radius:10px;padding:8px 0;flex:1;color:#ccc;font-size:13px;cursor:pointer;
+    border-radius:10px;padding:8px 0;flex:1;color:#ccc;font-size:16px;cursor:pointer;
     transition:all .2s;max-width:80px;
   }
   .duration-opt.active {
@@ -984,7 +999,7 @@
   .player-top-btn ion-icon { font-size:22px; color:#fff; }
   .player-top-center { text-align:center; flex:1; }
   .player-top-center h3 { font-size:18px; font-weight:700; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.3); }
-  .player-top-center p { font-size:13px; color:rgba(255,255,255,.75); margin-top:2px; }
+  .player-top-center p { font-size:16px; color:rgba(255,255,255,.75); margin-top:2px; }
 
   /* player visual area */
   .player-content {
@@ -1032,7 +1047,7 @@
     width:16px; height:16px; border-radius:50%; background:#fff;
     box-shadow:0 2px 6px rgba(0,0,0,.2);
   }
-  .player-time { display:flex; justify-content:space-between; font-size:13px; color:rgba(255,255,255,.6); margin-top:8px; }
+  .player-time { display:flex; justify-content:space-between; font-size:16px; color:rgba(255,255,255,.6); margin-top:8px; }
 
   /* immersive button */
   .player-immersive-btn {
@@ -1073,11 +1088,24 @@
     text-shadow:0 1px 4px rgba(0,0,0,.5); white-space:nowrap;
   }
 
+  /* 沉浸粒子 canvas */
+  .immersive-particles {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    z-index:1; pointer-events:none;
+  }
+  /* 沉浸明暗呼吸 */
+  .immersive-light-overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    z-index:1; pointer-events:none; background:#000;
+    opacity:0; transition:opacity 4s ease-in-out;
+  }
+  
+
   /* bottom hint */
   .player-bottom-hint {
     position:relative; z-index:2; text-align:center;
     padding:12px 20px 16px;
-    font-size:13px; color:rgba(255,255,255,.5);
+    font-size:16px; color:rgba(255,255,255,.5);
   }
 
   /* rating overlay */
@@ -1105,11 +1133,11 @@
     font-size:42px; cursor:pointer; color:rgba(255,255,255,.25); transition:all .2s;
   }
   .rating-star.active { color:#F39C12; }
-  .rating-label-text { font-size:13px; color:rgba(255,255,255,.5); margin-bottom:24px; min-height:20px; }
+  .rating-label-text { font-size:16px; color:rgba(255,255,255,.5); margin-bottom:24px; min-height:20px; }
   .rating-voice-btn {
     padding:12px 24px; border-radius:20px; background:rgba(255,255,255,.15);
     border:1px solid rgba(255,255,255,.25); color:#fff;
-    font-size:14px; cursor:pointer; font-family:inherit;
+    font-size:17px; cursor:pointer; font-family:inherit;
     display:inline-flex; align-items:center; gap:8px;
     backdrop-filter:blur(4px);
   }
@@ -1148,7 +1176,7 @@
   .questionnaire-icon-bg ion-icon { font-size:28px; color:var(--gold); }
   .questionnaire-content { flex:1; }
   .questionnaire-title { font-size:17px; font-weight:700; color:#2C2C2C; }
-  .questionnaire-subtitle { font-size:13px; color:#9A9A9A; margin-top:3px; }
+  .questionnaire-subtitle { font-size:16px; color:#9A9A9A; margin-top:3px; }
   .questionnaire-arrow { color:var(--gold); font-size:22px; flex-shrink:0; }
 
   .data-section { margin:0 16px 20px; }
@@ -1161,7 +1189,7 @@
   }
   .data-toggle-btn {
     padding:4px 12px; border-radius:6px; border:none; background:transparent;
-    font-size:13px; color:#7A7A7A; font-weight:500; cursor:pointer; font-family:inherit; transition:all .2s;
+    font-size:16px; color:#7A7A7A; font-weight:500; cursor:pointer; font-family:inherit; transition:all .2s;
   }
   .data-toggle-btn.active { background:rgba(253,250,245,.85); color:#2C2C2C; font-weight:700; }
 
@@ -1169,7 +1197,7 @@
     background:var(--card); border-radius:16px; padding:10px 6px 8px;
     box-shadow:0 2px 8px rgba(100,100,80,.06);
   }
-  .data-legend-hint { padding:0 10px 8px; text-align:center; font-size:12px; color:#9A9A9A; }
+  .data-legend-hint { padding:0 10px 8px; text-align:center; font-size:15px; color:#9A9A9A; }
 
   .data-usage-three {
     display:flex; padding:14px 0;
@@ -1182,7 +1210,7 @@
   }
   .data-usage-icon-bg ion-icon { font-size:22px; }
   .data-usage-value { font-size:22px; font-weight:700; color:#2C2C2C; }
-  .data-usage-label { font-size:12px; color:#9A9A9A; margin-top:2px; }
+  .data-usage-label { font-size:15px; color:#9A9A9A; margin-top:2px; }
   .data-usage-divider { width:1px; background:var(--border); }
 
   .data-records-card {
@@ -1198,13 +1226,13 @@
   .data-record-icon-bg ion-icon { font-size:20px; }
   .data-record-info { flex:1; }
   .data-record-name { font-size:15px; font-weight:600; color:#2C2C2C; }
-  .data-record-date { font-size:12px; color:#9A9A9A; margin-top:2px; }
+  .data-record-date { font-size:15px; color:#9A9A9A; margin-top:2px; }
   .data-record-right { text-align:right; }
   .data-record-duration { display:flex; align-items:center; gap:3px; justify-content:flex-end; }
-  .data-record-duration ion-icon { font-size:13px; color:#9A9A9A; }
-  .data-record-duration-text { font-size:12px; color:#9A9A9A; }
+  .data-record-duration ion-icon { font-size:16px; color:#9A9A9A; }
+  .data-record-duration-text { font-size:15px; color:#9A9A9A; }
   .data-record-rating { display:flex; gap:2px; justify-content:flex-end; margin-top:3px; }
-  .data-record-rating ion-icon { font-size:14px; }
+  .data-record-rating ion-icon { font-size:17px; }
   .data-record-rating .star-filled { color:var(--gold); }
   .data-record-rating .star-empty { color:#D8D4CC; }
 
@@ -1259,11 +1287,11 @@
     background:var(--gold); border:2px solid #fff;
     display:flex; align-items:center; justify-content:center;
   }
-  .profile-avatar-edit-badge ion-icon { font-size:12px; color:#fff; }
+  .profile-avatar-edit-badge ion-icon { font-size:15px; color:#fff; }
   .profile-user-info { flex:1; }
   .profile-user-name { font-size:20px; font-weight:700; color:#fff; }
-  .profile-user-sub { font-size:14px; color:rgba(255,255,255,.85); margin-top:4px; }
-  .profile-user-edit-hint { font-size:12px; color:rgba(255,255,255,.6); font-style:italic; margin-top:4px; }
+  .profile-user-sub { font-size:17px; color:rgba(255,255,255,.85); margin-top:4px; }
+  .profile-user-edit-hint { font-size:15px; color:rgba(255,255,255,.6); font-style:italic; margin-top:4px; }
   .profile-user-chevron { flex-shrink:0; }
   .profile-user-chevron ion-icon { font-size:22px; color:rgba(255,255,255,.6); }
 
@@ -1285,7 +1313,7 @@
   .profile-menu-icon-bg ion-icon { font-size:20px; }
   .profile-menu-info { flex:1; }
   .profile-menu-title { font-size:17px; font-weight:600; color:#2C2C2C; }
-  .profile-menu-subtitle { font-size:13px; color:#9A9A9A; margin-top:2px; }
+  .profile-menu-subtitle { font-size:16px; color:#9A9A9A; margin-top:2px; }
   .profile-menu-chevron ion-icon { font-size:20px; color:#D0CCC4; }
 
   /* voice settings card */
@@ -1296,7 +1324,7 @@
   .profile-voice-title { font-size:17px; font-weight:600; color:#2C2C2C; margin-bottom:14px; }
   .profile-voice-toggle { display:flex; gap:10px; margin-bottom:16px; }
   .profile-voice-opt {
-    flex:1; padding:10px 0; border-radius:20px; text-align:center; font-size:14px;
+    flex:1; padding:10px 0; border-radius:20px; text-align:center; font-size:17px;
     background:#E8E4DC; border:none; cursor:pointer;
     font-family:inherit; color:#7A7A7A; font-weight:500; transition:all .2s;
   }
@@ -1304,7 +1332,7 @@
   .profile-speed-row {
     display:flex; align-items:center; justify-content:space-between;
   }
-  .profile-speed-label { font-size:14px; color:#7A7A7A; }
+  .profile-speed-label { font-size:17px; color:#7A7A7A; }
   .profile-speed-controls { display:flex; align-items:center; gap:12px; }
   .profile-speed-btn {
     width:32px; height:32px; border-radius:50%;
@@ -1372,7 +1400,7 @@
 
   /* API key modal (复用 edit-name 风格) */
   .apikey-hint {
-    font-size:13px; color:#7A7A7A; line-height:1.6; margin-bottom:14px;
+    font-size:16px; color:#7A7A7A; line-height:1.6; margin-bottom:14px;
     background:rgba(201,169,78,.08); padding:10px 12px; border-radius:10px;
     border:1px solid rgba(201,169,78,.2);
   }
@@ -1384,14 +1412,14 @@
     letter-spacing:.5px;
   }
   .apikey-input:focus { border-color:var(--green); }
-  .apikey-row-eye { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; color:#7A7A7A; }
+  .apikey-row-eye { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:16px; color:#7A7A7A; }
   .apikey-clear-btn {
     margin-top:12px; width:100%; padding:10px; border-radius:10px;
     background:rgba(200,90,61,.08); color:#C85A3D; border:1px solid rgba(200,90,61,.2);
-    font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;
+    font-size:16px; font-weight:600; cursor:pointer; font-family:inherit;
   }
   .apikey-status {
-    display:inline-block; padding:3px 10px; border-radius:8px; font-size:12px; font-weight:600;
+    display:inline-block; padding:3px 10px; border-radius:8px; font-size:15px; font-weight:600;
   }
   .apikey-status.set { background:rgba(90,142,90,.15); color:#4A7A4A; }
   .apikey-status.unset { background:rgba(200,90,61,.12); color:#A0452F; }
@@ -1400,7 +1428,7 @@
   .toast {
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
     background:rgba(0,0,0,.75); color:#fff; padding:14px 28px; border-radius:12px;
-    font-size:14px; z-index:200; animation:fadeIn .2s ease; pointer-events:none;
+    font-size:17px; z-index:200; animation:fadeIn .2s ease; pointer-events:none;
     white-space:nowrap;
   }
 
@@ -1446,11 +1474,11 @@
     border-radius:14px; background:rgba(107,142,107,0.9); display:flex;
     align-items:center; justify-content:center;
   }
-  .healing-rec-msg-play ion-icon { font-size:14px; color:#fff; }
+  .healing-rec-msg-play ion-icon { font-size:17px; color:#fff; }
   .healing-rec-msg-info { padding:12px; display:flex; flex-direction:column; }
   .healing-rec-msg-name { font-size:16px; font-weight:700; color:#2C2C2C; margin-bottom:4px; }
-  .healing-rec-msg-desc { font-size:13px; color:#7A7A7A; line-height:1.5; margin-bottom:8px; }
-  .healing-rec-msg-action { font-size:14px; color:#6B8E6B; font-weight:600; }
+  .healing-rec-msg-desc { font-size:16px; color:#7A7A7A; line-height:1.5; margin-bottom:8px; }
+  .healing-rec-msg-action { font-size:17px; color:#6B8E6B; font-weight:600; }
 
   /* ========== PLAYER GUIDE BUBBLE ========== */
   .player-guide-bubble {
@@ -1468,7 +1496,7 @@
   .player-guide-avatar ion-icon { font-size:16px; color:#fff; }
   .player-guide-text {
     background:rgba(253,250,245,0.88); border-radius:16px; padding:12px 16px;
-    font-size:14px; color:#3D3D3D; line-height:1.6; max-width:280px;
+    font-size:17px; color:#3D3D3D; line-height:1.6; max-width:280px;
     border:1px solid rgba(201,169,78,0.15);
     box-shadow:0 4px 16px rgba(0,0,0,0.1);
   }
@@ -1524,7 +1552,7 @@
     background: var(--green); border-color: var(--green);
   }
   .journey-label {
-    font-size: 12px; color: rgba(255,255,255,0.6); transition: all 0.4s;
+    font-size: 15px; color: rgba(255,255,255,0.6); transition: all 0.4s;
   }
   .journey-label.active { color: var(--gold); font-weight: 600; }
   .journey-label.completed { color: var(--green); }
@@ -1570,7 +1598,7 @@
   .solar-term-card:active { transform: scale(.98); }
   .solar-term-card-center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
   .solar-term-tag {
-    font-size: 12px; font-weight: 600; color: var(--v10-cinnabar);
+    font-size: 15px; font-weight: 600; color: var(--v10-cinnabar);
     letter-spacing: 1.5px; font-family: var(--v10-font-kai);
   }
   .solar-term-name {
@@ -1578,7 +1606,7 @@
     font-family: var(--v10-font-serif); letter-spacing: 1px;
   }
   .solar-term-advice {
-    font-size: 12px; color: var(--v10-ink-soft); line-height: 1.6;
+    font-size: 15px; color: var(--v10-ink-soft); line-height: 1.6;
     font-family: var(--v10-font-kai);
   }
 
@@ -1603,12 +1631,12 @@
   .family-back-btn ion-icon { font-size: 22px; color: #2C2C2C; }
   .family-header-title { font-size: 19px; font-weight: 700; color: #2C2C2C; }
   .family-body { padding: 20px; flex: 1; }
-  .family-desc { font-size: 14px; color: #7A7A7A; line-height: 1.6; margin-bottom: 20px; }
+  .family-desc { font-size: 17px; color: #7A7A7A; line-height: 1.6; margin-bottom: 20px; }
   .family-code-wrap {
     background: var(--card); border-radius: 16px; padding: 20px;
     text-align: center; border: 1px solid var(--border); margin-bottom: 20px;
   }
-  .family-code-label { font-size: 13px; color: #9A9A9A; margin-bottom: 8px; }
+  .family-code-label { font-size: 16px; color: #9A9A9A; margin-bottom: 8px; }
   .family-code-num {
     font-size: 32px; font-weight: 700; color: var(--gold); letter-spacing: 6px;
     font-family: 'Noto Serif SC', serif; margin-bottom: 12px;
@@ -1631,14 +1659,14 @@
   }
   .family-member-info { flex: 1; }
   .family-member-name { font-size: 16px; font-weight: 600; color: #2C2C2C; }
-  .family-member-time { font-size: 12px; color: #9A9A9A; margin-top: 2px; }
+  .family-member-time { font-size: 15px; color: #9A9A9A; margin-top: 2px; }
 
   /* ========== FEATURE 8: ACHIEVEMENTS ========== */
   .achievement-section { margin: 0 16px 20px; }
   .achievement-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
   .achievement-header ion-icon { font-size: 22px; color: var(--gold); }
   .achievement-title { font-size: 17px; font-weight: 700; color: #2C2C2C; flex: 1; }
-  .achievement-progress { font-size: 13px; color: #9A9A9A; }
+  .achievement-progress { font-size: 16px; color: #9A9A9A; }
   .achievement-stamps {
     display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
   }
@@ -1652,7 +1680,7 @@
     border-color: var(--gold); background: rgba(201,169,78,0.12);
   }
   .achievement-stamp ion-icon { font-size: 22px; }
-  .achievement-stamp-name { font-size: 11px; font-weight: 600; margin-top: 2px; }
+  .achievement-stamp-name { font-size: 17px; font-weight: 600; margin-top: 2px; }
   .achievement-congrats {
     text-align: center; font-size: 15px; color: var(--gold); font-weight: 600;
     margin-top: 10px;
@@ -1669,11 +1697,11 @@
   }
   .diary-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .diary-card-mic { color: var(--green); font-size: 16px; }
-  .diary-card-date { font-size: 13px; color: #9A9A9A; }
-  .diary-card-wuyin { font-size: 13px; font-weight: 600; color: var(--ink); }
-  .diary-card-stars { color: var(--gold); font-size: 13px; margin-left: auto; }
-  .diary-card-text { font-size: 14px; color: #5A5A5A; line-height: 1.6; }
-  .diary-empty { text-align: center; padding: 20px; font-size: 14px; color: #9A9A9A; }
+  .diary-card-date { font-size: 16px; color: #9A9A9A; }
+  .diary-card-wuyin { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .diary-card-stars { color: var(--gold); font-size: 16px; margin-left: auto; }
+  .diary-card-text { font-size: 17px; color: #5A5A5A; line-height: 1.6; }
+  .diary-empty { text-align: center; padding: 20px; font-size: 17px; color: #9A9A9A; }
 
   /* =============================================================
      子页：日记详情（V10 第 8 屏）
@@ -1683,14 +1711,14 @@
   .diary-hero .back-pill{position:absolute;top:54px;left:20px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#FBF7EC;display:flex;align-items:center;justify-content:center;z-index:3;cursor:pointer;border:none}
   .diary-hero .back-pill ion-icon{font-size:20px;color:#FBF7EC}
   .diary-hero .title{position:absolute;left:24px;right:24px;bottom:20px;color:#FBF7EC;z-index:2}
-  .diary-hero .title .eyebrow{font-family:'Noto Serif SC',serif;font-size:14px;letter-spacing:.35em;opacity:.85;margin-bottom:4px}
+  .diary-hero .title .eyebrow{font-family:'Noto Serif SC',serif;font-size:17px;letter-spacing:.35em;opacity:.85;margin-bottom:4px}
   .diary-hero .title h2{font-family:'Noto Serif SC',serif;font-size:26px;font-weight:600;letter-spacing:.05em;margin:0}
   .diary-content{padding:24px 20px 100px}
   .diary-meta{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed var(--paper-edge)}
   .diary-meta .av{width:36px;height:36px;border-radius:50%;background:url('assets/images/user_avatar.jpg') center/cover;flex-shrink:0}
   .diary-meta .info .name{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:600;color:var(--ink)}
-  .diary-meta .info .dt{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--ink-faint);margin-top:2px;letter-spacing:.05em}
-  .diary-meta .tag{margin-left:auto;padding:4px 12px;border-radius:100px;background:var(--yue-jue-bg);color:var(--yue-jue);font-family:'Noto Serif SC',serif;font-size:14px;font-weight:500}
+  .diary-meta .info .dt{font-family:'Noto Serif SC',serif;font-size:16px;color:var(--ink-faint);margin-top:2px;letter-spacing:.05em}
+  .diary-meta .tag{margin-left:auto;padding:4px 12px;border-radius:100px;background:var(--yue-jue-bg);color:var(--yue-jue);font-family:'Noto Serif SC',serif;font-size:17px;font-weight:500}
   .diary-text{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--ink-soft);line-height:1.85;margin-bottom:18px;letter-spacing:.02em}
   .diary-quote{background:var(--paper-warm);border-left:3px solid var(--cinnabar);padding:12px 16px;border-radius:0 10px 10px 0;margin-bottom:18px;font-family:'Noto Serif SC',serif;font-size:18px;color:var(--ink);line-height:1.7;position:relative}
   .diary-quote::before{content:'「';position:absolute;top:6px;left:6px;font-size:26px;color:var(--cinnabar);opacity:.25}
@@ -1703,7 +1731,7 @@
   .diary-wave .wave .wave-bar:nth-child(3n){animation-duration:1.2s;opacity:.85}
   .diary-wave .wave .wave-bar:nth-child(4n){animation-duration:.9s;opacity:.65}
   @keyframes v10DiaryWave{0%,100%{height:30%}50%{height:100%}}
-  .diary-wave .wave-dur{font-family:'Noto Serif SC',serif;font-size:14px;color:var(--ink-faint);flex-shrink:0}
+  .diary-wave .wave-dur{font-family:'Noto Serif SC',serif;font-size:17px;color:var(--ink-faint);flex-shrink:0}
   .diary-btn-like{width:100%;padding:14px;border-radius:12px;background:var(--cinnabar);color:#FBF7EC;font-family:'Noto Serif SC',serif;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(180,60,40,.25)}
   .diary-btn-like:active{transform:scale(.98)}
   .diary-btn-like ion-icon{font-size:18px}
@@ -1721,7 +1749,7 @@
     border: 2px solid rgba(107,142,107,0.3); transition: all 0.5s ease;
   }
   .chat-avatar-state-label {
-    font-size: 12px; color: var(--green); background: rgba(107,142,107,0.12);
+    font-size: 15px; color: var(--green); background: rgba(107,142,107,0.12);
     padding: 2px 8px; border-radius: 10px; font-weight: 500;
   }
   .chat-avatar-morning { filter: brightness(1.05) saturate(1.1); }
@@ -1730,7 +1758,7 @@
   .chat-avatar-night { filter: brightness(0.85) saturate(0.9) hue-rotate(10deg); }
   .chat-avatar-sad { filter: brightness(0.9) saturate(0.8) hue-rotate(180deg); }
   .chat-avatar-weather {
-    position: absolute; top: -4px; right: -4px; font-size: 14px;
+    position: absolute; top: -4px; right: -4px; font-size: 17px;
     background: rgba(255,255,255,0.8); border-radius: 50%; width: 18px; height: 18px;
     display: flex; align-items: center; justify-content: center;
   }
@@ -1747,7 +1775,7 @@
   .smart-rec-icon { font-size: 28px; color: #fff; flex-shrink: 0; }
   .smart-rec-content { flex: 1; }
   .smart-rec-title { font-size: 15px; font-weight: 700; color: #fff; }
-  .smart-rec-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .smart-rec-sub { font-size: 16px; color: rgba(255,255,255,0.8); margin-top: 2px; }
   .smart-rec-chevron { color: rgba(255,255,255,0.6); font-size: 20px; }
 
   /* ========== FEATURE 12: DAILY CHECK-IN (V10 朱砂印章) ========== */
@@ -1790,7 +1818,7 @@
   }
   .checkin-btn.checked .checkin-text { color: #968A78; text-shadow: none; }
   .checkin-streak {
-    font-size: 14px; color: var(--v10-ink-soft); font-weight: 500;
+    font-size: 17px; color: var(--v10-ink-soft); font-weight: 500;
     font-family: var(--v10-font-kai);
   }
   .checkin-streak-num {
@@ -1842,7 +1870,7 @@
 
   .seal-badge {
     display: inline-flex; align-items: center; justify-content: center;
-    background: #C85A3D; color: #fff; font-size: 12px; font-weight: 700;
+    background: #C85A3D; color: #fff; font-size: 15px; font-weight: 700;
     padding: 4px 10px; border-radius: 4px; transform: rotate(-3deg);
     box-shadow: 0 2px 8px rgba(200,90,61,0.3); letter-spacing: 1px;
   }
@@ -1874,7 +1902,7 @@
     backdrop-filter: blur(12px) saturate(1.2);
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
     z-index: 10;
-    font-size: 13px;
+    font-size: 16px;
   }
   .questionnaire-home-card::after {
     content: '';
@@ -1926,7 +1954,7 @@
   .questionnaire-home-icon ion-icon { font-size: 22px; color: var(--v10-cinnabar); }
   .questionnaire-home-center { flex: 1; display: flex; flex-direction: column; gap: 4px; }
   .questionnaire-home-tag {
-    font-size: 12px; font-weight: 600; color: var(--v10-cinnabar);
+    font-size: 15px; font-weight: 600; color: var(--v10-cinnabar);
     letter-spacing: 1px; font-family: var(--v10-font-kai);
   }
   .questionnaire-home-title {
@@ -1942,7 +1970,7 @@
     background: linear-gradient(90deg, var(--v10-cinnabar) 0%, var(--v10-zhi) 100%);
     border-radius: 3px; transition: width .3s var(--v10-ease);
   }
-  .questionnaire-home-sub { font-size: 12px; color: var(--v10-ink-faint); }
+  .questionnaire-home-sub { font-size: 15px; color: var(--v10-ink-faint); }
   .questionnaire-home-chevron { color: var(--v10-ink-faint); font-size: 20px; flex-shrink: 0; }
 
   /* ========== FEATURE 8: HEALING SCROLL ========== */
@@ -1950,7 +1978,7 @@
   .puzzle-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
   .puzzle-header ion-icon { font-size: 22px; color: var(--gold); }
   .puzzle-title { font-size: 17px; font-weight: 700; color: #2C2C2C; flex: 1; }
-  .puzzle-progress { font-size: 13px; color: #9A9A9A; }
+  .puzzle-progress { font-size: 16px; color: #9A9A9A; }
   .scroll-container {
     position: relative;
     background: var(--card); border-radius: 16px; border: 1px solid var(--border);
@@ -2011,7 +2039,7 @@
   .scroll-label {
     flex: 1;
     text-align: center;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 600;
     color: #666;
   }
@@ -2022,7 +2050,7 @@
   .scroll-count {
     flex: 1;
     text-align: center;
-    font-size: 11px;
+    font-size: 17px;
     color: #9A9A9A;
   }
   .puzzle-congrats {
@@ -2031,7 +2059,7 @@
   }
   .puzzle-profile-entry {
     display: flex; align-items: center; gap: 8px; margin-top: 6px;
-    font-size: 13px; color: var(--gold); font-weight: 600;
+    font-size: 16px; color: var(--gold); font-weight: 600;
   }
 
   /* ========== FEATURE 9: QUESTIONNAIRE ========== */
@@ -2125,7 +2153,7 @@
     width: 100%; max-width: 300px; text-align: center; animation: fadeIn 0.3s ease;
   }
   .round-complete-modal h3 { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-  .round-complete-modal p { font-size: 14px; color: #7A7A7A; line-height: 1.6; margin-bottom: 16px; }
+  .round-complete-modal p { font-size: 17px; color: #7A7A7A; line-height: 1.6; margin-bottom: 16px; }
   .round-complete-unlock {
     background: rgba(201,169,78,0.1); border-radius: 12px; padding: 12px; margin-bottom: 16px;
     font-size: 15px; color: var(--gold); font-weight: 600;
@@ -2371,7 +2399,7 @@
   /* 品牌头 */
   .home-brand{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
   .home-brand .brand-text .en{
-    font-family:var(--font-en);font-size:14px;font-weight:500;
+    font-family:var(--font-en);font-size:17px;font-weight:500;
     letter-spacing:.35em;color:var(--cinnabar);margin-bottom:2px;
     display:none;/* 适老化：隐藏英文 */
   }
@@ -2402,7 +2430,7 @@
     text-align:right;font-family:var(--font-kai);font-size:17px;
     color:var(--ink-soft);letter-spacing:0;line-height:1.5;font-weight:500;
   }
-  .home-greet .date .small{font-size:14px;color:var(--ink-faint);display:none}
+  .home-greet .date .small{font-size:17px;color:var(--ink-faint);display:none}
 
   /* 时令提示 */
   .home-tip{
@@ -2448,7 +2476,7 @@
     background:rgba(255,255,255,.85);
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
     padding:3px 8px;border-radius:100px;
-    font-family:var(--font-kai);font-size:14px;color:var(--ink-soft);
+    font-family:var(--font-kai);font-size:17px;color:var(--ink-soft);
     border:1px solid rgba(255,255,255,.6);
   }
   .hero-card .scene .big-seal{
@@ -2485,7 +2513,7 @@
     gap:8px;box-shadow:var(--shadow-btn);min-height:44px;
     transition:transform var(--t-fast) var(--ease);cursor:pointer;
   }
-  .btn-primary-home::before{content:'✦';font-size:14px}
+  .btn-primary-home::before{content:'✦';font-size:17px}
   .btn-primary-home:active{transform:scale(.98)}
 
   /* 小五气泡 · 严格按 design-preview-v10.html 1:1 还原 */
@@ -2520,7 +2548,7 @@
     width:7px;height:7px;border-radius:50%;background:#4AB85B;flex-shrink:0;
   }
   .xiaowu-bubble .name .mode{
-    font-family:var(--font-kai);font-size:14px;color:var(--yue-jue);
+    font-family:var(--font-kai);font-size:17px;color:var(--yue-jue);
     font-weight:500;white-space:nowrap;
   }
   .xiaowu-bubble .msg{
@@ -2833,7 +2861,7 @@
   .greet{margin:6px 0 14px}
   .greet .hi{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint)}
   .greet .name{font-family:var(--v10-font-serif);font-size:30px;font-weight:600;color:var(--v10-ink);margin-top:2px;letter-spacing:.05em}
-  .greet .date{font-family:var(--v10-font-serif);font-size:14px;color:var(--v10-ink-faint);margin-top:4px;letter-spacing:.15em}
+  .greet .date{font-family:var(--v10-font-serif);font-size:17px;color:var(--v10-ink-faint);margin-top:4px;letter-spacing:.15em}
 
   .section-eyebrow{font-family:var(--v10-font-serif);font-size:18px;letter-spacing:.2em;color:var(--v10-cinnabar);margin:20px 0 12px;display:flex;align-items:center;gap:8px;font-weight:600}
   .section-eyebrow::before{content:'';width:12px;height:1px;background:var(--v10-cinnabar)}
@@ -2845,7 +2873,7 @@
     box-shadow:var(--v10-shadow-1);
   }
   .records-hero::before{content:'志';position:absolute;top:-10px;right:20px;font-family:var(--v10-font-serif);font-size:160px;font-weight:700;color:rgba(110,147,86,.10);line-height:1}
-  .records-hero .eyebrow{font-family:var(--v10-font-serif);font-size:14px;letter-spacing:.35em;color:var(--v10-jue);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+  .records-hero .eyebrow{font-family:var(--v10-font-serif);font-size:17px;letter-spacing:.35em;color:var(--v10-jue);text-transform:uppercase;margin-bottom:8px;font-weight:600}
   .records-hero h2{font-family:var(--v10-font-serif);font-size:26px;font-weight:600;color:var(--v10-ink);margin-bottom:6px;letter-spacing:.05em}
   .records-hero p{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-soft);line-height:1.7}
   /* ✅ 推荐调式行（替代健康分） */
@@ -2875,7 +2903,7 @@
   .emo-bar{background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);border-radius:16px;padding:16px 18px;box-shadow:var(--v10-shadow-1);margin-bottom:14px}
   .emo-bar h4{font-family:var(--v10-font-serif);font-size:19px;font-weight:600;color:var(--v10-ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .emo-bar h4::before{content:'';width:3px;height:14px;background:var(--v10-cinnabar);border-radius:2px}
-  .emo-bar .emo-sub{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);margin-bottom:14px}
+  .emo-bar .emo-sub{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);margin-bottom:14px}
   .emo-row{display:grid;grid-template-columns:64px 1fr 50px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--v10-paper-edge)}
   .emo-row:last-child{border-bottom:none}
   .emo-row .lbl{font-family:var(--v10-font-serif);font-size:17px;font-weight:600}
@@ -2888,7 +2916,7 @@
   .word-cloud{background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);border-radius:16px;padding:18px;box-shadow:var(--v10-shadow-1);margin-bottom:14px}
   .word-cloud h4{font-family:var(--v10-font-serif);font-size:19px;font-weight:600;color:var(--v10-ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .word-cloud h4::before{content:'';width:3px;height:14px;background:var(--v10-cinnabar);border-radius:2px}
-  .word-cloud .wc-sub{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);margin-bottom:14px}
+  .word-cloud .wc-sub{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);margin-bottom:14px}
   .wc-body{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:center;padding:6px 0;line-height:1.6}
   .wc-tag{font-family:var(--v10-font-kai);font-weight:500;border-radius:18px;padding:5px 12px;display:inline-block;transition:transform .25s;cursor:default}
   .wc-tag:hover{transform:scale(1.06)}
@@ -2929,13 +2957,13 @@
   .tool-cell .ic{width:36px;height:36px;border-radius:10px;background:var(--v10-jue-bg);color:var(--v10-jue);display:flex;align-items:center;justify-content:center}
   .tool-cell .ic ion-icon{font-size:20px}
   .tool-cell .t{font-family:var(--v10-font-serif);font-size:17px;font-weight:600;color:var(--v10-ink);line-height:1.2}
-  .tool-cell .s{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);line-height:1.2}
+  .tool-cell .s{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.2}
   .tool-cell .checkin-dots{display:flex;gap:3px;justify-content:center;margin-top:2px}
   .tool-cell .checkin-dots .d{width:6px;height:6px;border-radius:50%;background:var(--v10-paper-edge)}
   .tool-cell .checkin-dots .d.on{background:var(--v10-gold)}
 
   /* 情志测评历史（列表 + 卡片样式） */
-  .qh-sub{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);margin:2px 0 12px 2px;letter-spacing:.5px}
+  .qh-sub{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);margin:2px 0 12px 2px;letter-spacing:.5px}
   #questionnaireHistoryContainer{margin-bottom:18px}
   .qh-empty{
     background:var(--v10-paper-pure);
@@ -2947,7 +2975,7 @@
   }
   .qh-empty .ic{font-size:36px;color:var(--v10-paper-edge);margin-bottom:8px}
   .qh-empty .t{font-family:var(--v10-font-serif);font-size:17px;font-weight:600;color:var(--v10-ink);margin-bottom:4px}
-  .qh-empty .d{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);line-height:1.6}
+  .qh-empty .d{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.6}
   .qh-list{display:flex;flex-direction:column;gap:10px}
   .qh-item{
     background:var(--v10-paper-pure);
@@ -2970,17 +2998,17 @@
     color:var(--v10-cinnabar);
   }
   .qh-item .qh-date .day{font-family:var(--v10-font-serif);font-size:20px;font-weight:700;line-height:1.1}
-  .qh-item .qh-date .mon{font-family:var(--v10-font-kai);font-size:12px;color:var(--v10-ink-faint);line-height:1.2;margin-top:2px}
+  .qh-item .qh-date .mon{font-family:var(--v10-font-kai);font-size:15px;color:var(--v10-ink-faint);line-height:1.2;margin-top:2px}
   .qh-item .qh-body{flex:1;min-width:0}
   .qh-item .qh-title{font-family:var(--v10-font-serif);font-size:18px;font-weight:700;color:var(--v10-ink);margin-bottom:2px;line-height:1.3}
-  .qh-item .qh-desc{font-family:var(--v10-font-kai);font-size:14px;color:var(--v10-ink-faint);line-height:1.55;margin-bottom:6px;
+  .qh-item .qh-desc{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.55;margin-bottom:6px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
   }
   .qh-item .qh-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-  .qh-item .qh-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--v10-font-serif);font-size:11px;font-weight:700;color:#fff;letter-spacing:0}
+  .qh-item .qh-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--v10-font-serif);font-size:15px;font-weight:700;color:#fff;letter-spacing:0}
   .qh-item .qh-arrow{flex-shrink:0;color:var(--v10-ink-faint);align-self:center}
   .qh-item .qh-arrow ion-icon{font-size:18px}
-  .qh-item .qh-time{font-family:var(--v10-font-kai);font-size:12px;color:var(--v10-ink-faint);margin-top:2px}
+  .qh-item .qh-time{font-family:var(--v10-font-kai);font-size:15px;color:var(--v10-ink-faint);margin-top:2px}
 
   /* 隐藏档案页里没用的旧 section，避免视觉杂乱 */
   #page-data .data-overlay{display:none}
@@ -3167,7 +3195,7 @@
   .q-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.1)}
   .q-hero::after{content:'问';position:absolute;bottom:-26px;right:14px;font-family:var(--v10-font-serif);font-size:170px;font-weight:700;color:rgba(255,255,255,.12);line-height:1}
   .q-hero .eyebrow{
-    font-family:var(--v10-font-serif);font-size:14px;letter-spacing:.35em;
+    font-family:var(--v10-font-serif);font-size:17px;letter-spacing:.35em;
     opacity:.85;margin-bottom:10px;font-weight:500;
   }
   .q-hero h2{
@@ -3233,7 +3261,7 @@
     font-family:var(--v10-font-serif);font-size:18px;color:var(--v10-ink);letter-spacing:.05em;font-weight:600;
   }
   .q-top .info .pct{
-    font-family:var(--v10-font-serif);font-size:13px;color:var(--v10-ink-faint);
+    font-family:var(--v10-font-serif);font-size:16px;color:var(--v10-ink-faint);
     letter-spacing:.05em;margin-top:2px;
   }
   /* 11 号屏 · q-progress（进度条） */
@@ -3363,7 +3391,7 @@
   }
   .questionnaire-body{padding:24px 22px !important}
   .questionnaire-question-num{
-    font-family:var(--v10-font-serif) !important;font-size:14px !important;
+    font-family:var(--v10-font-serif) !important;font-size:17px !important;
     color:var(--v10-ink-faint) !important;letter-spacing:.2em;margin-bottom:14px !important;
   }
   .questionnaire-question-text{
@@ -3530,7 +3558,7 @@
   </div>
 
   <!-- ==================== HOME PAGE · V10 设计稿完整结构 ==================== -->
-  <div id="page-home" class="page active">
+  <div id="page-home" class="page">
     <div class="home-content">
 
       <!-- 所有元素都在 stagger-in 容器里，hero-card 单独加 animation:none 避免动画问题 -->
@@ -3618,8 +3646,7 @@
         <div class="name">小五</div>
         <div class="stat" id="chatAvatarStateLabel">在线 · 随时倾听</div>
       </div>
-      <div class="chat-end-btn" onclick="endChatSession('manual')" style="margin-left:auto;padding:8px 16px;background:rgba(255,255,255,0.15);border-radius:20px;font-size:16px;color:var(--yue-jue);cursor:pointer;white-space:nowrap;">结束聊天</div>
-    </div>
+      </div>
 
     <!-- 消息滚动区（独立滚动容器） -->
     <div class="chat-scroll">
@@ -3629,7 +3656,7 @@
       <!-- 快捷建议 -->
       <div class="suggest-row" id="suggestRow">
         <div class="suggest-chip" onclick="sendChatMessage('睡不着怎么办')">睡不着怎么办</div>
-        <div class="suggest-chip on" onclick="switchTab(2)">推荐音乐</div>
+        <div class="suggest-chip on" onclick="endChatSession('manual')">结束并推荐</div>
         <div class="suggest-chip" onclick="switchTab(3)">我的档案</div>
       </div>
     </div>
@@ -3874,7 +3901,7 @@
         <h4>情绪关键词</h4>
         <div class="wc-sub">近 30 天对话中提到的情绪</div>
         <div class="wc-body" id="emotionCloudContainer">
-          <div style="text-align:center;color:#9A9A9A;font-size:14px;width:100%;">开始聊天后，您的情绪关键词将在这里呈现</div>
+          <div style="text-align:center;color:#9A9A9A;font-size:17px;width:100%;">开始聊天后，您的情绪关键词将在这里呈现</div>
         </div>
       </div>
 
@@ -4013,7 +4040,7 @@
               <ion-icon name="musical-notes"></ion-icon>
               <span class="data-section-title">近期疗愈记录</span>
             </div>
-            <span id="recordsViewAllBtn" style="font-size:12px;color:var(--gold);cursor:pointer;display:none;" onclick="openRecordsDetail()">查看全部 ></span>
+            <span id="recordsViewAllBtn" style="font-size:15px;color:var(--gold);cursor:pointer;display:none;" onclick="openRecordsDetail()">查看全部 ></span>
           </div>
           <div class="data-records-card" id="healingRecordsContainerLegacy"></div>
         </div>
@@ -4025,13 +4052,13 @@
           <div class="data-chart-card" style="display:flex;align-items:center;gap:16px;padding:16px;">
             <div style="text-align:center;flex-shrink:0;">
               <div style="font-family:var(--font-serif);font-size:36px;font-weight:700;color:var(--gold);" id="checkinStreak">0</div>
-              <div style="font-size:12px;color:#9A9A9A;margin-top:2px;">连续天数</div>
+              <div style="font-size:15px;color:#9A9A9A;margin-top:2px;">连续天数</div>
             </div>
             <div style="flex:1;text-align:right;">
-              <div style="font-size:14px;color:#7A7A7A;">累计</div>
+              <div style="font-size:17px;color:#7A7A7A;">累计</div>
               <div style="font-family:var(--font-serif);font-size:22px;font-weight:600;color:#2C2C2C;" id="totalCheckinDays">0</div>
             </div>
-            <button id="checkinBtnLegacy" style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;flex-shrink:0;" onclick="doCheckin()">
+            <button id="checkinBtnLegacy" style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;flex-shrink:0;" onclick="doCheckin()">
               <span id="checkinText">签到</span>
             </button>
           </div>
@@ -4192,7 +4219,7 @@
             <div class="profile-user-name" id="profileUserNameLegacy">小五的伙伴</div>
             <div class="profile-user-sub">五音疗愈伙伴 · 平和体质</div>
             <div class="puzzle-profile-entry">
-              <ion-icon name="images" style="font-size:14px;"></ion-icon>
+              <ion-icon name="images" style="font-size:17px;"></ion-icon>
               <span id="profilePuzzleProgressLegacy">画卷完成度 0/5</span>
             </div>
             <div class="profile-user-edit-hint">点击修改名称</div>
@@ -4510,7 +4537,7 @@
       <div class="player-top-center">
         <h3 id="playerTitle"></h3>
         <p id="playerSubtitle"></p>
-        <p id="playerAlbumInfo" style="display:none;font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px;"></p>
+        <p id="playerAlbumInfo" style="display:none;font-size:17px;color:rgba(255,255,255,0.7);margin-top:2px;"></p>
       </div>
       <button class="voice-toggle-btn" id="voiceToggleBtn" onclick="toggleVoiceSpeak()" title="语音朗读开关">
         <ion-icon name="volume-high-outline" id="voiceToggleIcon"></ion-icon>
@@ -4567,7 +4594,10 @@
 
     <!-- 全景沉浸模式 -->
     <div class="immersive-overlay" id="immersiveOverlay">
+      <canvas class="immersive-particles" id="immersiveParticles"></canvas>
+      <div class="immersive-light-overlay" id="immersiveLightOverlay"></div>
       <div class="immersive-title" id="immersiveTitle"></div>
+      
       <button class="immersive-close" onclick="toggleImmersiveMode()">&#10005;</button>
       <div class="immersive-panorama-wrap" id="immersiveWrap">
         <img class="immersive-panorama-img" id="immersiveImg" src="" draggable="false">
@@ -4592,7 +4622,7 @@
           <ion-icon name="mic-outline"></ion-icon>
           <span>点击语音说出感受</span>
         </button>
-        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:var(--ink);font-size:13px;resize:none;display:none;margin:6px 0;"></textarea>
+        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:var(--ink);font-size:16px;resize:none;display:none;margin:6px 0;"></textarea>
         <button class="rating-submit-btn" id="ratingSubmitBtn" onclick="submitRating()">提交评价</button>
       </div>
     </div>
@@ -4607,7 +4637,7 @@
           <ion-icon name="arrow-back" style="font-size:20px;"></ion-icon>
         </div>
         <div class="title" style="position:absolute;left:24px;right:24px;bottom:20px;color:#FBF7EC;z-index:2;">
-          <div class="eyebrow" id="diaryHeroEyebrow" style="font-family:'Noto Serif SC',serif;font-size:14px;letter-spacing:.35em;opacity:.85;margin-bottom:4px;">DIARY · 04-19</div>
+          <div class="eyebrow" id="diaryHeroEyebrow" style="font-family:'Noto Serif SC',serif;font-size:17px;letter-spacing:.35em;opacity:.85;margin-bottom:4px;">DIARY · 04-19</div>
           <h2 id="diaryHeroTitle" style="font-family:'Noto Serif SC',serif;font-size:26px;font-weight:600;letter-spacing:.05em;margin:0;">疗愈语音日记</h2>
         </div>
       </div>
@@ -4761,7 +4791,7 @@
           <img src="assets/images/scene_shang.jpg" style="width:calc(50% - 4px);height:60px;object-fit:cover;border-radius:6px;">
           <img src="assets/images/scene_yu.jpg" style="width:calc(50% - 4px);height:60px;object-fit:cover;border-radius:6px;">
         </div>
-        <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;">五音疗愈旅程拼图</div>
+        <div style="text-align:center;font-size:15px;color:rgba(255,255,255,.5);margin-top:6px;">五音疗愈旅程拼图</div>
       </div>
       <!-- 礼炮特效容器 -->
       <div id="confettiContainer" style="display:none;position:absolute;inset:0;pointer-events:none;z-index:10;"></div>
@@ -5214,13 +5244,31 @@ function getAIRecommendation() {
 function showSessionRecommendation(rec) {
   var container = document.getElementById('chatMessages');
   if (!container) return;
+  // ✅ 持久化推荐卡片到聊天记录
+  saveChatMessage('recommendation', '疗愈推荐', {
+    primaryWutai: rec.primaryWutai,
+    secondaryWutai: rec.secondaryWutai || '',
+    primaryTone: rec.primaryTone,
+    primaryToneName: rec.primaryToneName,
+    secondaryTone: rec.secondaryTone || '',
+    secondaryToneName: rec.secondaryToneName || '',
+    summary: rec.summary || ''
+  });
+  renderRecommendationCard(rec, container);
+  container.scrollTop = container.scrollHeight;
+  showToast('已为您生成今日疗愈建议');
+  // ✅ 刷新主页疗愈推荐卡片
+  try { updateHomeV10(); } catch(e) {}
+}
+
+function renderRecommendationCard(rec, container) {
   var row = document.createElement('div');
   row.className = 'msg-row';
   var html = '<div class="msg-avatar"><ion-icon name="heart"></ion-icon></div>';
   html += '<div class="healing-rec-msg">';
   html += '<div class="healing-rec-msg-info">';
   html += '<div class="healing-rec-msg-name">今日建议</div>';
-  if (rec.summary) html += '<div style="font-size:14px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
+  if (rec.summary) html += '<div style="font-size:17px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
   html += '<div class="healing-rec-msg-desc">主要情志：' + rec.primaryWutai;
   if (rec.secondaryWutai) html += ' + ' + rec.secondaryWutai;
   html += '</div>';
@@ -5242,8 +5290,6 @@ function showSessionRecommendation(rec) {
   html += '</div></div>';
   row.innerHTML = html;
   container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  showToast('已为您生成今日疗愈建议');
 }
 
 var chatHistory = [];
@@ -5404,6 +5450,10 @@ function switchTab(idx) {
   document.querySelectorAll('.tab-item')[idx].classList.add('active');
   document.getElementById('subpage-intro').classList.remove('active');
   document.getElementById('subpage-player').classList.remove('active');
+  // 切换到主页时刷新招呼语、时令、情志档案
+  if (idx === 0) {
+    try { updateHomeV10(); } catch(e) {}
+  }
   // 切换到我的 tab 时检查 me-row 文字是否溢出，溢出则隐藏右侧 val/arrow
     // V3.0: 切换到聊天页面时启动 Session
   if (idx === 1) {
@@ -5415,19 +5465,47 @@ function switchTab(idx) {
       try { hasHist = renderChatHistory(); } catch(e) {}
       if (hasHist) {
         var sepRow = document.createElement('div');
-        sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:12px;opacity:0.6;';
+        sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:15px;opacity:0.6;';
         sepRow.textContent = '—— 以上为历史记录 ——';
         chatContainer.appendChild(sepRow);
-        addBotMsg('欢迎回来，老朋友~ 有什么想跟我聊聊的吗？', 'welcome');
+        addBotMsg('欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
       } else {
         addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
       }
     }
+    // 延迟滚动到底部（确保页面 visible 且 layout 完成后再滚）
+    setTimeout(function() {
+      var sc = document.querySelector('.chat-scroll');
+      if (sc) sc.scrollTop = sc.scrollHeight;
+    }, 200);
   }
   if (idx === 4) {
     setTimeout(function(){ trimMeRowOverflow(); }, 60);
+    // ✅ 刷新"我的"页面统计卡片：聆听 / 日记 / 连续 / 画卷
+    try {
+      var history = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]');
+      var diarys = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+      var checkin = (typeof getCheckinData === 'function') ? getCheckinData() : { streak: 0 };
+      var elListen = document.getElementById('meStatListen');
+      var elDiary = document.getElementById('meStatDiary');
+      var elStreak = document.getElementById('meStatStreak');
+      var elPuzzle = document.getElementById('meStatPuzzle');
+      if (elListen) elListen.textContent = history.length;
+      if (elDiary) elDiary.textContent = diarys.length;
+      if (elStreak) elStreak.textContent = checkin.streak || 0;
+      if (elPuzzle) {
+        var completedTones = {};
+        history.forEach(function(h) { if (h.toneId) completedTones[h.toneId] = true; });
+        elPuzzle.textContent = Object.keys(completedTones).length;
+      }
+    } catch(e) {}
   }
   // ✅ 切换到档案 tab 时刷新 records-hero + records-stats（不显示健康分；汇总问卷 + 对话真实数据）
+  if (idx === 2) {
+    // ✅ 切换到疗愈页时刷新推荐数据（AI聊天后生成的新推荐需实时更新）
+    try { updateHealingRecommendation(); } catch(e) {}
+    try { renderHealingRecCards(); } catch(e) {}
+  }
   if (idx === 3) {
     try { updateRecordsHero(); } catch(e) {}
     try { updateRecordsStats(); } catch(e) {}
@@ -5680,49 +5758,219 @@ function updatePanoramaOffset() { var el=document.querySelector('.player-bg-real
 function toggleImmersiveEvaluation() { showToast('请在疗愈结束后到"档案"页面记录感受'); }
 
 // ========== V10 设计稿 · 主页动态数据绑定 ==========
+// 2026年二十四节气精确日期（香港天文台数据）
+var SOLAR_TERM_DATES_2026 = [
+  { name:'小寒', m:1, d:5, tip:'小寒 · 宜温补养肾 · 羽音当令' },
+  { name:'大寒', m:1, d:20, tip:'大寒 · 宜温补脾肾 · 宫音当令' },
+  { name:'立春', m:2, d:4, tip:'立春 · 宜养肝疏郁 · 角音当令' },
+  { name:'雨水', m:2, d:18, tip:'雨水 · 宜健脾祛湿 · 宫音当令' },
+  { name:'惊蛰', m:3, d:5, tip:'惊蛰 · 宜升发阳气 · 角音当令' },
+  { name:'春分', m:3, d:20, tip:'春分 · 宜调和阴阳 · 角音当令' },
+  { name:'清明', m:4, d:5, tip:'清明 · 宜养肝清心 · 角音当令' },
+  { name:'谷雨', m:4, d:20, tip:'谷雨 · 宜健脾祛湿 · 宫音当令' },
+  { name:'立夏', m:5, d:5, tip:'立夏 · 宜养心安神 · 徵音当令' },
+  { name:'小满', m:5, d:21, tip:'小满 · 宜清热利湿 · 徵音当令' },
+  { name:'芒种', m:6, d:5, tip:'芒种 · 宜清热祛湿 · 徵音当令' },
+  { name:'夏至', m:6, d:21, tip:'夏至 · 宜养心清火 · 徵音当令' },
+  { name:'小暑', m:7, d:7, tip:'小暑 · 宜养心清热 · 徵音当令' },
+  { name:'大暑', m:7, d:23, tip:'大暑 · 宜清热解暑 · 徵音当令' },
+  { name:'立秋', m:8, d:7, tip:'立秋 · 宜润肺防燥 · 商音当令' },
+  { name:'处暑', m:8, d:23, tip:'处暑 · 宜养阴润燥 · 商音当令' },
+  { name:'白露', m:9, d:7, tip:'白露 · 宜养肺润燥 · 商音当令' },
+  { name:'秋分', m:9, d:23, tip:'秋分 · 宜滋阴润肺 · 商音当令' },
+  { name:'寒露', m:10, d:8, tip:'寒露 · 宜养肺固表 · 商音当令' },
+  { name:'霜降', m:10, d:23, tip:'霜降 · 宜温补脾胃 · 宫音当令' },
+  { name:'立冬', m:11, d:7, tip:'立冬 · 宜养肾藏精 · 羽音当令' },
+  { name:'小雪', m:11, d:22, tip:'小雪 · 宜温补脾肾 · 宫音当令' },
+  { name:'大雪', m:12, d:7, tip:'大雪 · 宜温补脾肾 · 宫音当令' },
+  { name:'冬至', m:12, d:22, tip:'冬至 · 宜养肾固本 · 羽音当令' }
+];
+
+// 时令轮换语料库（48条）
+var HOME_TIP_POOL = {
+  // A类 · 养生小贴士（全天候8条）+ 时段限定4条
+  A_anytime: [
+    '常按太冲穴，疏肝理气',
+    '饮食清淡七分饱，脾胃安康',
+    '每天梳头百下，疏通经络',
+    '揉揉耳朵，补肾益气',
+    '叩齿三十六下，固齿健肾',
+    '搓搓手心，温通心阳',
+    '保持心情舒畅，气血自通',
+    '日出而作日落而息，顺应天时'
+  ],
+  A_timed: [
+    { h:[5,6,7,8], text:'晨起一杯温水，唤醒身心' },
+    { h:[12,13], text:'午后小憩片刻，养心宁神' },
+    { h:[18,19], text:'饭后散步半小时，助消化' },
+    { h:[20,21,22], text:'睡前热水泡脚，安神助眠' }
+  ],
+  // B类 · 五行音乐科普（12条）
+  B: [
+    '角音属木通于肝，听角音可疏解郁气',
+    '徵音属火通于心，听徵音可振奋精神',
+    '宫音属土通于脾，听宫音可安定思绪',
+    '商音属金通于肺，听商音可舒缓悲忧',
+    '羽音属水通于肾，听羽音可安神定志',
+    '五音疗愈源自《黄帝内经》，已有千年传承',
+    '宫商角徵羽，五音对应五脏，调和身心',
+    '音乐能调节情绪，古人早已深谙此道',
+    '古琴五音，一音一脏器，妙不可言',
+    '角音如春风拂柳，唤醒肝气',
+    '徵音如夏日骄阳，温通心脉',
+    '宫音如大地厚土，安定脾意',
+    '商音如秋风送爽，清润肺气',
+    '羽音如冬雪凝水，滋养肾精'
+  ],
+  // C类 · 日常温馨关怀（12条）
+  C: [
+    '今天阳光正好，出去走走吧',
+    '听听喜欢的音乐，心情会变好',
+    '记得多喝水，照顾好自己',
+    '笑一笑，十年少',
+    '和老友聊聊天，心情舒畅',
+    '做点自己喜欢的事，享受当下',
+    '深呼吸三次，放松身心',
+    '生活有规律，健康常相伴',
+    '累了就歇歇，别太勉强自己',
+    '今天也是美好的一天',
+    '心怀感恩，处处是温暖',
+    '慢慢来，不着急，岁月静好'
+  ],
+  // D类 · 季节养生（按季节过滤）
+  D: {
+    spring: ['春养肝，少怒多舒展，角音正当时','春暖花开，多到户外走走，舒肝理气','春捂秋冻，别急着减衣'],
+    summer: ['夏养心，清淡饮食，徵音清心火','夏日炎炎，午间小憩养心神','夏季多食苦味，清心泻火'],
+    autumn: ['秋养肺，多食梨藕，商音润肺气','秋高气爽，登高望远舒胸怀','秋燥伤肺，少辛辣多滋润'],
+    winter: ['冬养肾，早睡晚起，羽音藏精气','冬令进补，温养肾阳保安康','冬季保暖先暖脚，寒气从脚起']
+  }
+};
+
+// 简易伪随机（基于日期种子，保证同一天抽到相同的池）
+function _dailyRandom(seed, max) {
+  var x = Math.sin(seed * 9301 + 49297) * 233280;
+  return Math.floor(Math.abs(x) % max);
+}
+function _shuffleBySeed(arr, seed) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = _dailyRandom(seed + i, i + 1);
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+// 构建当日时令轮换池
+function _buildDailyTipPool() {
+  var now = new Date();
+  var month = now.getMonth() + 1;
+  var day = now.getDate();
+  var hour = now.getHours();
+  var daySeed = month * 100 + day; // 每日种子
+
+  var pool = [];
+
+  // A类：全天候 + 时段限定
+  var aItems = HOME_TIP_POOL.A_anytime.slice();
+  HOME_TIP_POOL.A_timed.forEach(function(t) {
+    if (t.h.indexOf(hour) >= 0) aItems.push(t.text);
+  });
+  var aShuffled = _shuffleBySeed(aItems, daySeed);
+  var aCount = Math.min(3, aShuffled.length);
+  for (var i = 0; i < aCount; i++) pool.push(aShuffled[i]);
+
+  // B类
+  var bShuffled = _shuffleBySeed(HOME_TIP_POOL.B, daySeed + 1);
+  for (var i = 0; i < 3; i++) pool.push(bShuffled[i]);
+
+  // C类
+  var cShuffled = _shuffleBySeed(HOME_TIP_POOL.C, daySeed + 2);
+  for (var i = 0; i < 3; i++) pool.push(cShuffled[i]);
+
+  // D类：按季节
+  var seasonKey;
+  if (month >= 2 && month <= 4) seasonKey = 'spring';
+  else if (month >= 5 && month <= 7) seasonKey = 'summer';
+  else if (month >= 8 && month <= 10) seasonKey = 'autumn';
+  else seasonKey = 'winter';
+  var dItems = HOME_TIP_POOL.D[seasonKey].slice();
+  var dShuffled = _shuffleBySeed(dItems, daySeed + 3);
+  for (var i = 0; i < Math.min(2, dShuffled.length); i++) pool.push(dShuffled[i]);
+
+  return pool;
+}
+
+// 缓存当日池和上次展示索引
+var _dailyTipCache = { date: '', pool: [], lastIdx: -1 };
+
+function _getHomeTip() {
+  var now = new Date();
+  var todayKey = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate();
+  var month = now.getMonth() + 1;
+  var day = now.getDate();
+
+  // 检查是否为节气日
+  for (var i = 0; i < SOLAR_TERM_DATES_2026.length; i++) {
+    var st = SOLAR_TERM_DATES_2026[i];
+    if (st.m === month && st.d === day) {
+      return st.tip;
+    }
+  }
+
+  // 非节气日：从当日轮换池中随机取一条
+  if (_dailyTipCache.date !== todayKey) {
+    _dailyTipCache.date = todayKey;
+    _dailyTipCache.pool = _buildDailyTipPool();
+    _dailyTipCache.lastIdx = -1;
+  }
+  // 每次调用取池中下一条，循环
+  if (_dailyTipCache.pool.length > 0) {
+    _dailyTipCache.lastIdx = (_dailyTipCache.lastIdx + 1) % _dailyTipCache.pool.length;
+    return _dailyTipCache.pool[_dailyTipCache.lastIdx];
+  }
+  return '保持心情舒畅，气血自通';
+}
+
 function updateHomeV10() {
   // 1) 称呼：根据用户档案或时段自动
-  var userName = '奶奶';
-  try { var u = JSON.parse(localStorage.getItem('wuyin_user') || '{}'); if (u && u.name) userName = u.name; } catch(e) {}
+  var userName = localStorage.getItem('wuyin_user_name') || '奶奶';
   var hour = new Date().getHours();
   var greeting = (hour < 11) ? '早上好呀' : (hour < 14) ? '中午好呀' : (hour < 18) ? '下午好呀' : (hour < 22) ? '晚上好呀' : '夜深了，早点休息';
   var greetH2 = document.querySelector('.home-greet h2');
   if (greetH2) greetH2.innerHTML = userName + '<br>' + greeting;
 
-  // 2) 日期：节气 + 农历月日
+  // 2) 日期：节气日显示节气，非节气日显示星期几
   try {
     var now = new Date();
-    var solarTerms = ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
     var month = now.getMonth() + 1, day = now.getDate();
-    var termIdx = Math.floor((month - 1) * 2 + (day >= 15 ? 1 : 0));
-    var solarTerm = solarTerms[Math.min(termIdx, 23)];
     var weekNames = ['周日','周一','周二','周三','周四','周五','周六'];
     var week = weekNames[now.getDay()];
+    // 检查是否为节气日
+    var isSolarTermDay = false;
+    var solarTermName = '';
+    for (var i = 0; i < SOLAR_TERM_DATES_2026.length; i++) {
+      if (SOLAR_TERM_DATES_2026[i].m === month && SOLAR_TERM_DATES_2026[i].d === day) {
+        isSolarTermDay = true;
+        solarTermName = SOLAR_TERM_DATES_2026[i].name;
+        break;
+      }
+    }
     var solarEl = document.getElementById('homeDateSolar');
-    if (solarEl) solarEl.textContent = solarTerm + ' · ' + month + '月' + day + '日';
+    if (solarEl) {
+      if (isSolarTermDay) {
+        solarEl.textContent = solarTermName + ' · ' + month + '月' + day + '日';
+      } else {
+        solarEl.textContent = week + ' · ' + month + '月' + day + '日';
+      }
+    }
     var weekEl = document.getElementById('homeDateWeek');
     if (weekEl) weekEl.textContent = week;
   } catch(e) {}
 
-  // 3) 时令提示
+  // 3) 时令提示（新逻辑：节气日固定文案，非节气日轮换语料库）
   try {
-    var tips = {
-      1: '小寒 · 宜温补养肾 · 羽音当令',
-      2: '立春 · 宜养肝疏郁 · 角音当令',
-      3: '惊蛰 · 宜升发阳气 · 角音当令',
-      4: '清明 · 宜养肝清心 · 角音当令',
-      5: '立夏 · 宜养心安神 · 徵音当令',
-      6: '芒种 · 宜清热祛湿 · 徵音当令',
-      7: '小暑 · 宜养心清热 · 徵音当令',
-      8: '立秋 · 宜润肺防燥 · 商音当令',
-      9: '白露 · 宜养肺润燥 · 商音当令',
-      10: '寒露 · 宜养肺固表 · 商音当令',
-      11: '立冬 · 宜养肾藏精 · 羽音当令',
-      12: '大雪 · 宜温补脾肾 · 宫音当令'
-    };
-    var m = new Date().getMonth() + 1;
     var tipEl = document.getElementById('homeTip');
-    if (tipEl) tipEl.textContent = tips[m] || tips[1];
+    if (tipEl) tipEl.textContent = _getHomeTip();
   } catch(e) {}
 
   // 4) 情志档案（5 条 bar）+ 推荐色
@@ -5731,9 +5979,40 @@ function updateHomeV10() {
     var colors = ['var(--yue-jue)','var(--yue-zhi)','var(--yue-gong)','var(--yue-shang)','var(--yue-yu)'];
     var stored = null;
     try { stored = JSON.parse(localStorage.getItem('wuyin_qingzhi') || 'null'); } catch(e) {}
-    var vals = stored && Array.isArray(stored) && stored.length === 5
-      ? stored
-      : [72, 38, 55, 30, 25];
+    var vals = stored && Array.isArray(stored) && stored.length === 5 ? stored : null;
+    var hasData = (vals !== null);
+    var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
+
+    // 如果有问卷数据但 wuyin_qingzhi 为空，自动计算
+    if (!hasData && completed) {
+      var allAns = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]');
+      if (allAns.length >= 50) {
+        var emotionIds = { 喜:[6,9,15,16,20,23,27,36,42,47], 怒:[1,2,7,11,13,17,28,29,37,43], 忧:[12,21,24,30,31,32,38,39,46,48], 思:[3,8,10,18,19,25,33,40,44,50], 恐:[4,5,14,22,26,34,35,41,45,49] };
+        var rawScores = { 怒:0, 喜:0, 思:0, 忧:0, 恐:0 };
+        // 提取50道情绪题
+        var emotionAnswers = [];
+        if (allAns.length >= 78) {
+          for (var r = 0; r < 5; r++) { var off = r * 17; for (var q = 0; q < 10; q++) { emotionAnswers.push(allAns[off + q]); } }
+        } else {
+          emotionAnswers = allAns.slice(0, 50);
+        }
+        emotionAnswers.forEach(function(ans, idx) {
+          if (typeof ans !== 'number' || ans < 0) return;
+          var qNum = idx + 1;
+          for (var factor in emotionIds) {
+            if (emotionIds[factor].indexOf(qNum) >= 0) { rawScores[factor] += ans; break; }
+          }
+        });
+        vals = ['怒','喜','思','忧','恐'].map(function(f) { return Math.max(5, Math.round((rawScores[f] / 40) * 100)); });
+        localStorage.setItem('wuyin_qingzhi', JSON.stringify(vals));
+        hasData = true;
+      }
+    }
+
+    if (!hasData) {
+      vals = [0, 0, 0, 0, 0]; // 无数据：空柱状图
+    }
+
     var bars = document.querySelectorAll('#qingzhiBars .qingzhi-bar');
     var maxIdx = 0, maxVal = vals[0];
     bars.forEach(function(bar, i) {
@@ -5745,10 +6024,14 @@ function updateHomeV10() {
       bar.classList.toggle('active', i === maxIdx);
     });
     var accentMap = {0:'怒·角',1:'喜·徵',2:'思·宫',3:'忧·商',4:'恐·羽'};
-    var tipEl = document.getElementById('qingzhiTip');
-    if (tipEl) {
-      var acc = accentMap[maxIdx] || accentMap[0];
-      tipEl.innerHTML = '当前偏向<span class="accent">' + acc + '</span>，建议今日听' + (accentMap[maxIdx]||'').split('·')[1] + '音疏调';
+    var tipEl2 = document.getElementById('qingzhiTip');
+    if (tipEl2) {
+      if (hasData && maxVal > 0) {
+        var acc = accentMap[maxIdx] || accentMap[0];
+        tipEl2.innerHTML = '当前偏向<span class="accent">' + acc + '</span>，建议听' + (accentMap[maxIdx]||'').split('·')[1] + '音疏调';
+      } else {
+        tipEl2.innerHTML = '请先完成<span class="accent">情志问卷</span>，获取个性化档案';
+      }
     }
   } catch(e) {}
 
@@ -5815,11 +6098,16 @@ function initChat() {
   if (hasHistory) {
     // 有历史记录：添加分隔线，不再重复欢迎语
     var sepRow = document.createElement('div');
-    sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:12px;opacity:0.6;';
+    sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:15px;opacity:0.6;';
     sepRow.textContent = '—— 以上为历史记录 ——';
     container.appendChild(sepRow);
     // 仅显示一条简短问候
-    addBotMsg('欢迎回来，老朋友~ 有什么想跟我聊聊的吗？', 'welcome');
+    addBotMsg('欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
+    // 滚动到底部（显示最新消息）
+    requestAnimationFrame(function() {
+      var sc = document.querySelector('.chat-scroll');
+      if (sc) sc.scrollTop = sc.scrollHeight;
+    });
   } else {
     // 无历史记录：显示完整欢迎语
     addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
@@ -5839,9 +6127,11 @@ function addBotMsg(text, emotion) {
   row.innerHTML = '<div class="av-sm"></div>'
     + '<div><div class="b">' + text + '</div><div class="t">小五 · ' + timeStr + '</div></div>';
   container.appendChild(row);
-  // 滚动到 .chat-scroll 容器底部
-  var scrollContainer = document.querySelector('.chat-scroll');
-  if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  // 滚动到 .chat-scroll 容器底部（延迟确保 DOM 完成布局）
+  setTimeout(function() {
+    var scrollContainer = document.querySelector('.chat-scroll');
+    if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  }, 50);
   // ✅ V3.0: 持久化聊天记录（welcome/system 不保存）
   if (emotion !== 'welcome' && emotion !== 'system') {
     try { saveChatMessage('bot', text); } catch(e) {}
@@ -5854,10 +6144,12 @@ function addBotMsg(text, emotion) {
   updateAvatarState();
 }
 
-// ✅ V3.0: 聊天记录持久化（支持上滑找回历史）
-function saveChatMessage(role, text) {
+// ✅ V3.0: 聊天记录持久化（支持上滑找回历史，含疗愈推荐卡片）
+function saveChatMessage(role, text, extra) {
   var msgs = JSON.parse(localStorage.getItem('wuyin_chat_messages') || '[]');
-  msgs.push({ role: role, text: text, time: Date.now() });
+  var msg = { role: role, text: text, time: Date.now() };
+  if (extra) Object.assign(msg, extra);
+  msgs.push(msg);
   // 只保留最近 200 条
   if (msgs.length > 200) msgs = msgs.slice(-200);
   localStorage.setItem('wuyin_chat_messages', JSON.stringify(msgs));
@@ -5873,8 +6165,23 @@ function renderChatHistory() {
   if (!container) return;
   var msgs = loadChatMessages();
   if (msgs.length === 0) return false;
-  // 渲染历史消息
+  // 清空已有消息，避免重复渲染
+  container.innerHTML = '';
+  // 渲染历史消息（按时间顺序）
   msgs.forEach(function(m) {
+    if (m.role === 'recommendation') {
+      // 渲染疗愈推荐卡片
+      renderRecommendationCard({
+        primaryWutai: m.primaryWutai,
+        secondaryWutai: m.secondaryWutai || '',
+        primaryTone: m.primaryTone,
+        primaryToneName: m.primaryToneName,
+        secondaryTone: m.secondaryTone || '',
+        secondaryToneName: m.secondaryToneName || '',
+        summary: m.summary || ''
+      }, container);
+      return;
+    }
     var row = document.createElement('div');
     var date = new Date(m.time);
     var timeStr = date.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
@@ -5887,9 +6194,11 @@ function renderChatHistory() {
     }
     container.appendChild(row);
   });
-  // 滚动到底部
-  var scrollContainer = document.querySelector('.chat-scroll');
-  if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  // 滚动到底部（显示最新消息）
+  requestAnimationFrame(function() {
+    var scrollContainer = document.querySelector('.chat-scroll');
+    if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  });
   return true;
 }
 
@@ -5901,8 +6210,10 @@ function addUserMsg(text) {
   row.innerHTML = '<div class="av-sm"></div>'
     + '<div><div class="b">' + text + '</div><div class="t">' + timeStr + '</div></div>';
   container.appendChild(row);
-  var scrollContainer = document.querySelector('.chat-scroll');
-  if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  setTimeout(function() {
+    var scrollContainer = document.querySelector('.chat-scroll');
+    if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  }, 50);
   // ✅ V3.0: 持久化用户消息
   try { saveChatMessage('user', text); } catch(e) {}
 }
@@ -5929,7 +6240,7 @@ function addWaveform() {
   row.innerHTML = '<div class="av-sm"></div>'
     + '<div><div class="b" style="display:flex;flex-direction:column;align-items:flex-start;padding:10px 14px;">'
     + '<div class="wave" style="display:flex;align-items:center;height:18px;gap:3px;">' + bars + '</div>'
-    + '<div style="font-size:14px;color:var(--ink-faint);margin-top:4px;font-family:var(--font-kai);">我在听...</div>'
+    + '<div style="font-size:17px;color:var(--ink-faint);margin-top:4px;font-family:var(--font-kai);">我在听...</div>'
     + '</div></div>';
   container.appendChild(row);
   var scrollContainer = document.querySelector('.chat-scroll');
@@ -6032,6 +6343,8 @@ async function callQwenAPI(userText) {
   var todayStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
   var isCantonese = (ttsConfig.language === 'cantonese');
   var systemPrompt = '你是"' + avatarName + '"，一位温暖亲切的AI陪伴伙伴。你的服务对象主要是中老年人。\n\n'
+    + '【用户称呼——必须遵守】\n'
+    + '你正在陪伴的用户叫"' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '"，请用这个称呼来称呼她。不要使用"阿伯""阿嬸""阿姨""叔叔""您"等泛称，必须用用户的名字来称呼。\n\n'
     + '【绝对真实信息，严禁编造】\n'
     + '今天是' + todayStr + '。\n'
     + '当前节气：' + termInfo.current.name + '已过，' + termInfo.next.name + '将至。' + getSolarTermDetailAdvice(termInfo.current.name) + '\n'
@@ -6166,7 +6479,7 @@ function renderEmotionCloud() {
   if (!container) return;
   var log = JSON.parse(localStorage.getItem('wuyin_chat_emotion_log') || '[]');
   if (log.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:#9A9A9A;font-size:13px;">开始聊天后，您的情绪关键词将在这里呈现</div>';
+    container.innerHTML = '<div style="text-align:center;color:#9A9A9A;font-size:16px;">开始聊天后，您的情绪关键词将在这里呈现</div>';
     return;
   }
   // 统计每种情绪出现次数
@@ -6236,14 +6549,14 @@ function renderEmotionCloud() {
     html += '<div onclick="showEmotionDetail(decodeURIComponent(\'' + encodeURIComponent(name) + '\'))" style="display:inline-flex;align-items:center;gap:4px;padding:' + padSize + 'px 12px;background:' + cfg.color + '22;border:1px solid ' + cfg.color + '44;border-radius:20px;font-size:' + fontSize + 'px;opacity:' + opa + ';cursor:pointer;transition:transform .2s;" onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">';
     html += '<span>' + cfg.icon + '</span>';
     html += '<span style="color:' + cfg.color + ';">' + name + '</span>';
-    html += '<span style="color:#9A9A9A;font-size:11px;">' + count + '次</span>';
+    html += '<span style="color:#9A9A9A;font-size:17px;">' + count + '次</span>';
     html += '</div>';
   });
   html += '</div>';
   // 底部时间范围
   var firstTime = log[0].time;
   var days = Math.max(1, Math.ceil((Date.now() - firstTime) / 86400000));
-  html += '<div style="text-align:center;margin-top:10px;font-size:11px;color:#9A9A9A;">近' + days + '天共记录' + log.length + '条情绪 · 点击关键词查看详情</div>';
+  html += '<div style="text-align:center;margin-top:10px;font-size:17px;color:#9A9A9A;">近' + days + '天共记录' + log.length + '条情绪 · 点击关键词查看详情</div>';
   container.innerHTML = html;
 }
 
@@ -6255,7 +6568,7 @@ function showEmotionDetail(emotionName) {
   records.sort(function(a, b) { return b.time - a.time; });
   var srcMap = { 'ai_chat': 'AI对话分析', 'chat_fallback': '对话识别' };
   var lines = '<div style="max-height:60vh;overflow-y:auto;">';
-  lines += '<div style="margin-bottom:12px;color:var(--ink-faint);font-size:14px;">共 ' + records.length + ' 条记录</div>';
+  lines += '<div style="margin-bottom:12px;color:var(--ink-faint);font-size:17px;">共 ' + records.length + ' 条记录</div>';
   records.forEach(function(r) {
     var d = new Date(r.time);
     var ts = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
@@ -6264,20 +6577,20 @@ function showEmotionDetail(emotionName) {
     if (r.wuyinId) { var wi = WUYIN_DATA.find(function(w){return w.id===r.wuyinId;}); if (wi) wn = wi.name; }
     lines += '<div style="padding:10px 12px;margin-bottom:8px;background:rgba(0,0,0,0.03);border-radius:8px;border-left:3px solid var(--gold);">';
     lines += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
-    lines += '<span style="font-size:13px;color:var(--ink);font-weight:600;">' + ts + '</span>';
-    lines += '<span style="font-size:12px;color:var(--gold);background:rgba(200,170,100,0.15);padding:2px 8px;border-radius:4px;">' + sl + '</span>';
+    lines += '<span style="font-size:16px;color:var(--ink);font-weight:600;">' + ts + '</span>';
+    lines += '<span style="font-size:15px;color:var(--gold);background:rgba(200,170,100,0.15);padding:2px 8px;border-radius:4px;">' + sl + '</span>';
     lines += '</div>';
-    if (wn) lines += '<div style="font-size:13px;color:var(--ink-faint);margin-bottom:4px;">推荐调式：' + wn + '</div>';
+    if (wn) lines += '<div style="font-size:16px;color:var(--ink-faint);margin-bottom:4px;">推荐调式：' + wn + '</div>';
     // ✅ V3.0: 显示一句话情境概括（保护隐私，不显示原话）
     if (r.summary) {
-      lines += '<div style="font-size:13px;color:var(--ink);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;line-height:1.5;">' + r.summary + '</div>';
+      lines += '<div style="font-size:16px;color:var(--ink);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;line-height:1.5;">' + r.summary + '</div>';
     } else if (r.evidence && r.evidence.length > 0) {
       // 兼容旧数据：无 summary 时回退到 evidence，但做脱敏处理（只显示首条，并加省略号）
       var ev = r.evidence[0];
       if (ev.length > 30) ev = ev.substring(0, 30) + '...';
-      lines += '<div style="font-size:13px;color:var(--ink-faint);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;font-style:italic;">' + ev + '</div>';
+      lines += '<div style="font-size:16px;color:var(--ink-faint);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;font-style:italic;">' + ev + '</div>';
     } else {
-      lines += '<div style="font-size:13px;color:var(--ink-faint);margin-top:6px;font-style:italic;">暂无情境描述</div>';
+      lines += '<div style="font-size:16px;color:var(--ink-faint);margin-top:6px;font-style:italic;">暂无情境描述</div>';
     }
     lines += '</div>';
   });
@@ -6286,12 +6599,15 @@ function showEmotionDetail(emotionName) {
   if (!m) {
     m = document.createElement('div');
     m.id = 'emotionDetailModal';
-    m.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    m.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
     m.onclick = function(e) { if (e.target === m) m.style.display = 'none'; };
   }
   m.innerHTML = '<div style="background:#F5F0E8;border-radius:16px;max-width:500px;width:100%;padding:20px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,0.1);"><h3 style="font-family:var(--font-serif);font-size:22px;color:var(--ink);margin:0;">情绪追溯 · ' + emotionName + '</h3><button onclick="document.getElementById(\'emotionDetailModal\').style.display=\'none\'" style="background:none;border:none;font-size:24px;color:var(--ink-faint);cursor:pointer;padding:4px 8px;line-height:1;">&times;</button></div>' + lines + '</div>';
   m.style.display = 'flex';
-  if (!m.parentNode) document.body.appendChild(m);
+  if (!m.parentNode) {
+    var phoneScreen = document.getElementById('phoneScreen');
+    if (phoneScreen) phoneScreen.appendChild(m); else document.body.appendChild(m);
+  }
 }
 
 function getRecentChatEmotions(hours) {
@@ -6987,7 +7303,7 @@ function openIntro(idx) {
     var guofengDivider = '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">' +
       '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.4;"></div>' +
       '<div style="width:24px;height:24px;border-radius:50%;border:1.5px dashed var(--gold);display:flex;align-items:center;justify-content:center;opacity:0.6;">' +
-        '<ion-icon name="infinite" style="font-size:12px;color:var(--gold);"></ion-icon>' +
+        '<ion-icon name="infinite" style="font-size:15px;color:var(--gold);"></ion-icon>' +
       '</div>' +
       '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.4;"></div>' +
     '</div>';
@@ -6997,7 +7313,7 @@ function openIntro(idx) {
         '<div style="width:32px;height:32px;border-radius:50%;background:' + item1.accent + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;"><ion-icon name="' + item1.icon + '" style="font-size:16px;color:#fff;"></ion-icon></div>' +
         '<div style="flex:1;">' +
           '<div style="font-size:16px;font-weight:700;color:var(--ink);">' + item1.name + ' · ' + item1.emotionLabel + '</div>' +
-          '<div style="font-size:14px;color:#888;line-height:1.4;margin-top:2px;">' + item1.description + '</div>' +
+          '<div style="font-size:17px;color:#888;line-height:1.4;margin-top:2px;">' + item1.description + '</div>' +
         '</div>' +
       '</div>' +
       guofengDivider +
@@ -7006,7 +7322,7 @@ function openIntro(idx) {
         '<div style="width:32px;height:32px;border-radius:50%;background:' + item2.accent + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;"><ion-icon name="' + item2.icon + '" style="font-size:16px;color:#fff;"></ion-icon></div>' +
         '<div style="flex:1;">' +
           '<div style="font-size:16px;font-weight:700;color:var(--ink);">' + item2.name + ' · ' + item2.emotionLabel + '</div>' +
-          '<div style="font-size:14px;color:#888;line-height:1.4;margin-top:2px;">' + item2.description + '</div>' +
+          '<div style="font-size:17px;color:#888;line-height:1.4;margin-top:2px;">' + item2.description + '</div>' +
         '</div>' +
       '</div>';
     // 隐藏第二个卡片
@@ -7248,6 +7564,9 @@ function openPlayer(idx) {
   updateJourneyProgress();
   document.getElementById('ratingOverlay').classList.remove('active');
   document.getElementById('subpage-player').classList.add('active');
+  // 隐藏底部导航栏
+  var tabbar = document.getElementById('tabbar');
+  if (tabbar) tabbar.style.display = 'none';
   var bgWrap = document.getElementById('playerBgWrap');
   if (bgWrap) {
     bgWrap.classList.remove('player-bg-stage-0', 'player-bg-stage-1', 'player-bg-stage-2', 'player-bg-stage-3');
@@ -7261,13 +7580,27 @@ function openPlayer(idx) {
 }
 
 // 沉浸全景模式
-var immersiveState = { active: false, dragStartX: 0, currentOffset: 0 };
+var immersiveState = {
+  active: false,
+  dragStartX: 0,
+  currentOffset: 0,
+  autoTimer: null,
+  // 新增效果
+  gyroX: 0, gyroY: 0,           // 陀螺仪视差
+  kenBurnsStart: 0,              // Ken Burns 起始时间
+  breatheStart: 0,               // 呼吸起始时间
+  breatheTimer: null,            // 呼吸定时器
+  particlesCtx: null,            // 粒子 canvas 上下文
+  particles: [],                 // 粒子数组
+  particlesAnimId: null          // 粒子动画帧
+};
+// 每调式5张情境图 [0]=旧占位图保留, [1-4]=新情境图
 var PANORAMA_IMAGES = [
-  'assets/images/scene_jue_panorama.jpg',
-  'assets/images/scene_zhi_panorama.jpg',
-  'assets/images/scene_gong_panorama.jpg',
-  'assets/images/scene_shang_panorama.jpg',
-  'assets/images/scene_yu_panorama.jpg'
+  ['assets/images/scene_jue_panorama.jpg', 'assets/images/角调情境2.png', 'assets/images/角调情境3.png', 'assets/images/角调情境4.png', 'assets/images/角调情境5.png'],
+  ['assets/images/scene_zhi_panorama.jpg', 'assets/images/徵调情境2.png', 'assets/images/徵调情境3.png', 'assets/images/徵调情境4.jpg', 'assets/images/徵调情境5.jpg'],
+  ['assets/images/scene_gong_panorama.jpg', 'assets/images/宫调情境2.png', 'assets/images/宫调情境3.png', 'assets/images/宫调情境4.png', 'assets/images/宫调情境5.png'],
+  ['assets/images/scene_shang_panorama.jpg', 'assets/images/商调情境2.png', 'assets/images/商调情境3.png', 'assets/images/商调情境4.png', 'assets/images/商调情境5.jpg'],
+  ['assets/images/scene_yu_panorama.jpg', 'assets/images/羽调情境2.png', 'assets/images/羽调情境3.png', 'assets/images/羽调情境4.png', 'assets/images/羽调情境5.png']
 ];
 
 function toggleImmersiveMode() {
@@ -7276,18 +7609,59 @@ function toggleImmersiveMode() {
   if (immersiveState.active) {
     overlay.classList.remove('active');
     immersiveState.active = false;
+    // 显示底部导航栏（仍在疗愈页时）
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar && document.getElementById('page-healing').classList.contains('active')) {
+      tabbar.style.display = 'flex';
+    }
     // 停止自动平移
     if (immersiveState.autoTimer) { clearInterval(immersiveState.autoTimer); immersiveState.autoTimer = null; }
+    // 停止呼吸
+    if (immersiveState.breatheTimer) { clearTimeout(immersiveState.breatheTimer); immersiveState.breatheTimer = null; }
+    // 停止粒子
+    if (immersiveState.particlesAnimId) { cancelAnimationFrame(immersiveState.particlesAnimId); immersiveState.particlesAnimId = null; }
+    immersiveState.particles = [];
+    // 重置呼吸遮罩
+    var lightOverlay = document.getElementById('immersiveLightOverlay');
+    if (lightOverlay) lightOverlay.style.opacity = '0';
+    console.log('[immersive] EXIT - 所有效果已停止');
   } else {
     // 根据当前五音加载对应全景图
     var idx = currentWuyinItem ? ['jue','zhi','gong','shang','yu'].indexOf(currentWuyinItem.id) : 2;
     if (idx < 0) idx = 2;
+    console.log('[immersive] ENTER - 开始加载全景图, idx=' + idx);
     loadImmersiveImage(idx);
     overlay.classList.add('active');
     immersiveState.active = true;
-    // 启动自动缓慢平移
-    startImmersiveAutoPan();
+    // 隐藏底部导航栏
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar) tabbar.style.display = 'none';
+    // 等待浏览器完成 reflow 后再启动效果，确保 wrap 尺寸已计算
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        if (!immersiveState.active) return;
+        console.log('[immersive] reflow 完成，启动所有效果');
+        // 启动自动缓慢平移
+        startImmersiveAutoPan();
+        // 启动新增效果
+        startImmersiveParticles();
+        startImmersiveBreathing();
+        startImmersiveKenBurns();
+        startImmersiveGyro();
+      });
+    });
   }
+}
+
+// 统一应用 transform：平移 + 陀螺仪视差 + Ken Burns 缩放
+function applyImmersiveTransform() {
+  var img = document.getElementById('immersiveImg');
+  if (!img) return;
+  var scale = getImmersiveKenBurnsScale();
+  var gyroX = immersiveState.gyroX || 0;
+  var gyroY = immersiveState.gyroY || 0;
+  img.style.transform =
+    'translateY(calc(-50% + ' + gyroY.toFixed(1) + 'px)) translateX(calc(' + immersiveState.currentOffset + 'px + ' + gyroX.toFixed(1) + 'px)) scale(' + scale.toFixed(4) + ')';
 }
 
 function startImmersiveAutoPan() {
@@ -7295,6 +7669,12 @@ function startImmersiveAutoPan() {
   var img = document.getElementById('immersiveImg');
   var wrap = document.getElementById('immersiveWrap');
   if (!img || !wrap) return;
+  // 尺寸为 0 时延迟重试
+  if (wrap.offsetWidth <= 0) {
+    console.log('[immersive] autoPan: wrap width 0, retrying in 100ms');
+    setTimeout(function() { if (immersiveState.active) startImmersiveAutoPan(); }, 100);
+    return;
+  }
   var direction = 1; // 1=右移, -1=左移
   immersiveState.autoTimer = setInterval(function() {
     if (!immersiveState.active) return;
@@ -7308,7 +7688,8 @@ function startImmersiveAutoPan() {
     // 到边界后反向
     if (immersiveState.currentOffset >= maxX) { immersiveState.currentOffset = maxX; direction = -1; }
     if (immersiveState.currentOffset <= minX) { immersiveState.currentOffset = minX; direction = 1; }
-    img.style.transform = 'translateY(-50%) translateX(' + immersiveState.currentOffset + 'px)';
+    applyImmersiveTransform();
+    updateGyroLerp();
   }, 50); // 50ms间隔，约20fps
 }
 
@@ -7325,16 +7706,10 @@ function loadImmersiveImage(idx) {
   img.onerror = null;
 
   // 图片源备选链：jpg 失败 → png 备选
-  var baseSrc = PANORAMA_IMAGES[idx];
+  // 从该调式的5张情境图中随机选一张
+  var images = PANORAMA_IMAGES[idx];
+  var baseSrc = images[Math.floor(Math.random() * images.length)];
   var candidates = [baseSrc];
-  // 同名 png 备选
-  var pngSrc = baseSrc.replace(/\.jpg(\?.*)?$/i, '.png$1');
-  if (pngSrc !== baseSrc) candidates.push(pngSrc);
-  // 3D全景文件夹里的备选（用 URL 编码的中文文件名）
-  var panoramicNames = ['角音_翠竹林_全景.jpg', '徵音_阳光草地_全景.jpg', '宫音_田园麦田_全景.jpg', '商音_秋日晴空_全景.jpg', '羽音_宁静湖面_全景.jpg'];
-  if (panoramicNames[idx]) {
-    candidates.push(encodeURI('五音情境图_3D全景/' + panoramicNames[idx]));
-  }
 
   var tryIdx = 0;
   function tryNext() {
@@ -7352,9 +7727,13 @@ function loadImmersiveImage(idx) {
       if (imgW <= 0) { console.warn('[immersive] image loaded but width=0'); return; }
       var offsetX = -(imgW - wrapW) / 2;
       immersiveState.currentOffset = Math.max(-(imgW - wrapW), Math.min(0, offsetX));
-      img.style.transform = 'translateY(-50%) translateX(' + immersiveState.currentOffset + 'px)';
       // 重启自动平移
       startImmersiveAutoPan();
+      // 重置 Ken Burns 和陀螺仪
+      immersiveState.kenBurnsStart = Date.now();
+      immersiveState.gyroX = 0;
+      immersiveState.gyroY = 0;
+      applyImmersiveTransform();
     };
     img.onerror = function() {
       img.onload = null; img.onerror = null;
@@ -7390,7 +7769,7 @@ function loadImmersiveImage(idx) {
       var wrapW = wrap.offsetWidth;
       var imgW = img.offsetWidth || (wrapW * 5);
       immersiveState.currentOffset = Math.max(-(imgW - wrapW), Math.min(0, immersiveState.currentOffset + dx));
-      img.style.transform = 'translateY(-50%) translateX(' + immersiveState.currentOffset + 'px)';
+      applyImmersiveTransform();
     }
 
     wrap.addEventListener('mousemove', function(e) { onMove(e.clientX); });
@@ -7402,6 +7781,179 @@ function loadImmersiveImage(idx) {
     wrap.addEventListener('touchend', onEnd);
   });
 })();
+
+// ========== 沉浸全景 · 新增效果 ==========
+
+// Ken Burns 缓慢缩放
+function getImmersiveKenBurnsScale() {
+  if (!immersiveState.kenBurnsStart) immersiveState.kenBurnsStart = Date.now();
+  var elapsed = (Date.now() - immersiveState.kenBurnsStart) / 1000;
+  var cycle = 240; // 4 分钟一个周期
+  var phase = (elapsed % cycle) / cycle;
+  var progress = (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+  return 1.0 + 0.04 * progress; // 1.00 ~ 1.04
+}
+
+function startImmersiveKenBurns() {
+  console.log('[immersive] Ken Burns 缩放 - 启动');
+  immersiveState.kenBurnsStart = Date.now();
+}
+
+// 明暗呼吸
+function startImmersiveBreathing() {
+  console.log('[immersive] 明暗呼吸 - 启动');
+  immersiveState.breatheStart = Date.now();
+  if (immersiveState.breatheTimer) clearTimeout(immersiveState.breatheTimer);
+  var lightOverlay = document.getElementById('immersiveLightOverlay');
+  if (!lightOverlay) return;
+  function breathe() {
+    if (!immersiveState.active) return;
+    var elapsed = (Date.now() - immersiveState.breatheStart) / 1000;
+    var phase = (elapsed % 90) / 90; // 90 秒一个呼吸周期
+    var opacity = 0.03 + 0.04 * Math.sin(phase * Math.PI * 2);
+    lightOverlay.style.opacity = opacity.toFixed(3);
+    immersiveState.breatheTimer = setTimeout(breathe, 1000);
+  }
+  breathe();
+}
+
+// 陀螺仪视差 + 桌面端鼠标视差（平滑缓动）
+function startImmersiveGyro() {
+  var overlay = document.getElementById('immersiveOverlay');
+  if (!overlay) return;
+  immersiveState._targetGyroX = 0;
+  immersiveState._targetGyroY = 0;
+
+  var hasDOE = typeof DeviceOrientationEvent !== 'undefined';
+  if (!hasDOE) return;
+
+  // 陀螺仪事件处理
+  function onOrientation(e) {
+    if (!immersiveState.active) return;
+    var gamma = e.gamma || 0;
+    var beta = e.beta || 0;
+    immersiveState._targetGyroX = Math.max(-1, Math.min(1, gamma / 25)) * 40;
+    immersiveState._targetGyroY = Math.max(-1, Math.min(1, (beta - 45) / 35)) * 35;
+  }
+
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS 13+：需要 requestPermission
+    DeviceOrientationEvent.requestPermission()
+      .then(function(state) {
+        if (state === 'granted') {
+          window.addEventListener('deviceorientation', onOrientation);
+        }
+      })
+      .catch(function(err) {
+        console.log('[immersive] gyro permission error:', err);
+      });
+  } else {
+    // Android / 旧版 iOS：直接注册
+    window.addEventListener('deviceorientation', onOrientation);
+  }
+
+  // 鼠标视差（桌面端）
+  overlay.addEventListener('mousemove', function(e) {
+    if (!immersiveState.active) return;
+    var rect = overlay.getBoundingClientRect();
+    var cx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    var cy = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    immersiveState._targetGyroX = cx * 25;
+    immersiveState._targetGyroY = cy * 20;
+  });
+  overlay.addEventListener('mouseleave', function() {
+    immersiveState._targetGyroX = 0;
+    immersiveState._targetGyroY = 0;
+  });
+}
+
+// 每帧平滑插值（在 autoPan 中调用）
+function updateGyroLerp() {
+  var lerp = 0.30; // 缓动系数，越大响应越快
+  immersiveState.gyroX += (immersiveState._targetGyroX - immersiveState.gyroX) * lerp;
+  immersiveState.gyroY += (immersiveState._targetGyroY - immersiveState.gyroY) * lerp;
+}
+
+// 边缘粒子
+function startImmersiveParticles() {
+  console.log('[immersive] 粒子效果 - 启动');
+  var canvas = document.getElementById('immersiveParticles');
+  if (!canvas) { console.log('[immersive] 粒子 - canvas 不存在'); return; }
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  var dpr = window.devicePixelRatio || 1;
+  var wrap = document.getElementById('immersiveWrap');
+  var w = wrap ? wrap.offsetWidth : canvas.offsetWidth;
+  var h = wrap ? wrap.offsetHeight : canvas.offsetHeight;
+  // 尺寸仍为 0 时延迟重试（等待 reflow 完成）
+  if (w <= 0 || h <= 0) {
+    console.log('[immersive] particles: dimensions still 0, retrying in 100ms');
+    setTimeout(function() { if (immersiveState.active) startImmersiveParticles(); }, 100);
+    return;
+  }
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+  console.log('[immersive] 粒子 canvas: ' + w + 'x' + h + ' (dpr=' + dpr + ')');
+
+  immersiveState.particles = [];
+  for (var i = 0; i < 35; i++) {
+    // 粒子分布在整个画面，不只是边缘
+    var x, y;
+    var zone = Math.random();
+    if (zone < 0.4) {
+      // 上半部分散布
+      x = Math.random() * w;
+      y = Math.random() * h * 0.4;
+    } else if (zone < 0.7) {
+      // 下半部分散布
+      x = Math.random() * w;
+      y = h * 0.3 + Math.random() * h * 0.4;
+    } else {
+      // 左右边缘
+      x = Math.random() < 0.5 ? Math.random() * w * 0.1 : w * 0.9 + Math.random() * w * 0.1;
+      y = Math.random() * h;
+    }
+    immersiveState.particles.push({
+      x: x, y: y,
+      size: Math.random() * 3 + 2,
+      speedX: (Math.random() - 0.5) * 0.25,
+      speedY: Math.random() * 0.3 + 0.08,
+      opacity: Math.random() * 0.3 + 0.3,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: Math.random() * 0.012 + 0.003
+    });
+  }
+  console.log('[immersive] 粒子 - 已创建 ' + immersiveState.particles.length + ' 颗粒子');
+
+  function draw() {
+    if (!immersiveState.active) { immersiveState.particlesAnimId = null; return; }
+    ctx.clearRect(0, 0, w, h);
+    var ps = immersiveState.particles;
+    for (var i = 0; i < ps.length; i++) {
+      var p = ps[i];
+      p.x += p.speedX + Math.sin(p.sway) * 0.2;
+      p.y += p.speedY;
+      p.sway += p.swaySpeed;
+      if (p.y > h + 10) { p.y = -10; p.x = Math.random() * w; }
+      if (p.x < -10) p.x = w + 10;
+      if (p.x > w + 10) p.x = -10;
+      var gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      gradient.addColorStop(0, 'rgba(255,245,200,' + p.opacity + ')');
+      gradient.addColorStop(0.5, 'rgba(200,230,180,' + (p.opacity * 0.5) + ')');
+      gradient.addColorStop(1, 'rgba(150,200,130,0)');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+    immersiveState.particlesAnimId = requestAnimationFrame(draw);
+  }
+  draw();
+}
 
 function closePlayer() {
   stopPlay();
@@ -7415,6 +7967,11 @@ function closePlayer() {
   if (bg) { bg.classList.remove('entering', 'player-bg-stage-0', 'player-bg-stage-1', 'player-bg-stage-2', 'player-bg-stage-3'); }
   setTimeout(function() {
     document.getElementById('subpage-player').classList.remove('active');
+    // 显示底部导航栏（仍在疗愈页时）
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar && document.getElementById('page-healing').classList.contains('active')) {
+      tabbar.style.display = 'flex';
+    }
   }, 800);
 }
 
@@ -8514,7 +9071,7 @@ function showOptimizationSuggestion() {
       '<div class="rating-overlay-bg"></div>' +
       '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-height:82vh;overflow-y:auto;padding:16px 12px;z-index:2001;box-sizing:border-box;">' +
         '<h3 style="font-size:18px;color:#fff;font-weight:700;margin-bottom:6px;line-height:1.4;text-align:center;">为了让下次疗愈更适合您</h3>' +
-        '<p style="font-size:14px;color:rgba(255,255,255,.7);margin-bottom:12px;text-align:center;">您希望调整哪一项？</p>' +
+        '<p style="font-size:17px;color:rgba(255,255,255,.7);margin-bottom:12px;text-align:center;">您希望调整哪一项？</p>' +
         '<div id="optToneSelector" style="display:none;margin-bottom:12px;"></div>' +
         '<div id="optButtons" style="display:flex;flex-direction:column;gap:8px;"></div>' +
       '</div>';
@@ -8585,19 +9142,19 @@ function showOptimizationSuggestion() {
   buttonsContainer.innerHTML =
     '<button class="opt-btn" data-action="music" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(90,142,90,.35),rgba(90,142,90,.15));border:1.5px solid rgba(150,200,150,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🎵</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一首音乐</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这首音乐不太适合我</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一首音乐</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这首音乐不太适合我</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="scene" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(74,127,165,.35),rgba(74,127,165,.15));border:1.5px solid rgba(120,180,220,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🌿</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一个自然情境</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这个自然场景不太适合我</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一个自然情境</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这个自然场景不太适合我</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="keep" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,170,100,.3),rgba(200,170,100,.12));border:1.5px solid rgba(220,190,130,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🙂</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">保持现在就好</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">今天只是状态不好，不需要调整</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">保持现在就好</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">今天只是状态不好，不需要调整</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="feedback" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,90,61,.3),rgba(200,90,61,.12));border:1.5px solid rgba(230,130,100,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🎤</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">告诉我们您的想法</div><div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;">您觉得哪里还可以改进？</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">告诉我们您的想法</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">您觉得哪里还可以改进？</div></div>' +
     '</button>';
   overlay.classList.add('active');
   buttonsContainer.querySelectorAll('.opt-btn').forEach(function(btn) {
@@ -8678,7 +9235,7 @@ function showFreeFeedbackInput() {
           '<button onclick="closeFreeFeedbackOverlay()" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;padding:6px 12px;border-radius:8px;cursor:pointer;margin-right:10px;">← 返回</button>' +
           '<h3 style="font-size:18px;color:#fff;font-weight:700;flex:1;">告诉我们您的想法</h3>' +
         '</div>' +
-        '<p style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:14px;">您觉得哪里还可以改进？</p>' +
+        '<p style="font-size:17px;color:rgba(255,255,255,.6);margin-bottom:14px;">您觉得哪里还可以改进？</p>' +
         '<button class="rating-voice-btn" id="freeFeedbackVoiceBtn" onclick="toggleFreeFeedbackVoice(this)" style="margin-bottom:8px;">' +
           '<ion-icon name="mic-outline"></ion-icon><span>点击语音说出想法</span>' +
         '</button>' +
@@ -9732,6 +10289,12 @@ function showQuestionnaireResults() {
     }
     localStorage.setItem('wuyin_recommend_ids', JSON.stringify(storedIds));
     localStorage.setItem('wuyin_positive_emotion', JSON.stringify(positiveEmotions));
+    // 同步保存情志档案数据（主页情志卡片使用）
+    var qingzhiOrder = ['怒','喜','思','忧','恐'];
+    var qingzhiVals = qingzhiOrder.map(function(emo) {
+      return Math.max(5, Math.round((scores[emo] / 40) * 100));
+    });
+    localStorage.setItem('wuyin_qingzhi', JSON.stringify(qingzhiVals));
   } catch(e) {}
 }
 
@@ -10847,6 +11410,8 @@ function saveEditName(){
   if (chatTitle) chatTitle.textContent = '与' + v + '聊天';
   closeEditName();
   showToast && showToast('已保存');
+  // 同步刷新主页招呼语
+  try { updateHomeV10(); } catch(e) {}
 }
 
 // ========== V10 弹窗 · AI 密钥配置 ==========
@@ -11245,7 +11810,7 @@ function openDiaryDetail() {
   var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
   var container = document.getElementById('diaryDetailContainer');
   if (diaries.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:#9A9A9A;font-size:14px;padding:60px 20px;">暂无疗愈语音日记<br><br>完成疗愈评价后，您的语音感受会记录在这里</div>';
+    container.innerHTML = '<div style="text-align:center;color:#9A9A9A;font-size:17px;padding:60px 20px;">暂无疗愈语音日记<br><br>完成疗愈评价后，您的语音感受会记录在这里</div>';
   } else {
     container.innerHTML = diaries.slice().reverse().map(renderDiaryDetail).join('');
   }
@@ -11500,31 +12065,32 @@ function executeReblockResource(toneId, musicId, sceneId) {
   }, 300);
 }
 
-// V3.0: 取消规避确认弹窗
+// V3.0: 取消规避确认弹窗（每次重新创建，避免数据过期；样式与重新规避弹窗一致）
 function confirmUnblockResource(toneId, musicId, sceneId, timestamp) {
-  var overlay = document.getElementById('unblockConfirmOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'unblockConfirmOverlay';
-    overlay.className = 'rating-overlay';
-    overlay.innerHTML =
-      '<div class="rating-overlay-bg"></div>' +
-      '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;padding:20px;z-index:2001;">' +
-        '<h3 style="font-size:18px;color:#fff;font-weight:700;margin-bottom:12px;text-align:center;">确定恢复该曲目的推荐吗？</h3>' +
-        '<p style="font-size:14px;color:rgba(255,255,255,.7);margin-bottom:20px;text-align:center;">恢复后，该曲目将重新进入随机推荐池</p>' +
-        '<div style="display:flex;gap:10px;">' +
-          '<button onclick="closeUnblockConfirm()" style="flex:1;padding:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:15px;cursor:pointer;">取消</button>' +
-          '<button id="confirmUnblockBtn" style="flex:1;padding:12px;background:rgba(90,142,90,.4);border:1px solid rgba(90,142,90,.6);border-radius:8px;color:#fff;font-size:15px;cursor:pointer;">确定恢复</button>' +
-        '</div>' +
-      '</div>';
-    document.getElementById('phoneScreen').appendChild(overlay);
-  }
+  // 移除旧弹窗
+  var old = document.getElementById('unblockConfirmOverlay');
+  if (old) old.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'unblockConfirmOverlay';
+  overlay.className = 'rating-overlay';
+  overlay.innerHTML =
+    '<div class="rating-overlay-bg"></div>' +
+    '<div class="rating-overlay-content" style="position:relative;z-index:2;max-width:85vw;padding:24px 28px;background:rgba(255,255,255,0.97);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);">' +
+      '<div style="text-align:center;padding:6px 0 10px;">' +
+        '<div style="font-size:22px;font-weight:700;color:#2C2C2C;font-family:\'Noto Serif SC\',serif;margin-bottom:14px;">确定恢复该曲目的推荐吗？</div>' +
+        '<div style="font-size:17px;color:#444;line-height:1.6;">恢复后，该曲目将重新进入随机推荐池</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;margin-top:14px;">' +
+        '<button onclick="closeUnblockConfirm()" style="flex:1;padding:15px;border-radius:12px;background:#F5F2EC;border:1.5px solid #D4CFC4;color:#333;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;cursor:pointer;">取消</button>' +
+        '<button id="confirmUnblockBtn" style="flex:1;padding:15px;border-radius:12px;background:rgba(90,142,90,.18);border:1.5px solid rgba(90,142,90,.4);color:#3D7A3D;font-family:\'Noto Serif SC\',serif;font-size:17px;font-weight:600;cursor:pointer;">确定恢复</button>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('phoneScreen').appendChild(overlay);
+  setTimeout(function() { overlay.classList.add('active'); }, 10);
   // 保存参数到 window
   window._unblockParams = { toneId: toneId, musicId: musicId, sceneId: sceneId, timestamp: timestamp };
   // 绑定确定按钮
-  var btn = overlay.querySelector('#confirmUnblockBtn');
-  btn.onclick = function() { executeUnblockResource(); };
-  overlay.classList.add('active');
+  document.getElementById('confirmUnblockBtn').onclick = function() { executeUnblockResource(); };
 }
 
 // V3.0: 执行取消规避（新增记录保留历史）
@@ -11800,7 +12366,7 @@ function renderQuestionnaireHistory() {
       var topWuyins = getHistoryTopWuyins(rec, 3);
       var dotsHtml = '';
       if (topWuyins.length === 0) {
-        dotsHtml = '<span style="font-size:12px;color:var(--v10-ink-faint);">五音皆宜</span>';
+        dotsHtml = '<span style="font-size:15px;color:var(--v10-ink-faint);">五音皆宜</span>';
       } else {
         topWuyins.forEach(function(t) {
           dotsHtml += '<div class="qh-dot" style="background:' + t.info.color + ';" title="' + t.emotion + '·' + t.info.name + '音">' + t.info.name + '</div>';
@@ -11888,6 +12454,27 @@ function viewHistoryRecord(historyId) {
       }
     } catch(e) { console.error('[viewHistoryRecord] inject answers:', e); }
 
+    // 同步保存情志档案数据到 wuyin_qingzhi（从历史记录计算）
+    try {
+      var emotionIds = { 喜:[6,9,15,16,20,23,27,36,42,47], 怒:[1,2,7,11,13,17,28,29,37,43], 忧:[12,21,24,30,31,32,38,39,46,48], 思:[3,8,10,18,19,25,33,40,44,50], 恐:[4,5,14,22,26,34,35,41,45,49] };
+      var rawScores = { 怒:0, 喜:0, 思:0, 忧:0, 恐:0 };
+      var emotionAnswers = [];
+      if (rec.answers.length >= 78) {
+        for (var r = 0; r < 5; r++) { var off = r * 17; for (var q = 0; q < 10; q++) { emotionAnswers.push(rec.answers[off + q]); } }
+      } else {
+        emotionAnswers = rec.answers.slice(0, 50);
+      }
+      emotionAnswers.forEach(function(ans, idx) {
+        if (typeof ans !== 'number' || ans < 0) return;
+        var qNum = idx + 1;
+        for (var factor in emotionIds) {
+          if (emotionIds[factor].indexOf(qNum) >= 0) { rawScores[factor] += ans; break; }
+        }
+      });
+      var qingzhiVals = ['怒','喜','思','忧','恐'].map(function(f) { return Math.max(5, Math.round((rawScores[f] / 40) * 100)); });
+      localStorage.setItem('wuyin_qingzhi', JSON.stringify(qingzhiVals));
+    } catch(e) {}
+
     // ✅ 3) 打开结果页（只读模式：隐藏"开始今日疗愈"和"重新测评"按钮避免误操作）
     try {
       var startBtn = document.getElementById('resultsStartBtn');
@@ -11933,8 +12520,9 @@ function showHistoryViewer(record, onClose) {
     if (!viewer) {
       viewer = document.createElement('div');
       viewer.id = vid;
-      viewer.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--v10-paper-warm,#F5F0E6);overflow-y:auto;-webkit-overflow-scrolling:touch;';
-      document.body.appendChild(viewer);
+      viewer.style.cssText = 'position:absolute;inset:0;z-index:9999;background:var(--v10-paper-warm,#F5F0E6);overflow-y:auto;-webkit-overflow-scrolling:touch;';
+      var phoneScreen = document.getElementById('phoneScreen');
+      if (phoneScreen) phoneScreen.appendChild(viewer); else document.body.appendChild(viewer);
     }
 
     // 2) 顶部：返回按钮 + 标题 + "历史查看模式"标签
@@ -11945,9 +12533,9 @@ function showHistoryViewer(record, onClose) {
       +   '</button>'
       +   '<div style="flex:1;min-width:0;">'
       +     '<div style="font-family:var(--v10-font-serif,serif);font-size:18px;font-weight:700;color:var(--v10-ink,#2C2620);">情志测评历史</div>'
-      +     '<div style="font-family:var(--v10-font-kai,serif);font-size:13px;color:var(--v10-ink-faint,#7A7066);margin-top:2px;">' + (record.date || '') + (record.time ? ' ' + record.time : '') + '</div>'
+      +     '<div style="font-family:var(--v10-font-kai,serif);font-size:16px;color:var(--v10-ink-faint,#7A7066);margin-top:2px;">' + (record.date || '') + (record.time ? ' ' + record.time : '') + '</div>'
       +   '</div>'
-      +   '<div style="font-family:var(--v10-font-kai,serif);font-size:12px;color:var(--v10-cinnabar,#C85A3D);background:var(--v10-cinnabar-s,rgba(200,90,61,0.1));padding:4px 10px;border-radius:10px;white-space:nowrap;">历史查看</div>'
+      +   '<div style="font-family:var(--v10-font-kai,serif);font-size:15px;color:var(--v10-cinnabar,#C85A3D);background:var(--v10-cinnabar-s,rgba(200,90,61,0.1));padding:4px 10px;border-radius:10px;white-space:nowrap;">历史查看</div>'
       + '</div>';
 
     // 3) ✅ 备份原 #questionnaireResults 的内容（避免被 showQuestionnaireResults 污染）
@@ -12427,7 +13015,7 @@ function buildDualRecCard(item1, item2) {
     '<div style="display:flex;align-items:center;gap:12px;padding:0 16px;margin:2px 0;">' +
       '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.5;"></div>' +
       '<div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed var(--gold);display:flex;align-items:center;justify-content:center;opacity:0.7;">' +
-        '<ion-icon name="infinite" style="font-size:14px;color:var(--gold);"></ion-icon>' +
+        '<ion-icon name="infinite" style="font-size:17px;color:var(--gold);"></ion-icon>' +
       '</div>' +
       '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.5;"></div>' +
     '</div>' +
@@ -12755,18 +13343,8 @@ try { updateQuestionnaireStatus(); } catch(e) { console.error('[init] updateQues
 try { updateV10Dates(); } catch(e) { console.error('[init] updateV10Dates:', e); }
 setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
 
-// 首次访问且未设置 API Key 时，2 秒后弹出引导
-if (!hasApiKey()) {
-  setTimeout(function() {
-    // 仅在首页弹出，避免打扰其他操作
-    var home = document.getElementById('page-home');
-    if (home && home.classList.contains('active')) {
-      if (confirm('检测到您还未设置 API 密钥。\n\nAI 聊天功能需要该密钥才能正常工作。\n\n是否现在设置？')) {
-        showApiKeyModal();
-      }
-    }
-  }, 2000);
-}
+// ✅ API 已默认配置在 Cloudflare Pages 环境变量中，不再弹窗提示
+// 用户可在「我的」页面手动设置/更换 API Key
 
 /* =============================================================
    V10 融合 · Splash + Onboarding 控制逻辑
@@ -12796,6 +13374,9 @@ if (!hasApiKey()) {
     setTimeout(function(){
       splash.style.display = 'none';
       onboard.classList.add('active');
+      // 隐藏底部导航栏
+      var tabbar = document.getElementById('tabbar');
+      if (tabbar) tabbar.style.display = 'none';
     }, 500);
   };
 
@@ -12805,12 +13386,18 @@ if (!hasApiKey()) {
     onboard.classList.remove('active');
     setTimeout(function(){ onboard.style.display = 'none'; }, 400);
 
+    // 激活主页（初始无 active，避免 splash 结束前闪现）
+    var home = document.getElementById('page-home');
+    if (home) home.classList.add('active');
+    // 显示底部导航栏
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar) tabbar.style.display = 'flex';
+
     // ✅ 自动弹出五态情志测评弹窗（如果用户未完成测评）
     // 延迟 1.5 秒让 onboard 动画完成，避免遮挡
     setTimeout(function() {
       try {
         var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
-        var home = document.getElementById('page-home');
         if (!completed && home && home.classList.contains('active')) {
           if (typeof openQzModal === 'function') openQzModal('first');
         }
