@@ -9841,6 +9841,12 @@ function openQuestionnaire() {
     if (body2) body2.style.display = 'block';
     var nav2 = document.getElementById('questionnaireNav');
     if (nav2) nav2.style.display = 'flex';
+    var navV10 = document.getElementById('questionnaireNavBottom');
+    if (navV10) { navV10.style.display = 'flex'; }
+    var qtopEl = document.querySelector('#questionnaireOverlay .q-top');
+    if (qtopEl) qtopEl.style.display = 'flex';
+    var qprogEl = document.querySelector('#questionnaireOverlay .q-progress');
+    if (qprogEl) qprogEl.style.display = 'block';
     var actionBtns = document.getElementById('questionnaireActionBtns');
     if (actionBtns) actionBtns.style.display = 'none';
     try { renderQuestion(); } catch(e) { console.error('[openQuestionnaire] renderQuestion error:', e); }
@@ -10075,6 +10081,12 @@ function continueNextRound() {
   document.getElementById('questionnaireResults').classList.remove('active');
   document.getElementById('questionnaireBody').style.display = 'block';
   document.getElementById('questionnaireNav').style.display = 'flex';
+  var navV10 = document.getElementById('questionnaireNavBottom');
+  if (navV10) { navV10.style.display = 'flex'; }
+  var qtopEl = document.querySelector('#questionnaireOverlay .q-top');
+  if (qtopEl) qtopEl.style.display = 'flex';
+  var qprogEl = document.querySelector('#questionnaireOverlay .q-progress');
+  if (qprogEl) qprogEl.style.display = 'block';
   var actionBtns = document.getElementById('questionnaireActionBtns');
   if (actionBtns) actionBtns.style.display = 'none';
   renderQuestion();
@@ -10132,11 +10144,11 @@ function showQuestionnaireResults() {
   // ✅ 彻底移除结果页的 q-top（右上角"第 1 题/共 17 题 已完成 6%"）以及进度条/导航
   try {
     var qtop = document.querySelector('#questionnaireOverlay .q-top');
-    if (qtop) qtop.remove();
+    if (qtop) qtop.style.display = 'none';
     var qprog = document.querySelector('#questionnaireOverlay .q-progress');
-    if (qprog) qprog.remove();
+    if (qprog) qprog.style.display = 'none';
     var qnav = document.querySelector('#questionnaireOverlay .q-nav');
-    if (qnav) qnav.remove();
+    if (qnav) qnav.style.display = 'none';
   } catch(e) {}
   // 显示重新测评/清空按钮（仅在结果页）
   var actionBtns = document.getElementById('questionnaireActionBtns');
@@ -11624,6 +11636,12 @@ function showQuestionnaireFromProfile() {
     document.getElementById('questionnaireResults').classList.remove('active');
     document.getElementById('questionnaireBody').style.display = 'block';
     document.getElementById('questionnaireNav').style.display = 'flex';
+    var navV10_2 = document.getElementById('questionnaireNavBottom');
+    if (navV10_2) { navV10_2.style.display = 'flex'; }
+    var qtopEl_2 = document.querySelector('#questionnaireOverlay .q-top');
+    if (qtopEl_2) qtopEl_2.style.display = 'flex';
+    var qprogEl_2 = document.querySelector('#questionnaireOverlay .q-progress');
+    if (qprogEl_2) qprogEl_2.style.display = 'block';
     var actionBtns = document.getElementById('questionnaireActionBtns');
     if (actionBtns) actionBtns.style.display = 'none';
     renderQuestion();
@@ -11648,6 +11666,12 @@ function restartQuestionnaire() {
     document.getElementById('questionnaireResults').classList.remove('active');
     document.getElementById('questionnaireBody').style.display = 'block';
     document.getElementById('questionnaireNav').style.display = 'flex';
+    var navV10_3 = document.getElementById('questionnaireNavBottom');
+    if (navV10_3) { navV10_3.style.display = 'flex'; }
+    var qtopEl_3 = document.querySelector('#questionnaireOverlay .q-top');
+    if (qtopEl_3) qtopEl_3.style.display = 'flex';
+    var qprogEl_3 = document.querySelector('#questionnaireOverlay .q-progress');
+    if (qprogEl_3) qprogEl_3.style.display = 'block';
     var actionBtns = document.getElementById('questionnaireActionBtns');
     if (actionBtns) actionBtns.style.display = 'none';
     renderQuestion();
@@ -11673,6 +11697,12 @@ function clearQuestionnaireData() {
     document.getElementById('questionnaireResults').classList.remove('active');
     document.getElementById('questionnaireBody').style.display = 'block';
     document.getElementById('questionnaireNav').style.display = 'flex';
+    var navV10_4 = document.getElementById('questionnaireNavBottom');
+    if (navV10_4) { navV10_4.style.display = 'flex'; }
+    var qtopEl_4 = document.querySelector('#questionnaireOverlay .q-top');
+    if (qtopEl_4) qtopEl_4.style.display = 'flex';
+    var qprogEl_4 = document.querySelector('#questionnaireOverlay .q-progress');
+    if (qprogEl_4) qprogEl_4.style.display = 'block';
     renderQuestion();
     updateQuestionnaireStatus();
     showToast('问卷数据已彻底清空');
