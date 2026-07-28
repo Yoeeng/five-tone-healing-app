@@ -11603,6 +11603,9 @@ function updateV10Dates(){
 }
 
 function showQuestionnaireFromProfile() {
+  // 隐藏底部导航栏（避免遮挡答题导航按钮）
+  var tabbar = document.getElementById('tabbar');
+  if (tabbar) tabbar.style.display = 'none';
   var completed = localStorage.getItem('wuyin_questionnaire_completed');
   var savedAnswers = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]');
   var savedRound = parseInt(localStorage.getItem('wuyin_questionnaire_round') || '0');
