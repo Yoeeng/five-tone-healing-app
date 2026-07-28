@@ -5265,8 +5265,10 @@ function showSessionRecommendation(rec) {
   renderRecommendationCard(rec, container);
   container.scrollTop = container.scrollHeight;
   showToast('已为您生成今日疗愈建议');
-  // ✅ 刷新主页疗愈推荐卡片
+  // ✅ 刷新主页和疗愈页推荐卡片
   try { updateHomeV10(); } catch(e) {}
+  try { renderRecSourceBadges(); } catch(e) {}
+  try { renderHealingRecCards(); } catch(e) {}
 }
 
 function renderRecommendationCard(rec, container) {
