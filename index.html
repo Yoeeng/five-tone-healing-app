@@ -9740,6 +9740,9 @@ function openQiIntro(){
   }
   // 首次用户显示介绍页
   try{ document.getElementById('welcomeOverlay').classList.remove('active'); }catch(e){}
+  // ✅ 隐藏底部导航栏（避免遮挡介绍页按钮）
+  var tabbar = document.getElementById('tabbar');
+  if (tabbar) tabbar.style.display = 'none';
   var el = document.getElementById('subpage-qi-intro');
   if (el) {
     el.classList.add('active');
@@ -9752,6 +9755,9 @@ function closeQiIntro(){
     el.classList.remove('active');
     el.style.display = 'none';
   }
+  // ✅ 恢复底部导航栏
+  var tabbar = document.getElementById('tabbar');
+  if (tabbar) tabbar.style.display = 'flex';
 }
 function startQiTest(){
   try {
