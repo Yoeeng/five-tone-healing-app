@@ -9800,6 +9800,9 @@ function openQuestionnaire() {
   try {
     // ✅ 进入答题 overlay 前先关闭所有子页面/浮层（避免遮挡）
     try { closeAllSubpages(); } catch(_) {}
+    // ✅ 隐藏底部导航栏（避免遮挡答题导航按钮）
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar) tabbar.style.display = 'none';
 
     // 检测是否需要重新测评（1个月后）
     var completedTime = localStorage.getItem('wuyin_questionnaire_completed_time');
@@ -9877,6 +9880,9 @@ function closeQuestionnaire() {
     }
     // ✅ 3) 保存当前进度（防止答到一半关闭丢失）
     saveQuestionnaireProgress();
+    // ✅ 4) 恢复底部导航栏
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar) tabbar.style.display = 'flex';
   } catch(e) {
     console.error('[closeQuestionnaire] error:', e);
   }
@@ -11674,6 +11680,9 @@ function restartQuestionnaire() {
     if (qprogEl_3) qprogEl_3.style.display = 'block';
     var actionBtns = document.getElementById('questionnaireActionBtns');
     if (actionBtns) actionBtns.style.display = 'none';
+    // ✅ 隐藏底部导航栏
+    var tabbar = document.getElementById('tabbar');
+    if (tabbar) tabbar.style.display = 'none';
     renderQuestion();
     updateQuestionnaireStatus();
     showToast('已开始重新测评');
@@ -13021,6 +13030,19 @@ function renderHealingRecCards() {
       '</div>';
   });
   container.innerHTML = html;
+  // ✅ 修复：将 inline onclick 转为 addEventListener，确保移动端点击可靠
+  container.querySelectorAll('.healing-rec-card[onclick]').forEach(function(cardEl) {
+    var code = cardEl.getAttribute('onclick');
+    cardEl.removeAttribute('onclick');
+    cardEl.addEventListener('click', function(ev) {
+      try {
+        (new Function(code))();
+      } catch(err) {
+        console.error('[healing-rec-card] click error:', err);
+        if (typeof showToast === 'function') showToast('打开疗愈失败，请重试');
+      }
+    });
+  });
 }
 
 // 单推荐卡片（来源标签在卡片上方的"今日推荐"标题处统一显示，卡片内不再重复）
