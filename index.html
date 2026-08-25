@@ -5026,20 +5026,20 @@ var isRatingRecording = false;
 // ==================== V3.0 AI对话与情志动态识别模块 ====================
 // ===== 知识库A：LLM情绪表达标准化与五态映射词典（V3.2终稿）=====
 var EMOTION_STANDARD_DICT = {
-  // 恐
-  '害怕':'恐','恐惧':'恐','畏惧':'恐','惊慌':'恐','受惊':'恐',
-  // 思
-  '反复思考':'思','想很多':'思','一直想着':'思','放不下':'思',
-  '思虑':'思','纠结':'思','犹豫':'思','反复关注身体变化':'思',
-  // 忧
-  '难过':'忧','悲伤':'忧','情绪低落':'忧','失落':'忧',
-  '压抑':'忧','崩溃':'忧','无助':'忧','孤独':'忧','消沉':'忧',
-  // 怒
-  '生气':'怒','愤怒':'怒','烦躁':'怒','急躁':'怒',
-  '不满':'怒','委屈':'怒','恼怒':'怒','抱怨':'怒','想发火':'怒',
   // 喜
-  '开心':'喜','高兴':'喜','快乐':'喜','愉快':'喜',
-  '满足':'喜','欣慰':'喜','放松':'喜','舒心':'喜','幸福':'喜',
+  '喜悦':'喜','欢喜':'喜','开心':'喜','高兴':'喜','愉快':'喜',
+  '放松':'喜','幸福':'喜','满足':'喜',
+  // 怒
+  '不满':'怒','生气':'怒','愤怒':'怒','恼怒':'怒','愤恨':'怒',
+  '激怒':'怒','暴怒':'怒',
+  // 忧
+  '忧虑':'忧','担心':'忧','低落消沉':'忧','难过':'忧','伤心':'忧',
+  '悲伤':'忧',
+  // 思
+  '反复思考':'思','思虑':'思','思念':'思',
+  // 恐
+  '害怕':'恐','恐惧':'恐','惧怕不安':'恐','畏惧':'恐','恐慌':'恐',
+  '惊恐':'恐',
 };
 
 // ===== 知识库B：五态—五音—情境对应知识库（终稿）=====
@@ -5086,9 +5086,10 @@ function endChatSession(reason) {
   if (chatSession.idleTimer) { clearTimeout(chatSession.idleTimer); chatSession.idleTimer = null; }
   if (chatSession.exitTimer) { clearTimeout(chatSession.exitTimer); chatSession.exitTimer = null; }
   console.log('[Session] Ended:', reason || 'manual', '(wasActive:', wasActive, ')');
-  // 即使 session 未正式激活，只要有 >=2 条用户消息也触发分析
+  // 手动点击"结束并推荐"：只要有 >=1 条用户消息就分析；空闲超时兜底仍需 >=2 条
   var userMsgs = chatHistory.filter(function(m) { return m.role === 'user'; });
-  if (userMsgs.length >= 2) {
+  var minMsgs = (reason === 'manual') ? 1 : 2;
+  if (userMsgs.length >= minMsgs) {
     showToast('正在分析您的聊天内容...');
     analyzeChatSession();
   } else if (wasActive) {
@@ -5115,19 +5116,21 @@ async function analyzeChatSession() {
     + '3. 生成一句话情境概括（保护隐私，不直接引用原话）\n'
     + '4. 保留原始表达作为证据\n\n'
     + '【标准化情绪表达词典】\n'
-    + '恐类：害怕、恐惧、畏惧、惊慌、受惊\n'
-    + '思类：反复思考、想很多、一直想着、放不下、思虑、纠结、犹豫、反复关注身体变化\n'
-    + '忧类：难过、悲伤、情绪低落、失落、压抑、崩溃、无助、孤独、消沉\n'
-    + '怒类：生气、愤怒、烦躁、急躁、不满、委屈、恼怒、抱怨、想发火\n'
-    + '喜类：开心、高兴、快乐、愉快、满足、欣慰、放松、舒心、幸福\n\n'
+    + '喜类：喜悦、欢喜、开心、高兴、愉快、放松、幸福、满足\n'
+    + '怒类：不满、生气、愤怒、恼怒、愤恨、激怒、暴怒\n'
+    + '忧类：忧虑、担心、低落消沉、难过、伤心、悲伤\n'
+    + '思类：反复思考、思虑、思念\n'
+    + '恐类：害怕、恐惧、惧怕不安、畏惧、恐慌、惊恐\n\n'
     + '【输出格式（严格按此格式）】\n'
     + '摘要：[一句话情境概括，20-40字，描述用户的整体情境和情绪背景，不得直接引用用户原话，需用第三人称客观转述，例如"用户表达了近期工作压力较大，伴有焦虑情绪"]\n'
-    + '主要表达：[标准化情绪表达]\n'
-    + '伴随表达：[标准化情绪表达或无]\n'
+    + '主要表达：[整轮对话中最核心、最主要的一个标准化情绪表达，只能填一个，从上述词典中选择]\n'
+    + '伴随表达：[仅当对话明确同时存在第二种与主要表达同等强度、难以区分主次的情绪时才填写（从词典选择）；否则一律填写"无"]\n'
     + '原始证据1：[用户原始表达]\n'
     + '原始证据2：[用户原始表达，无则不输出]\n\n'
     + '【禁止】\n'
     + '- 不要输出五态名称(怒喜思忧恐)、评分、百分比、权重、诊断结论\n'
+    + '- 严格忠于用户对话原文，禁止凭空推断、脑补或夸大用户未明确表达的情绪\n'
+    + '- 不要把轻微、次要或仅凭背景猜测的情绪列为"伴随表达"；只有当它与"主要表达"程度相当、真正难分主次时才可输出\n'
     + '- 摘要中不要出现"用户说""用户表示"等引用语，要客观转述情境\n'
     + '- 摘要中不要包含可能识别个人身份的具体信息（姓名、地点、日期等）\n\n'
     + '【聊天记录】\n';
@@ -5155,15 +5158,10 @@ async function analyzeChatSession() {
         // ✅ V3.0: 将 AI 分析提取的情绪词汇同步到档案页情绪关键词库
         try {
           if (typeof logChatEmotion === 'function') {
-            // 写入主要情绪表达（映射到对应五音，附带情境概括用于追溯展示）
+            // 仅写入主要情志关键词到档案词云（次要/伴随情志不记录，保证与推荐卡片一致）
             var primaryWuyinId = primaryWutai ? (WUTAI_WUYIN_MAP[primaryWutai] && WUTAI_WUYIN_MAP[primaryWutai].tone) : null;
             if (result.primaryEmotion) {
               logChatEmotion(result.primaryEmotion, primaryWuyinId, 'ai_chat', result.evidence || [], result.summary || '');
-            }
-            // 写入伴随情绪表达
-            if (result.secondaryEmotion) {
-              var secondaryWuyinId = secondaryWutai ? (WUTAI_WUYIN_MAP[secondaryWutai] && WUTAI_WUYIN_MAP[secondaryWutai].tone) : null;
-              logChatEmotion(result.secondaryEmotion, secondaryWuyinId, 'ai_chat', result.evidence || [], result.summary || '');
             }
           }
         } catch(e) { console.warn('[Session] logChatEmotion sync failed:', e); }
@@ -5256,6 +5254,8 @@ function showSessionRecommendation(rec) {
   saveChatMessage('recommendation', '疗愈推荐', {
     primaryWutai: rec.primaryWutai,
     secondaryWutai: rec.secondaryWutai || '',
+    primaryEmotion: rec.primaryEmotion || '',
+    secondaryEmotion: rec.secondaryEmotion || '',
     primaryTone: rec.primaryTone,
     primaryToneName: rec.primaryToneName,
     secondaryTone: rec.secondaryTone || '',
@@ -5279,7 +5279,9 @@ function renderRecommendationCard(rec, container) {
   html += '<div class="healing-rec-msg-info">';
   html += '<div class="healing-rec-msg-name">今日建议</div>';
   if (rec.summary) html += '<div style="font-size:17px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
-  html += '<div class="healing-rec-msg-desc">主要情志：' + rec.primaryWutai;
+  html += '<div class="healing-rec-msg-desc">';
+  if (rec.primaryEmotion) html += '情志关键词：' + rec.primaryEmotion + '　';
+  html += '主要情志：' + rec.primaryWutai;
   if (rec.secondaryWutai) html += ' + ' + rec.secondaryWutai;
   html += '</div>';
   if (rec.primaryTone) {
@@ -6184,6 +6186,8 @@ function renderChatHistory() {
       renderRecommendationCard({
         primaryWutai: m.primaryWutai,
         secondaryWutai: m.secondaryWutai || '',
+        primaryEmotion: m.primaryEmotion || '',
+        secondaryEmotion: m.secondaryEmotion || '',
         primaryTone: m.primaryTone,
         primaryToneName: m.primaryToneName,
         secondaryTone: m.secondaryTone || '',
