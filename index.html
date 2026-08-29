@@ -4644,7 +4644,7 @@
         </div>
       </div>
       <!-- 下方内容区 -->
-      <div id="diaryDetailContainer" class="diary-content" style="position:relative;z-index:2;padding:16px 20px 100px;overflow-y:auto;height:calc(100% - 240px);background:var(--paper);"></div>
+            <div id="diaryDetailContainer" class="diary-content" style="position:relative;z-index:2;padding:16px 20px 100px;overflow-y:auto;height:calc(100% - 240px);background:var(--paper);"></div>
     </div>
   </div>
 
@@ -4924,7 +4924,7 @@ function parseAIResponse(data) {
 
 // ========== DATA ==========
 var WUYIN_DATA = [
-  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a'], albumTitle:'角调', albumArtist:'吴贯军',
+  { id:'jue', name:'角音', element:'木', organ:'肝', emotion:'怒', emotionLabel:'疏解郁结', accent:'#5A8E5A', light:'rgba(90,142,90,0.1)', icon:'leaf', scene:'翠竹林', description:'疏解肝气郁结，心胸开阔如竹林清风。', musicDesc:'古琴与竹笛旋律悠扬，如林间清风，可舒缓情绪、调和肝气。', img:'scene_jue.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_2.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_3.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/jue_4.m4a'], albumTitle:'角调', albumArtist:'吴贯军',
     sceneList:[
       {sceneId:'jue_s1', name:'翠竹林',     img:'scene_jue.jpg'},
       {sceneId:'jue_s2', name:'春日山谷',   img:'scene_jue.jpg'},
@@ -4932,7 +4932,7 @@ var WUYIN_DATA = [
       {sceneId:'jue_s4', name:'森林晨曦',   img:'scene_jue.jpg'},
       {sceneId:'jue_s5', name:'梅花小径',   img:'scene_jue.jpg'}
     ] },
-  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a'], albumTitle:'徵调', albumArtist:'吴贯军',
+  { id:'zhi', name:'徵音', element:'火', organ:'心', emotion:'喜', emotionLabel:'提振喜悦', accent:'#C85A3D', light:'rgba(200,90,61,0.1)', icon:'flame', scene:'阳光草地', description:'提振喜悦之情，温暖心田。', musicDesc:'琵琶与二胡欢快明亮，如夏日暖阳，令人心生喜悦。', img:'scene_zhi.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_2.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_3.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/zhi_4.m4a'], albumTitle:'徵调', albumArtist:'吴贯军',
     sceneList:[
       {sceneId:'zhi_s1', name:'阳光草地',   img:'scene_zhi.jpg'},
       {sceneId:'zhi_s2', name:'花海田园',   img:'scene_zhi.jpg'},
@@ -4940,7 +4940,7 @@ var WUYIN_DATA = [
       {sceneId:'zhi_s4', name:'朝霞山巅',   img:'scene_zhi.jpg'},
       {sceneId:'zhi_s5', name:'晚霞湖畔',   img:'scene_zhi.jpg'}
     ] },
-  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a'], albumTitle:'宫调', albumArtist:'吴贯军',
+  { id:'gong', name:'宫音', element:'土', organ:'脾', emotion:'思', emotionLabel:'安定心神', accent:'#8A7A3A', light:'rgba(138,122,58,0.1)', icon:'earth', scene:'田园麦田', description:'安定心神，回归平和。', musicDesc:'编钟与古筝沉稳厚重，如大地回响，可安神定志。', img:'scene_gong.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_2.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_3.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/gong_4.m4a'], albumTitle:'宫调', albumArtist:'吴贯军',
     sceneList:[
       {sceneId:'gong_s1', name:'田园麦田',   img:'scene_gong.jpg'},
       {sceneId:'gong_s2', name:'秋收田野',   img:'scene_gong.jpg'},
@@ -4948,7 +4948,7 @@ var WUYIN_DATA = [
       {sceneId:'gong_s4', name:'古寺禅院',   img:'scene_gong.jpg'},
       {sceneId:'gong_s5', name:'黄土高原',   img:'scene_gong.jpg'}
     ] },
-  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'忧', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a'], albumTitle:'商调', albumArtist:'吴贯军',
+  { id:'shang', name:'商音', element:'金', organ:'肺', emotion:'忧', emotionLabel:'涤荡悲忧', accent:'#6E7A8F', light:'rgba(110,122,143,0.1)', icon:'cloud', scene:'秋日晴空', description:'涤荡悲忧，释放情感。', musicDesc:'箫声清冷悠远，如秋风过林，可疏解肺气、释放悲伤。', img:'scene_shang.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_2.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_3.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/shang_4.m4a'], albumTitle:'商调', albumArtist:'吴贯军',
     sceneList:[
       {sceneId:'shang_s1', name:'秋日晴空',   img:'scene_shang.jpg'},
       {sceneId:'shang_s2', name:'月夜竹林',   img:'scene_shang.jpg'},
@@ -4956,7 +4956,7 @@ var WUYIN_DATA = [
       {sceneId:'shang_s4', name:'雪山之巅',   img:'scene_shang.jpg'},
       {sceneId:'shang_s5', name:'银色湖畔',   img:'scene_shang.jpg'}
     ] },
-  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a'], albumTitle:'羽调', albumArtist:'吴贯军',
+  { id:'yu', name:'羽音', element:'水', organ:'肾', emotion:'恐', emotionLabel:'消除恐惧', accent:'#4A7FA5', light:'rgba(74,127,165,0.1)', icon:'water', scene:'宁静湖面', description:'消除恐惧，安宁内心。', musicDesc:'流水与古琴相和，如月下江流，可滋养肾气、消除恐惧。', img:'scene_yu.jpg', audioTracks:['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_1.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_2.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_3.m4a','https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/yu_4.m4a'], albumTitle:'羽调', albumArtist:'吴贯军',
     sceneList:[
       {sceneId:'yu_s1', name:'宁静湖面',   img:'scene_yu.jpg'},
       {sceneId:'yu_s2', name:'月下江流',   img:'scene_yu.jpg'},
@@ -7610,11 +7610,11 @@ var immersiveState = {
 };
 // 每调式5张情境图 [0]=旧占位图保留, [1-4]=新情境图
 var PANORAMA_IMAGES = [
-  ['assets/images/scene_jue_panorama.jpg', 'assets/images/角调情境2.png', 'assets/images/角调情境3.png', 'assets/images/角调情境4.png', 'assets/images/角调情境5.png'],
-  ['assets/images/scene_zhi_panorama.jpg', 'assets/images/徵调情境2.png', 'assets/images/徵调情境3.png', 'assets/images/徵调情境4.jpg', 'assets/images/徵调情境5.jpg'],
-  ['assets/images/scene_gong_panorama.jpg', 'assets/images/宫调情境2.png', 'assets/images/宫调情境3.png', 'assets/images/宫调情境4.png', 'assets/images/宫调情境5.png'],
-  ['assets/images/scene_shang_panorama.jpg', 'assets/images/商调情境2.png', 'assets/images/商调情境3.png', 'assets/images/商调情境4.png', 'assets/images/商调情境5.jpg'],
-  ['assets/images/scene_yu_panorama.jpg', 'assets/images/羽调情境2.png', 'assets/images/羽调情境3.png', 'assets/images/羽调情境4.png', 'assets/images/羽调情境5.png']
+  ['assets/images/角音情境1_翠竹林.jpg', 'assets/images/角音情境2_春日山谷.png', 'assets/images/角音情境3_柳岸溪畔.png', 'assets/images/角音情境4_森林晨曦.png', 'assets/images/角音情境5_梅花小径.png'],
+  ['assets/images/徵音情境1_阳光草地.jpg', 'assets/images/徵音情境2_花海田园.png', 'assets/images/徵音情境3_夏日荷塘.png', 'assets/images/徵音情境4_朝霞山巅.jpg', 'assets/images/徵音情境5_晚霞湖畔.jpg'],
+  ['assets/images/宫音情境1_田园麦田.jpg', 'assets/images/宫音情境2_秋收田野.png', 'assets/images/宫音情境3_山间村落.png', 'assets/images/宫音情境4_古寺禅院.png', 'assets/images/宫音情境5_黄土高原.png'],
+  ['assets/images/商音情境1_秋日晴空.jpg', 'assets/images/商音情境2_月夜竹林.png', 'assets/images/商音情境3_清晨薄雾.png', 'assets/images/商音情境4_雪山之巅.png', 'assets/images/商音情境5_银色湖畔.jpg'],
+  ['assets/images/羽音情境1_宁静湖面.jpg', 'assets/images/羽音情境2_月下江流.png', 'assets/images/羽音情境3_深海幽蓝.png', 'assets/images/羽音情境4_雨夜窗前.png', 'assets/images/羽音情境5_冬日雪原.png']
 ];
 
 function toggleImmersiveMode() {
@@ -7719,10 +7719,24 @@ function loadImmersiveImage(idx) {
   img.onload = null;
   img.onerror = null;
 
-  // 图片源备选链：jpg 失败 → png 备选
-  // 从该调式的5张情境图中随机选一张
+  // 使用已选定的场景（而非每次随机），确保单次疗愈中画面固定
   var images = PANORAMA_IMAGES[idx];
-  var baseSrc = images[Math.floor(Math.random() * images.length)];
+  var sceneIdx = 0;
+  // 从 _currentSceneId（单模式）或 _dualSceneIds（双模式）获取场景索引
+  var sid = window._currentSceneId;
+  if (window._isDualMode && window._dualSceneIds) {
+    var toneId = ['jue','zhi','gong','shang','yu'][idx];
+    var di = (window._dualHealingIds || []).indexOf(toneId);
+    if (di >= 0) sid = window._dualSceneIds[di];
+  }
+  if (sid) {
+    var parts = sid.split('_s');
+    if (parts.length >= 2) {
+      var si = parseInt(parts[1]) - 1;
+      if (si >= 0 && si < images.length) sceneIdx = si;
+    }
+  }
+  var baseSrc = images[sceneIdx] || images[0];
   var candidates = [baseSrc];
 
   var tryIdx = 0;
@@ -8753,6 +8767,13 @@ function doDualSwitch(instant) {
     if (audio._fadeInTimer) { clearInterval(audio._fadeInTimer); audio._fadeInTimer = null; }
     try { audio.pause(); audio.currentTime = 0; } catch(e) {}
     var audioSrc = selectWeightedTrack(targetId);
+    // V3.0: 记录切换后的调式曲目ID和情境ID
+    var dualIdx = window._dualHealingIds ? window._dualHealingIds.indexOf(targetId) : -1;
+    if (dualIdx >= 0) {
+      window._dualMusicIds[dualIdx] = window._currentMusicId || null;
+      var sceneObj = selectRandomScene(targetId);
+      window._dualSceneIds[dualIdx] = sceneObj ? sceneObj.sceneId : null;
+    }
     audio.volume = 0.9;
     // 同步设置 src + play()（保持用户交互上下文）
     audio.src = audioSrc;
@@ -8814,6 +8835,13 @@ function doDualSwitch(instant) {
 
   // 同步设置新 src 并 play()（关键：在同步执行路径中，避免 NotAllowedError）
   var audioSrc = selectWeightedTrack(targetId);
+  // V3.0: 记录切换后的调式曲目ID和情境ID
+  var dualIdx = window._dualHealingIds ? window._dualHealingIds.indexOf(targetId) : -1;
+  if (dualIdx >= 0) {
+    window._dualMusicIds[dualIdx] = window._currentMusicId || null;
+    var sceneObj = selectRandomScene(targetId);
+    window._dualSceneIds[dualIdx] = sceneObj ? sceneObj.sceneId : null;
+  }
   audio2.volume = 0;
   audio2.src = audioSrc;
   audio2.load();
@@ -10506,11 +10534,19 @@ function buildHealingRecords() {
       time: d.time || '',
       wuyinId: d.wuyinId,
       wuyinName: d.wuyinName,
-      scene: d.isDual ? (d.scenes ? d.scenes.join(' + ') : '') : (wuyin ? wuyin.scene : ''),
+      scene: d.isDual ? (d.scenes ? d.scenes.join(' + ') : '') : (d.sceneId && wuyin && wuyin.sceneList ? (function(){var s=wuyin.sceneList.find(function(x){return x.sceneId===d.sceneId;});return s?s.name:d.sceneId;})() : (wuyin ? wuyin.scene : '')),
       duration: d.duration || 20,
       rating: d.rating || 0,
       isDual: d.isDual,
-      text: d.text || ''
+      text: d.text || '',
+      wuyinIds: d.wuyinIds,
+      wuyinNames: d.wuyinNames,
+      dualMusicIds: d.dualMusicIds,
+      dualSceneIds: d.dualSceneIds,
+      dualSceneNames: d.dualSceneNames,
+      sceneId: d.sceneId,
+      musicId: d.musicId,
+      scenes: d.scenes
     };
   });
   var allRecords = realFormatted.reverse().concat(MOCK_HEALING_RECORDS);
@@ -10547,16 +10583,59 @@ function openDiaryDetailByRecord(d) {
   window._currentDiaryRecord = d; // 保存当前查看的日记记录（用于重新规避后单条刷新）
   var container = document.getElementById('diaryDetailContainer');
   container.innerHTML = renderDiaryDetail(d);
-  // 同步顶部 hero
+  // 同步顶部 hero（标题+情境画面）
   try {
     var eyebrowEl = document.getElementById('diaryHeroEyebrow');
     var titleEl = document.getElementById('diaryHeroTitle');
+    var heroBg = document.getElementById('diaryHeroBg');
     if (eyebrowEl) eyebrowEl.textContent = 'DIARY · ' + (d.date || '');
     var ti = WUYIN_DATA.find(function(w){ return w.id === d.wuyinId; });
-    if (titleEl) {
-      var titleText = d.wuyinName || (ti ? ti.name : '疗愈语音日记');
-      if (ti && ti.scene) titleText = (d.wuyinName || ti.name) + ' · ' + ti.scene;
+    if (titleEl && ti) {
+      var titleText = '';
+      if (d.isDual && d.wuyinIds && d.dualSceneNames) {
+        var parts = [];
+        for (var di = 0; di < d.wuyinIds.length; di++) {
+          var dualTone = WUYIN_DATA.find(function(w) { return w.id === d.wuyinIds[di]; });
+          var dualName = dualTone ? dualTone.name : (d.wuyinNames ? d.wuyinNames[di] : '');
+          var dualScene = (d.dualSceneNames && d.dualSceneNames[di]) ? d.dualSceneNames[di] : (dualTone ? dualTone.scene : '');
+          parts.push(dualName + '·' + dualScene);
+        }
+        titleText = parts.join(' + ');
+      } else {
+        var sceneName = ti.scene;
+        if (d.sceneId && ti.sceneList) {
+          var scene = ti.sceneList.find(function(s) { return s.sceneId === d.sceneId; });
+          if (scene) sceneName = scene.name;
+        }
+        titleText = (d.wuyinName || ti.name) + ' · ' + sceneName;
+      }
       titleEl.textContent = titleText;
+    }
+    // 顶部背景图换成对应情境全景图
+    if (heroBg) {
+      if (d.isDual && d.dualSceneIds && d.wuyinIds) {
+        var firstSceneId = d.dualSceneIds[0];
+        var firstToneId = d.wuyinIds[0];
+        if (firstSceneId && firstToneId) {
+          var tIdx = ['jue','zhi','gong','shang','yu'].indexOf(firstToneId);
+          var sParts = firstSceneId.split('_s');
+          if (tIdx >= 0 && sParts.length >= 2) {
+            var sI = parseInt(sParts[1]) - 1;
+            if (sI >= 0 && PANORAMA_IMAGES[tIdx] && sI < PANORAMA_IMAGES[tIdx].length) {
+              heroBg.style.backgroundImage = "url('" + PANORAMA_IMAGES[tIdx][sI] + "')";
+            }
+          }
+        }
+      } else if (d.sceneId && ti) {
+        var toneIdx = ['jue','zhi','gong','shang','yu'].indexOf(d.wuyinId);
+        var sceneParts = d.sceneId.split('_s');
+        if (toneIdx >= 0 && sceneParts.length >= 2) {
+          var sIdx = parseInt(sceneParts[1]) - 1;
+          if (sIdx >= 0 && PANORAMA_IMAGES[toneIdx] && sIdx < PANORAMA_IMAGES[toneIdx].length) {
+            heroBg.style.backgroundImage = "url('" + PANORAMA_IMAGES[toneIdx][sIdx] + "')";
+          }
+        }
+      }
     }
   } catch(e) {}
   document.getElementById('subpage-diary-detail').classList.add('active');
@@ -10598,11 +10677,19 @@ function openRecordsDetail() {
       time: d.time || '',
       wuyinId: d.wuyinId,
       wuyinName: d.wuyinName,
-      scene: d.isDual ? (d.scenes ? d.scenes.join(' + ') : '') : (wuyin ? wuyin.scene : ''),
+      scene: d.isDual ? (d.scenes ? d.scenes.join(' + ') : '') : (d.sceneId && wuyin && wuyin.sceneList ? (function(){var s=wuyin.sceneList.find(function(x){return x.sceneId===d.sceneId;});return s?s.name:d.sceneId;})() : (wuyin ? wuyin.scene : '')),
       duration: d.duration || 20,
       rating: d.rating || 0,
       isDual: d.isDual,
-      text: d.text || ''
+      text: d.text || '',
+      wuyinIds: d.wuyinIds,
+      wuyinNames: d.wuyinNames,
+      dualMusicIds: d.dualMusicIds,
+      dualSceneIds: d.dualSceneIds,
+      dualSceneNames: d.dualSceneNames,
+      sceneId: d.sceneId,
+      musicId: d.musicId,
+      scenes: d.scenes
     };
   });
   var allRecords = realFormatted.reverse().concat(MOCK_HEALING_RECORDS);
@@ -11873,19 +11960,64 @@ function openDiaryDetail() {
   } else {
     container.innerHTML = diaries.slice().reverse().map(renderDiaryDetail).join('');
   }
-  // 同步顶部 hero（取最新一条的日期和情感标签）
+  // 同步顶部 hero（取最新一条的日期和情感标签 + 情境画面）
   try {
     var last = diaries.slice().reverse()[0];
     if (last) {
       var eyebrowEl = document.getElementById('diaryHeroEyebrow');
       var titleEl = document.getElementById('diaryHeroTitle');
+      var heroBg = document.getElementById('diaryHeroBg');
       if (eyebrowEl) eyebrowEl.textContent = 'DIARY · ' + (last.date || '');
-      // 标题 = 调式 + 场景（如"角音 · 翠竹林"）
+      // 标题 = 调式 + 场景名称（如"角音 · 翠竹林"），双调式显示两个
       var ti = (last.wuyinId || last.wuyinIds) ? WUYIN_DATA.find(function(w){ return w.id === last.wuyinId; }) : null;
-      if (titleEl) {
-        var titleText = last.wuyinName || (ti ? ti.name : '疗愈语音日记');
-        if (ti && ti.scene) titleText = (last.wuyinName || ti.name) + ' · ' + ti.scene;
+      if (titleEl && ti) {
+        var titleText = '';
+        if (last.isDual && last.wuyinIds && last.dualSceneNames) {
+          // 双调式："宫音·古寺禅院 + 商音·秋日晴空"
+          var parts = [];
+          for (var di = 0; di < last.wuyinIds.length; di++) {
+            var dualTone = WUYIN_DATA.find(function(w) { return w.id === last.wuyinIds[di]; });
+            var dualName = dualTone ? dualTone.name : (last.wuyinNames ? last.wuyinNames[di] : '');
+            var dualScene = (last.dualSceneNames && last.dualSceneNames[di]) ? last.dualSceneNames[di] : (dualTone ? dualTone.scene : '');
+            parts.push(dualName + '·' + dualScene);
+          }
+          titleText = parts.join(' + ');
+        } else {
+          var sceneName = ti.scene;
+          if (last.sceneId && ti.sceneList) {
+            var scene = ti.sceneList.find(function(s) { return s.sceneId === last.sceneId; });
+            if (scene) sceneName = scene.name;
+          }
+          titleText = (last.wuyinName || ti.name) + ' · ' + sceneName;
+        }
         titleEl.textContent = titleText;
+      }
+      // 顶部背景图换成对应情境全景图
+      if (heroBg) {
+        if (last.isDual && last.dualSceneIds && last.wuyinIds) {
+          // 双调式：用第一个调式的情境图
+          var firstSceneId = last.dualSceneIds[0];
+          var firstToneId = last.wuyinIds[0];
+          if (firstSceneId && firstToneId) {
+            var tIdx = ['jue','zhi','gong','shang','yu'].indexOf(firstToneId);
+            var sParts = firstSceneId.split('_s');
+            if (tIdx >= 0 && sParts.length >= 2) {
+              var sI = parseInt(sParts[1]) - 1;
+              if (sI >= 0 && PANORAMA_IMAGES[tIdx] && sI < PANORAMA_IMAGES[tIdx].length) {
+                heroBg.style.backgroundImage = "url('" + PANORAMA_IMAGES[tIdx][sI] + "')";
+              }
+            }
+          }
+        } else if (last.sceneId && ti) {
+          var toneIdx = ['jue','zhi','gong','shang','yu'].indexOf(last.wuyinId);
+          var sceneParts = last.sceneId.split('_s');
+          if (toneIdx >= 0 && sceneParts.length >= 2) {
+            var sIdx = parseInt(sceneParts[1]) - 1;
+            if (sIdx >= 0 && PANORAMA_IMAGES[toneIdx] && sIdx < PANORAMA_IMAGES[toneIdx].length) {
+              heroBg.style.backgroundImage = "url('" + PANORAMA_IMAGES[toneIdx][sIdx] + "')";
+            }
+          }
+        }
       }
     }
   } catch(e) {}
@@ -11896,11 +12028,17 @@ function closeDiaryDetail() {
 }
 
 // ✅ 详情页日记（V10 第 8 屏）：diary-meta + diary-text + diary-quote + diary-wave + 点赞按钮
-function renderDiaryDetail(d) {
-  var wuyin = WUYIN_DATA.find(function(w){ return w.id === d.wuyinId; });
+function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w.id === d.wuyinId; });
   var wuyinColor = wuyin ? (WUYIN_ACCENT_MAP[d.wuyinId] || WUYIN_ACCENT_MAP.jue) : WUYIN_ACCENT_MAP.jue;
   var emotionTag = wuyin ? wuyin.emotion : '';
   var emotionLabel = wuyin ? wuyin.emotionLabel : '';
+  var dualEmotionTag = '';
+  if (d.isDual && d.wuyinIds && d.wuyinIds.length >= 2) {
+    dualEmotionTag = d.wuyinIds.map(function(id) {
+      var w = WUYIN_DATA.find(function(x) { return x.id === id; });
+      return w ? w.emotion : '';
+    }).filter(function(e) { return e; }).join('·');
+  }
   // 把日记正文拆成段：第一段普通文本，第二段做成引文
   var text = d.text || '（暂无语音转写内容）';
   var sentences = text.split(/[。！？!?\n]+/).filter(function(s){ return s.trim().length > 0; });
@@ -11950,7 +12088,7 @@ function renderDiaryDetail(d) {
     + '<div class="name">' + userName + '</div>'
     + '<div class="dt">' + dateStr + (d.time ? ' · ' + d.time : '') + '</div>'
     + '</div>'
-    + '<div class="tag" style="background:' + wuyinColor.color + '22;color:' + wuyinColor.color + ';">' + (emotionTag || '疗愈') + '</div>'
+    + '<div class="tag" style="background:' + wuyinColor.color + '22;color:' + wuyinColor.color + ';">' + (dualEmotionTag || emotionTag || '疗愈') + '</div>'
     + '</div>';
 
   // V3.0: 评分/曲目/情境信息（放在日记正文之前，字号与正文一致 16px）
@@ -11985,23 +12123,67 @@ function renderDiaryDetail(d) {
       html += s <= displayRating ? '<span style="color:#F39C12;font-size:22px;">★</span>' : '<span style="color:rgba(0,0,0,.1);font-size:22px;">★</span>';
     }
     html += '</div>';
-    // 曲目
-    if (lrResource && lrResource.musicId) {
-      var musicIdx = lrResource.musicId.split('_m')[1] || '?';
-      html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
-      html += '<span style="color:var(--ink-faint);">曲目</span> ' + (wuyin ? wuyin.name : '') + '·曲目' + musicIdx;
-      html += '</div>';
-    }
-    // 情境
-    if (lrResource && lrResource.sceneId) {
-      var sceneName = '';
-      if (wuyin && wuyin.sceneList) {
-        var scene = wuyin.sceneList.find(function(s) { return s.sceneId === lrResource.sceneId; });
-        sceneName = scene ? scene.name : lrResource.sceneId;
+    // 曲目（双调式显示两个，单模式显示一个）
+    if (d.isDual && d.wuyinIds && d.wuyinIds.length >= 2) {
+      // 双调式：优先从日记数据中取 dualMusicIds/dualSceneIds（新数据）
+      // 如果新数据不可用，则从 healingRecords 查找（旧数据回退）
+      for (var di = 0; di < d.wuyinIds.length; di++) {
+        var dualTone = WUYIN_DATA.find(function(w) { return w.id === d.wuyinIds[di]; });
+        var dualToneName = dualTone ? dualTone.name : (d.wuyinNames ? d.wuyinNames[di] : '');
+        // 曲目：优先使用日记数据中的 dualMusicIds，回退到 healingRecords
+        var dualMusicId = (d.dualMusicIds && d.dualMusicIds[di]) ? d.dualMusicIds[di] : null;
+        if (!dualMusicId) {
+          var toneRecords = healingRecords.filter(function(r) {
+            return r.date === (d.date || '').replace(/\//g, '-') && r.toneId === d.wuyinIds[di];
+          }).sort(function(a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+          dualMusicId = (toneRecords[0] && toneRecords[0].musicId) ? toneRecords[0].musicId : null;
+        }
+        if (dualMusicId) {
+          var dualMusicIdx = dualMusicId.split('_m')[1] || '?';
+          html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+          html += '<span style="color:var(--ink-faint);">曲目' + (di+1) + '</span> ' + dualToneName + '·曲目' + dualMusicIdx;
+          html += '</div>';
+        }
+        // 情境：优先使用日记数据中的 dualSceneIds，回退到 healingRecords
+        var dualSceneId = (d.dualSceneIds && d.dualSceneIds[di]) ? d.dualSceneIds[di] : null;
+        if (!dualSceneId) {
+          var toneRecords2 = healingRecords.filter(function(r) {
+            return r.date === (d.date || '').replace(/\//g, '-') && r.toneId === d.wuyinIds[di];
+          }).sort(function(a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+          dualSceneId = (toneRecords2[0] && toneRecords2[0].sceneId) ? toneRecords2[0].sceneId : null;
+        }
+        if (dualSceneId) {
+          var dualSceneName = (d.dualSceneNames && d.dualSceneNames[di]) ? d.dualSceneNames[di] : dualSceneId;
+          // 如果 dualSceneName 是 ID 格式，尝试从场景列表查找中文名
+          if (dualSceneName === dualSceneId && dualTone && dualTone.sceneList) {
+            var sceneObj = dualTone.sceneList.find(function(s) { return s.sceneId === dualSceneId; });
+            if (sceneObj) dualSceneName = sceneObj.name;
+          }
+          html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+          html += '<span style="color:var(--ink-faint);">情境' + (di+1) + '</span> ' + dualSceneName;
+          html += '</div>';
+        }
       }
-      html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
-      html += '<span style="color:var(--ink-faint);">情境</span> ' + sceneName;
-      html += '</div>';
+    } else {
+      // 单模式：显示一个曲目和情境
+      var musicIdSrc = d.musicId || (lrResource ? lrResource.musicId : null);
+      if (musicIdSrc) {
+        var musicIdx = musicIdSrc.split('_m')[1] || '?';
+        html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+        html += '<span style="color:var(--ink-faint);">曲目</span> ' + (wuyin ? wuyin.name : '') + '·曲目' + musicIdx;
+        html += '</div>';
+      }
+      var sceneIdSrc = d.sceneId || (lrResource ? lrResource.sceneId : null);
+      if (sceneIdSrc) {
+        var sceneName = '';
+        if (wuyin && wuyin.sceneList) {
+          var scene = wuyin.sceneList.find(function(s) { return s.sceneId === sceneIdSrc; });
+          sceneName = scene ? scene.name : sceneIdSrc;
+        }
+        html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+        html += '<span style="color:var(--ink-faint);">情境</span> ' + sceneName;
+        html += '</div>';
+      }
     }
     html += '</div>';
   }
@@ -12668,7 +12850,7 @@ function saveVoiceDiary(wuyinId, wuyinName, rating, text) {
   var dateStr = today.getFullYear() + '-' + (today.getMonth()+1<10?'0':'') + (today.getMonth()+1) + '-' + (today.getDate()<10?'0':'') + today.getDate();
   var timeStr = (today.getHours()<10?'0':'') + today.getHours() + ':' + (today.getMinutes()<10?'0':'') + today.getMinutes();
   // 组合疗愈：合并为一条记录
-  var entry = { date: dateStr, time: timeStr, wuyinId: wuyinId, wuyinName: wuyinName, rating: rating, text: text || '', duration: Math.floor(playerDuration / 60) || 20 };
+  var entry = { date: dateStr, time: timeStr, wuyinId: wuyinId, wuyinName: wuyinName, rating: rating, text: text || '', duration: Math.floor(playerDuration / 60) || 20, musicId: window._currentMusicId || null, sceneId: window._currentSceneId || null, sceneName: (function(){ if(window._currentSceneId) { var w=WUYIN_DATA.find(function(x){return x.id===wuyinId;});if(w&&w.sceneList){var s=w.sceneList.find(function(x){return x.sceneId===window._currentSceneId;});return s?s.name:null;}}return null;})() };
   if (window._dualHealingIds && window._dualHealingIds.length >= 2) {
     var firstItem = WUYIN_DATA.find(function(w) { return w.id === window._dualHealingIds[0]; });
     var secondItem = WUYIN_DATA.find(function(w) { return w.id === window._dualHealingIds[1]; });
@@ -12676,7 +12858,15 @@ function saveVoiceDiary(wuyinId, wuyinName, rating, text) {
     entry.wuyinIds = window._dualHealingIds.slice();
     entry.wuyinNames = [firstItem ? firstItem.name : '', secondItem ? secondItem.name : ''];
     entry.wuyinName = (firstItem ? firstItem.name : '') + ' + ' + (secondItem ? secondItem.name : '');
-    entry.scenes = [firstItem ? firstItem.scene : '', secondItem ? secondItem.scene : ''];
+    // 保存双调式实际的曲目ID和情境ID（而非仅最后调式的值）
+    entry.dualMusicIds = window._dualMusicIds ? window._dualMusicIds.slice() : [null, null];
+    entry.dualSceneIds = window._dualSceneIds ? window._dualSceneIds.slice() : [null, null];
+    entry.dualSceneNames = entry.dualSceneIds.map(function(sid, idx) {
+      if (!sid) return null;
+      var w = WUYIN_DATA.find(function(x) { return x.id === window._dualHealingIds[idx]; });
+      if (w && w.sceneList) { var s = w.sceneList.find(function(x) { return x.sceneId === sid; }); return s ? s.name : sid; }
+      return sid;
+    });
     // 清理旧的分开记录：删除同一天、同一调式组合的非组合记录
     var dualSet = [window._dualHealingIds[0], window._dualHealingIds[1]].sort().join(',');
     diaries = diaries.filter(function(d) {
@@ -13547,3 +13737,9 @@ function v10OnboardDone(){
 </script>
 </body>
 </html>
+
+
+
+
+
+
