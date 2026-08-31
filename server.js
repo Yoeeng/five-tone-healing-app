@@ -1,4 +1,4 @@
-// =============================================================
+﻿// =============================================================
 //  五音疗愈 APP 静态服务器 + 云语音 TTS 代理
 //  - 静态文件:  GET  /*  (支持 HTTP Range 移动端音频流式)
 //  - 健康检查:  GET  /health
@@ -107,11 +107,11 @@ function fetchAudioFromUrl(audioUrl, maxRedirects) {
 function callDashScopeTTS(apiKey, text, voice, rate) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      model: 'cosyvoice-v1',
+      model: 'cosyvoice-v2',
       voice: voice,
       text: text,
       audio_parameter: { format: 'mp3', sample_rate: 24000, volume: 50, rate: 1.0, pitch: 1.0 },
-      // 注：rate 字段是相对于默认 1.0 的倍率；老 API 也接受 speed 参数，cosyvoice-v1 用 audio_parameter.rate
+      // 注：cosyvoice-v2 使用 _v2 后缀音色（如 longxiaochun_v2），兼容 v1 的 API 格式
     });
     const u = new URL(DASHSCOPE_TTS_URL);
     const req = https.request({
@@ -219,7 +219,7 @@ async function handleChat(req, res) {
     const messages = (payload.messages && payload.messages.length > 0)
       ? payload.messages
       : (payload.input && payload.input.messages ? payload.input.messages : []);
-    const model = payload.model || 'qwen-plus';
+    const model = payload.model || 'qwen3.7-plus';
     const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
     const temperature = (typeof payload.temperature === 'number') ? payload.temperature : (payload.parameters && payload.parameters.temperature) || 0.7;
 
@@ -407,3 +407,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('[range]  HTTP Range requests supported ✓ (mobile audio fix)');
   console.log('=========================================');
 });
+
+
+

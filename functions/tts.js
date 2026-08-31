@@ -1,4 +1,4 @@
-// =============================================================
+﻿// =============================================================
 // Cloudflare Pages Function: TTS 代理
 // POST /tts → DashScope CosyVoice
 // 优先用环境变量 DASHSCOPE_API_KEY，否则用前端传的 apiKey
@@ -7,10 +7,10 @@
 const DASHSCOPE_TTS_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2audio/audio-generation';
 
 const COSY_VOICE_MAP = {
-  'mandarin_female': 'longxiaochun',
-  'mandarin_male':   'longcheng',
-  'cantonese_female':'longwan',
-  'cantonese_male':  'longfei'
+  'mandarin_female': 'longxiaochun_v2',
+  'mandarin_male':   'longcheng_v2',
+  'cantonese_female':'longwan_v2',
+  'cantonese_male':  'longfei_v2'
 };
 
 export async function onRequestPost({ request, env }) {
@@ -43,7 +43,7 @@ export async function onRequestPost({ request, env }) {
 
     // 调用 DashScope TTS
     const body = JSON.stringify({
-      model: 'cosyvoice-v1',
+      model: 'cosyvoice-v2',
       voice: resolvedVoice,
       text: text,
       audio_parameter: { format: 'mp3', sample_rate: 24000, volume: 50, rate: 1.0, pitch: 1.0 }
@@ -110,3 +110,4 @@ export async function onRequestGet() {
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
   });
 }
+

@@ -1,10 +1,10 @@
-// =============================================================
+﻿// =============================================================
 // Cloudflare Pages Function: AI Chat 代理
 // POST /chat → DashScope qwen-plus
 // 优先用环境变量 DASHSCOPE_API_KEY，否则用前端传的 apiKey
 // =============================================================
 
-const DASHSCOPE_CHAT_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+const DASHSCOPE_CHAT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 export async function onRequestPost({ request, env }) {
   const corsHeaders = {
@@ -23,7 +23,7 @@ export async function onRequestPost({ request, env }) {
     const messages = (payload.messages && payload.messages.length > 0)
       ? payload.messages
       : (payload.input && payload.input.messages ? payload.input.messages : []);
-    const model = payload.model || 'qwen-plus';
+    const model = payload.model || 'qwen3.7-plus';
     const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
     const temperature = (typeof payload.temperature === 'number') ? payload.temperature : (payload.parameters && payload.parameters.temperature) || 0.7;
     console.log('[chat] apiKey=' + (apiKey ? 'OK' : 'MISSING') + ' envKey=' + (envKey ? 'OK' : 'MISSING') + ' messages=' + messages.length);
@@ -38,8 +38,10 @@ export async function onRequestPost({ request, env }) {
 
     const body = JSON.stringify({
       model: model,
-      input: { messages: messages },
-      parameters: { max_tokens: maxTokens, temperature: temperature, result_format: 'message' }
+      messages: messages,
+      max_tokens: maxTokens,
+      temperature: temperature,
+      stream: false
     });
 
     // ✅ 直接用 envKey（不再依赖前端传的 apiKey），简化调用
@@ -87,3 +89,4 @@ export async function onRequestGet({ env }) {
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
 }
+

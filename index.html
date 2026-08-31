@@ -5142,7 +5142,7 @@ async function analyzeChatSession() {
 
   try {
     var data = await callChatAPI({
-      model: 'qwen-plus',
+      model: 'qwen3.7-plus',
       messages: [
         { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
         { role: 'user', content: analysisPrompt }
@@ -6413,7 +6413,7 @@ async function callQwenAPI(userText) {
 
   try {
     var data = await callChatAPI({
-      model: 'qwen-plus',
+      model: 'qwen3.7-plus',
       messages: messages,
       max_tokens: 100,
       temperature: 0.7
@@ -6434,7 +6434,7 @@ async function callQwenAPI(userText) {
 
   try {
     var data2 = await callChatAPI({
-      model: 'qwen-plus',
+      model: 'qwen3.7-plus',
       messages: messages,
       max_tokens: 100,
       temperature: 0.7
@@ -10963,16 +10963,16 @@ var ttsConfig = {
   voiceGender: 'female', // 'female' 或 'male'
   // apiKey 不再硬编码，运行时通过 getApiKey() 从 localStorage 读取
   wsUrl: '/tts', // 同源相对路径，桌面端和手机端（通过 cloudflared）都能访问
-  model: 'cosyvoice-v1'
+  model: 'cosyvoice-v2'
 };
 
 // 音色映射（DashScope CosyVoice 音色 ID；对应"语言+性别"）
 // 备选音色：longxiaochun(温柔女), longxiaoxia(活泼女), longwan(粤语女), longcheng(沉稳男), longfei(粤语男)
 var VOICE_MAP = {
-  'cantonese_female': 'longwan',       // 粤语女声
-  'cantonese_male':   'longfei',       // 粤语男声
-  'mandarin_female':  'longxiaochun',  // 普通话女声（温柔亲切，最适合小五）
-  'mandarin_male':    'longcheng'      // 普通话男声（沉稳专业）
+  'cantonese_female': 'longwan_v2',       // 粤语女声
+  'cantonese_male':   'longfei_v2',       // 粤语男声
+  'mandarin_female':  'longxiaochun_v2',  // 普通话女声（温柔亲切，最适合小五）
+  'mandarin_male':    'longcheng_v2'      // 普通话男声（沉稳专业）
 };
 
 function getVoiceId() {
@@ -13737,6 +13737,8 @@ function v10OnboardDone(){
 </script>
 </body>
 </html>
+
+
 
 
 
