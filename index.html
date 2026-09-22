@@ -47,6 +47,9 @@
   }, 10000);
 </script>
 
+<script src="oy_account.js"></script>
+<script src="oy_admin.js"></script>
+
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1975,95 +1978,6 @@
   .questionnaire-home-sub { font-size: 15px; color: var(--v10-ink-faint); }
   .questionnaire-home-chevron { color: var(--v10-ink-faint); font-size: 20px; flex-shrink: 0; }
 
-  /* ========== FEATURE 8: HEALING SCROLL ========== */
-  .puzzle-section { margin: 0 16px 20px; }
-  .puzzle-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .puzzle-header ion-icon { font-size: 22px; color: var(--gold); }
-  .puzzle-title { font-size: 17px; font-weight: 700; color: #2C2C2C; flex: 1; }
-  .puzzle-progress { font-size: 16px; color: #9A9A9A; }
-  .scroll-container {
-    position: relative;
-    background: var(--card); border-radius: 16px; border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .scroll-image-wrap {
-    position: relative;
-    width: 100%;
-    height: 160px;
-    display: flex;
-  }
-  .scroll-region {
-    flex: 1;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.6s ease;
-    background-image: url('assets/images/healing_scroll.jpg');
-    background-size: 500% 100%;
-    background-repeat: no-repeat;
-  }
-  .scroll-region:nth-child(1) { background-position: 0% center; }
-  .scroll-region:nth-child(2) { background-position: 25% center; }
-  .scroll-region:nth-child(3) { background-position: 50% center; }
-  .scroll-region:nth-child(4) { background-position: 75% center; }
-  .scroll-region:nth-child(5) { background-position: 100% center; }
-  .scroll-region-overlay {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0);
-    transition: all 0.6s ease;
-    pointer-events: none;
-  }
-  .scroll-region.g0 .scroll-region-overlay { background: rgba(0,0,0,0.6); }
-  .scroll-region.g1 .scroll-region-overlay { background: rgba(0,0,0,0.4); }
-  .scroll-region.g2 .scroll-region-overlay { background: rgba(0,0,0,0.2); }
-  .scroll-region.g3 .scroll-region-overlay { background: rgba(0,0,0,0.08); }
-  .scroll-region.g4 .scroll-region-overlay { background: rgba(0,0,0,0); }
-  .scroll-region.g4 {
-    box-shadow: inset 0 0 0 2px var(--gold);
-  }
-  @keyframes scrollSparkle {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-  }
-  .scroll-sparkle {
-    position: absolute;
-    width: 4px; height: 4px;
-    background: var(--gold);
-    border-radius: 50%;
-    animation: scrollSparkle 1.5s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .scroll-labels {
-    display: flex;
-    padding: 10px 0;
-    border-top: 1px solid var(--border);
-  }
-  .scroll-label {
-    flex: 1;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 600;
-    color: #666;
-  }
-  .scroll-counts {
-    display: flex;
-    padding: 0 0 10px;
-  }
-  .scroll-count {
-    flex: 1;
-    text-align: center;
-    font-size: 17px;
-    color: #9A9A9A;
-  }
-  .puzzle-congrats {
-    text-align: center; font-size: 15px; color: var(--gold); font-weight: 600;
-    margin-top: 10px; animation: inkIn 0.8s ease;
-  }
-  .puzzle-profile-entry {
-    display: flex; align-items: center; gap: 8px; margin-top: 6px;
-    font-size: 16px; color: var(--gold); font-weight: 600;
-  }
-
   /* ========== FEATURE 9: QUESTIONNAIRE ========== */
   .questionnaire-overlay {
     position: absolute; top: 0; left: 0; right: 0; bottom: var(--tabbar-h); z-index: 100;
@@ -2952,8 +2866,8 @@
   .diary-row .arrow{color:var(--v10-ink-faint)}
   .diary-row .arrow svg{width:16px;height:16px;stroke-width:1.5}
 
-  /* 健康工具 · 紧凑入口区（保留问卷/画卷/历史数据功能入口） */
-  .tools-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+  /* 健康工具 · 紧凑入口区（保留问卷/历史数据功能入口） */
+  .tools-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
   .tool-cell{background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--v10-shadow-1);cursor:pointer;text-align:center}
   .tool-cell:active{transform:scale(.97)}
   .tool-cell .ic{width:36px;height:36px;border-radius:10px;background:var(--v10-jue-bg);color:var(--v10-jue);display:flex;align-items:center;justify-content:center}
@@ -3016,7 +2930,6 @@
   #page-data .data-overlay{display:none}
   #page-data .data-header,
   #page-data .questionnaire-card,
-  #page-data .puzzle-section,
   #page-data .data-section,
   #page-data .data-modal-overlay{display:none !important}
   /* 隐藏切换中的 svg 图表相关旧元素（保留 ID 给 JS 兼容） */
@@ -3059,9 +2972,9 @@
   }
   .me-header .edit svg{width:20px;height:20px;stroke-width:1.6}
 
-  /* 4 列统计：聆听 / 日记 / 连续 / 画卷 */
+  /* 3 列统计：聆听 / 日记 / 连续 */
   .me-stats{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:0;
     background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);
     border-radius:16px;padding:16px 6px;margin-bottom:18px;
     box-shadow:var(--v10-shadow-1);
@@ -3914,16 +3827,12 @@
         <div class="stat-cell"><div class="v" id="statStreak">0</div><div class="l">连续天数</div></div>
       </div>
 
-      <!-- 健康工具：保留问卷 / 画卷 / 历史数据 三个功能入口 -->
+      <!-- 健康工具：保留问卷 / 历史数据 两个功能入口 -->
       <div class="section-eyebrow">健康工具</div>
       <div class="tools-row">
         <div class="tool-cell" onclick="openQiIntro()">
           <div class="ic" style="background:var(--v10-cinnabar-s);color:var(--v10-cinnabar)"><ion-icon name="document-text-outline"></ion-icon></div>
           <div class="t">五态情志</div>
-        </div>
-        <div class="tool-cell" onclick="showAchieve({badgeChar:'春',title:'画卷初成',desc:'您已听完 3 种调式，再听 2 种即可圆满！'})">
-          <div class="ic" style="background:var(--v10-jue-bg);color:var(--v10-jue)"><ion-icon name="images-outline"></ion-icon></div>
-          <div class="t">疗愈画卷</div>
         </div>
         <div class="tool-cell" id="historyBtn" onclick="scrollToQuestionnaireHistory()">
           <div class="ic" style="background:var(--v10-yu-bg);color:var(--v10-yu)"><ion-icon name="archive-outline"></ion-icon></div>
@@ -3944,7 +3853,7 @@
         <button onclick="viewAllDiaries()" style="padding:10px 24px;background:transparent;border:1.5px solid var(--cinnabar);border-radius:10px;color:var(--cinnabar);font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;cursor:pointer;">查看更多</button>
       </div>
 
-      <!-- 兼容保留：旧 JS 节点（折线图 / 时长统计 / 画卷拼图 / 签到信息） -->
+      <!-- 兼容保留：旧 JS 节点（折线图 / 时长统计 / 签到信息） -->
       <div style="display:none" aria-hidden="true">
         <div class="data-header">
           <div class="data-header-title">中医情志档案</div>
@@ -3958,37 +3867,6 @@
             <div class="questionnaire-subtitle" id="questionnaireCardSubtitleLegacy">每月一测</div>
           </div>
           <ion-icon class="questionnaire-arrow" name="chevron-forward"></ion-icon>
-        </div>
-        <div class="puzzle-section">
-          <div class="puzzle-header">
-            <ion-icon name="images"></ion-icon>
-            <span class="puzzle-title">我的疗愈画卷</span>
-            <span class="puzzle-progress" id="puzzleProgressLegacy">完成度 0/5</span>
-          </div>
-          <div class="scroll-container">
-            <div class="scroll-image-wrap" id="scrollImageWrap">
-              <div class="scroll-region g0" id="scroll-jue" data-wuyin="jue"><div class="scroll-region-overlay"></div></div>
-              <div class="scroll-region g0" id="scroll-zhi" data-wuyin="zhi"><div class="scroll-region-overlay"></div></div>
-              <div class="scroll-region g0" id="scroll-gong" data-wuyin="gong"><div class="scroll-region-overlay"></div></div>
-              <div class="scroll-region g0" id="scroll-shang" data-wuyin="shang"><div class="scroll-region-overlay"></div></div>
-              <div class="scroll-region g0" id="scroll-yu" data-wuyin="yu"><div class="scroll-region-overlay"></div></div>
-            </div>
-            <div class="scroll-labels">
-              <div class="scroll-label" style="color:#5A8E5A;">角·竹</div>
-              <div class="scroll-label" style="color:#C85A3D;">徵·莲</div>
-              <div class="scroll-label" style="color:#8A7A3A;">宫·麦</div>
-              <div class="scroll-label" style="color:#6E7A8F;">商·菊</div>
-              <div class="scroll-label" style="color:#4A7FA5;">羽·雪</div>
-            </div>
-            <div class="scroll-counts">
-              <div class="scroll-count" id="scroll-count-jue">已听 0 次</div>
-              <div class="scroll-count" id="scroll-count-zhi">已听 0 次</div>
-              <div class="scroll-count" id="scroll-count-gong">已听 0 次</div>
-              <div class="scroll-count" id="scroll-count-shang">已听 0 次</div>
-              <div class="scroll-count" id="scroll-count-yu">已听 0 次</div>
-            </div>
-          </div>
-          <div class="puzzle-congrats" id="puzzleCongrats" style="display:none;">画卷圆满，五音调和！</div>
         </div>
         <div class="data-section">
           <div class="data-section-header">
@@ -4094,7 +3972,7 @@
       <div class="me-header" onclick="openEditName()">
         <div class="av"></div>
         <div class="info">
-          <div class="name" id="profileUserName">小五的伙伴</div>
+          <div class="name" id="profileUserName">小五</div>
           <div class="sub" id="meStreakSub">已坚持疗愈 0 天</div>
         </div>
         <div class="edit" aria-label="修改名称">
@@ -4109,7 +3987,6 @@
         <div class="me-stat"><div class="v" id="meStatListen">0</div><div class="l">聆听</div></div>
         <div class="me-stat"><div class="v" id="meStatDiary">0</div><div class="l">日记</div></div>
         <div class="me-stat"><div class="v" id="meStatStreak">0</div><div class="l">连续</div></div>
-        <div class="me-stat"><div class="v" id="meStatPuzzle">0</div><div class="l">画卷</div></div>
       </div>
 
       <!-- 卡 1：偏好 -->
@@ -4165,12 +4042,6 @@
           <div class="val">查看趋势</div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
         </div>
-        <div class="me-row" onclick="switchTab(3)">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div class="lbl">疗愈画卷</div>
-          <div class="val" id="profilePuzzleProgress">完成度 0/5</div>
-          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
-        </div>
         <div class="me-row" onclick="showToast('语音唤醒功能开发中')">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <div class="lbl">语音唤醒</div>
@@ -4218,11 +4089,11 @@
             <div class="profile-avatar-edit-badge"><ion-icon name="pencil"></ion-icon></div>
           </div>
           <div class="profile-user-info">
-            <div class="profile-user-name" id="profileUserNameLegacy">小五的伙伴</div>
+            <div class="profile-user-name" id="profileUserNameLegacy">小五</div>
             <div class="profile-user-sub">五音疗愈伙伴 · 平和体质</div>
-            <div class="puzzle-profile-entry">
+            <div class="puzzle-profile-entry" style="display:none;">
               <ion-icon name="images" style="font-size:17px;"></ion-icon>
-              <span id="profilePuzzleProgressLegacy">画卷完成度 0/5</span>
+              <span id="profileUserSubLegacy" style="display:none;"></span>
             </div>
             <div class="profile-user-edit-hint">点击修改名称</div>
           </div>
@@ -5071,7 +4942,10 @@ var chatSession = {
 
 function startChatSession() {
   chatSession.active = true;
+  if (window.OY) window.OY.noteActive('chat');
   chatSession.startTime = Date.now();
+  // 研究数据：记录本轮会话起点（消息数基线，用于计算本轮消息条数）
+  window.__oyChatStart = { ts: chatSession.startTime, msgs: (chatHistory ? chatHistory.length : 0), users: (chatHistory ? chatHistory.filter(function(m){ return m.role === 'user'; }).length : 0) };
   // ✅ V3.0 修复：不清空 chatHistory，保留本次会话新增的消息（用于 endChatSession 分析）
   // chatHistory 在 initChat 时已通过 renderChatHistory 加载历史，这里保留即可
   window._hasRecommendedThisSession = false;
@@ -5083,13 +4957,29 @@ function endChatSession(reason) {
   // ✅ V3.0 修复：即使 session 未激活（如未调用 startChatSession），只要有聊天记录也允许分析
   var wasActive = chatSession.active;
   chatSession.active = false;
+  if (window.OY) window.OY.noteInactive('chat');
   if (chatSession.idleTimer) { clearTimeout(chatSession.idleTimer); chatSession.idleTimer = null; }
   if (chatSession.exitTimer) { clearTimeout(chatSession.exitTimer); chatSession.exitTimer = null; }
   console.log('[Session] Ended:', reason || 'manual', '(wasActive:', wasActive, ')');
   // 手动点击"结束并推荐"：只要有 >=1 条用户消息就分析；空闲超时兜底仍需 >=2 条
   var userMsgs = chatHistory.filter(function(m) { return m.role === 'user'; });
+  var __oySt = window.__oyChatStart || null;
+  var newUserMsgs = __oySt ? Math.max(0, userMsgs.length - __oySt.users) : userMsgs.length;
+  // 研究数据：保存本轮对话会话记录（时长/条数，不含对话原文）
+  try {
+    if (window.OY && typeof window.OY.saveChatSession === 'function') {
+      var __st = window.__oyChatStart || null;
+      window.OY.saveChatSession({
+        startTs: __st ? __st.ts : null,
+        endTs: Date.now(),
+        msgCount: (chatHistory && __st ? Math.max(0, chatHistory.length - __st.msgs) : 0),
+        userMsgCount: newUserMsgs
+      });
+    }
+  } catch(e) { console.warn('[Session] saveChatSession failed:', e); }
+  window.__oyChatStart = null;
   var minMsgs = (reason === 'manual') ? 1 : 2;
-  if (userMsgs.length >= minMsgs) {
+  if (newUserMsgs >= minMsgs) {
     showToast('正在分析您的聊天内容...');
     analyzeChatSession();
   } else if (wasActive) {
@@ -5168,6 +5058,7 @@ async function analyzeChatSession() {
         if (primaryWutai) {
           var rec = generateTodayRecommendation(primaryWutai, secondaryWutai, result);
           saveTodayRecommendation(rec);
+          // 研究数据：分析据以 ai_chat_history 为唯一存储，不再叠加回填，避免同一会话分析重复
           showSessionRecommendation(rec);
         }
       }
@@ -5230,20 +5121,27 @@ function saveTodayRecommendation(rec) {
   localStorage.setItem('wuyin_today_recommendation', JSON.stringify(rec));
   var history = JSON.parse(localStorage.getItem('wuyin_ai_chat_history') || '[]');
   history.push(rec);
-  var threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
-  history = history.filter(function(r) { return r.timestamp > threeDaysAgo; });
+  // 研究数据保留：不再按3天过滤删除，全量保留，上限200条防溢出
+  if (history.length > 200) history = history.slice(-200);
   localStorage.setItem('wuyin_ai_chat_history', JSON.stringify(history));
 }
 
 function getAIRecommendation() {
+  var THREE = 3 * 24 * 60 * 60 * 1000, nowT = Date.now();
   var rec = localStorage.getItem('wuyin_today_recommendation');
   if (rec) {
-    var parsed = JSON.parse(rec);
-    var today = new Date().toISOString().split('T')[0];
-    if (parsed.date === today) return parsed;
+    try {
+      var parsed = JSON.parse(rec);
+      var today = new Date().toISOString().split('T')[0];
+      if (parsed.date === today) return parsed;
+    } catch(e) {}
   }
+  // 仅推荐最近一次 AI 分析；超过3天不显示，落到问卷推荐（历史保留不删）
   var history = JSON.parse(localStorage.getItem('wuyin_ai_chat_history') || '[]');
-  if (history.length > 0) return history[history.length - 1];
+  for (var i = history.length - 1; i >= 0; i--) {
+    var h = history[i];
+    if (h && h.timestamp && (nowT - h.timestamp) <= THREE) return h;
+  }
   return null;
 }
 
@@ -5493,23 +5391,20 @@ function switchTab(idx) {
   }
   if (idx === 4) {
     setTimeout(function(){ trimMeRowOverflow(); }, 60);
-    // ✅ 刷新"我的"页面统计卡片：聆听 / 日记 / 连续 / 画卷
+    try { renderMeHeaderName(); } catch(e){}
+    // ✅ 刷新"我的"页面统计卡片：聆听 / 日记 / 连续
     try {
       var history = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]');
       var diarys = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
-      var checkin = (typeof getCheckinData === 'function') ? getCheckinData() : { streak: 0 };
+      var autoStreak = (typeof getConsecutiveUsageDays === 'function') ? getConsecutiveUsageDays() : 0;
       var elListen = document.getElementById('meStatListen');
       var elDiary = document.getElementById('meStatDiary');
       var elStreak = document.getElementById('meStatStreak');
-      var elPuzzle = document.getElementById('meStatPuzzle');
       if (elListen) elListen.textContent = history.length;
       if (elDiary) elDiary.textContent = diarys.length;
-      if (elStreak) elStreak.textContent = checkin.streak || 0;
-      if (elPuzzle) {
-        var completedTones = {};
-        history.forEach(function(h) { if (h.toneId) completedTones[h.toneId] = true; });
-        elPuzzle.textContent = Object.keys(completedTones).length;
-      }
+      if (elStreak) elStreak.textContent = autoStreak;
+      var sub2 = document.getElementById('meStreakSub');
+      if (sub2) sub2.textContent = '已坚持疗愈 ' + autoStreak + ' 天';
     } catch(e) {}
   }
   // ✅ 切换到档案 tab 时刷新 records-hero + records-stats（不显示健康分；汇总问卷 + 对话真实数据）
@@ -6749,52 +6644,40 @@ function getTodayRecommendation() {
     }
   }
 
-  // 2. 基础推荐（问卷）—— 第二优先级
+  // 2. 基础推荐（问卷）—— 第二优先级（两种情志均分差<=0.3 视为接近，推荐两个调式；★与后台问卷推荐口径一致）
   var qResult = getQuestionnaireResult();
   if (qResult) {
-    if (qResult.maxIds && qResult.maxIds.length >= 3) {
-      var ids = qResult.maxIds.slice();
-      var pairs = [];
-      var i = 0;
-      while (i < ids.length) {
-        var a = ids[i];
-        var b = ids[(i + 1) % ids.length];
-        pairs.push([a, b]);
-        i += 2;
-      }
-      var seen = {};
-      var uniqPairs = pairs.filter(function(p) {
-        var k = p.slice().sort().join('-');
-        if (seen[k]) return false;
-        seen[k] = 1;
-        return true;
-      });
-      uniqPairs.forEach(function(p) {
-        var it1 = WUYIN_DATA.find(function(w) { return w.id === p[0]; });
-        var it2 = WUYIN_DATA.find(function(w) { return w.id === p[1]; });
-        if (!it1 || !it2) return;
+    // 取"接近最高分"的调式（差<=0.3），分数从高到低，最多推荐 2 个
+    var qRec = (qResult.prominentIds && qResult.prominentIds.length ? qResult.prominentIds.slice() : (qResult.maxIds || []).slice());
+    qRec.sort(function(a, b) { return (qResult.scores[b] || 0) - (qResult.scores[a] || 0); });
+    if (qRec.length > 2) qRec = qRec.slice(0, 2);
+    if (!qRec.length && qResult.wuyinId) qRec = [qResult.wuyinId];
+    if (qRec.length >= 2) {
+      var c1 = WUYIN_DATA.find(function(w) { return w.id === qRec[0]; });
+      var c2 = WUYIN_DATA.find(function(w) { return w.id === qRec[1]; });
+      if (c1 && c2) {
         sources.push({
           priority: 1,
           source: 'questionnaire',
-          wuyinId: p[0],
-          wuyin: it1,
-          reason: '情志偏颇较均衡，' + it1.name + '与' + it2.name + '组合，可全方位调理',
-          maxIds: [p[0], p[1]],
-          dualPair: [it1, it2]
+          wuyinId: qRec[0],
+          wuyin: c1,
+          reason: '根据您的中医情志问卷，' + c1.name + '、' + c2.name + '两种情志表现较为突出，' + c1.name + '为主，' + c2.name + '为辅，组合体验更均衡',
+          maxIds: qRec,
+          dualPair: [c1, c2]
         });
-      });
+      }
     } else {
-      var qSecondWuyin = (qResult.maxIds && qResult.maxIds.length >= 2) ?
-        WUYIN_DATA.find(function(w) { return w.id === qResult.maxIds[1]; }) : null;
-      var qReason = '根据您的中医情志问卷，' + qResult.wuyin.name + (qSecondWuyin ? '、' + qSecondWuyin.name : '') + '最适合您当前的体质';
-      sources.push({
-        priority: 1,
-        source: 'questionnaire',
-        wuyinId: qResult.wuyinId,
-        wuyin: qResult.wuyin,
-        reason: qReason,
-        maxIds: qResult.maxIds
-      });
+      var c0 = WUYIN_DATA.find(function(w) { return w.id === qRec[0]; });
+      if (c0) {
+        sources.push({
+          priority: 1,
+          source: 'questionnaire',
+          wuyinId: qRec[0],
+          wuyin: c0,
+          reason: '根据您的中医情志问卷，' + c0.name + '最适合您当前的体质',
+          maxIds: qRec
+        });
+      }
     }
   }
 
@@ -6990,13 +6873,13 @@ function updateRecordsStats() {
   try {
     var history = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]');
     var diarys = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
-    var checkin = (typeof getCheckinData === 'function') ? getCheckinData() : { streak: 0 };
+    var autoStreak2 = (typeof getConsecutiveUsageDays === 'function') ? getConsecutiveUsageDays() : 0;
     var listenEl = document.getElementById('statListen');
     var diaryEl = document.getElementById('statDiary');
     var streakEl = document.getElementById('statStreak');
     if (listenEl) listenEl.textContent = history.length;
     if (diaryEl) diaryEl.textContent = diarys.length;
-    if (streakEl) streakEl.textContent = checkin.streak || 0;
+    if (streakEl) streakEl.textContent = autoStreak2;
   } catch(e) { console.error('[updateRecordsStats] stat-grid error:', e); }
 
   // 3. 情绪关键词词云 —— 来自 wuyin_chat_emotion_log 真实聊天情绪
@@ -7985,6 +7868,7 @@ function startImmersiveParticles() {
 
 function closePlayer() {
   stopPlay();
+  if (window.OY) window.OY.noteInactive();
   window._dualHealingIds = null; // 在这里清除，stopPlay保留给submitRating用
   // 如果用户在问卷试听过程中手动关闭播放器，恢复设置
   if (isQuestionnaireTrial) {
@@ -8320,6 +8204,10 @@ function recordTrackFeedback(wuyinId, trackIndex, score) {
 
 function startPlay() {
   isPlaying = true;
+  if (window.OY) window.OY.noteActive('healing');
+  window.__oyHealSec = 0; // 本次疗愈会话心跳秒基数复位
+
+  window.__oyHealSession = false;
   // 双调式组合模式：两个调式各放一半时间
   if (window._isDualMode && window._dualHealingIds && window._dualHealingIds.length >= 2) {
     startDualPlay();
@@ -8603,8 +8491,10 @@ function stopPlay() {
   clearGuideTimers();
   // 清理组合切换定时器
   if (window._dualSwitchTimer) { clearTimeout(window._dualSwitchTimer); window._dualSwitchTimer = null; }
-  // 记录疗愈时长（至少1分钟才记录）
-  if (playProgress >= 60) {
+  // 记录疗愈时长（至少1分钟才记录；一次性防重守卫，避免组合疗愈重复计时）
+  if (window.OY) window.OY.noteInactive();
+  if (playProgress >= 60 && !window.__oyHealSession) {
+    window.__oyHealSession = true;
     var mins = Math.round(playProgress / 60);
     recordHealingDuration(mins);
   }
@@ -8928,6 +8818,7 @@ function toggleRatingVoice(btn) {
   var textArea = document.getElementById('ratingVoiceText');
   if (!isRatingRecording) {
     isRatingRecording = true;
+    window._ratingVoiceUsed = true;
     spanEl.textContent = '正在记录，点击结束';
     btn.style.background = 'rgba(255,100,100,.3)';
     btn.style.borderColor = 'rgba(255,100,100,.5)';
@@ -9021,7 +8912,7 @@ function submitRating() {
     showToast('请先选择星级评分');
     return;
   }
-  recordPuzzleCollection(currentWuyinItem.id);
+  try { if (typeof recordPuzzleCollection === 'function') recordPuzzleCollection(currentWuyinItem.id); } catch(e){}
   saveVoiceDiary(currentWuyinItem.id, currentWuyinItem.name, currentRating, voiceText);
   // V3.0: 按文档格式保存疗愈记录
   // 注意：stopPlay() 会清除 _isDualMode 但保留 _dualHealingIds，所以这里直接检查 _dualHealingIds
@@ -9048,6 +8939,7 @@ function submitRating() {
       { toneId: currentWuyinItem.id, musicId: window._currentMusicId || null, sceneId: window._currentSceneId || null }
     ]
   };
+  var feedbackType = (window._ratingVoiceUsed === true) ? 'voice' : 'text';
   window._pendingFeedback.tones.forEach(function(toneInfo) {
     var record = {
       date: dateStr,
@@ -9058,11 +8950,17 @@ function submitRating() {
       sceneId: toneInfo.sceneId,
       rating: currentRating,
       comment: voiceText || '',
+      durationMin: Math.floor(playerDuration / 60) || 20,
+      actualSec: (window.__oyHealSec ? Math.round(window.__oyHealSec) : 0),
+      playSec: (typeof playProgress === 'number' ? playProgress : null),
       needChangeMusic: false,
       needChangeScene: false,
       isDual: isDual,
+      isTrial: (isQuestionnaireTrial === true),
+      feedbackType: feedbackType,
       timestamp: window._pendingFeedback.timestamp
     };
+    if (isQuestionnaireTrial === true) record.durationMin = 1;
     saveHealingRecord(record);
   });
   var trackIdx = window._currentTrackIndex;
@@ -9079,6 +8977,7 @@ function submitRating() {
     btn.style.background = 'var(--green)';
     if (document.getElementById('ratingVoiceText')) document.getElementById('ratingVoiceText').style.display = 'none';
     // V3.0: 重置星级状态，避免下次疗愈出现上次的评星
+    window._ratingVoiceUsed = false;
     currentRating = 0;
     document.querySelectorAll('#ratingStars .rating-star').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById('ratingLabel').textContent = '';
@@ -9226,6 +9125,17 @@ function handleOptimizationAction(action) {
   var fb = window._pendingFeedback;
   if (!fb) { closeOptimizationOverlay(); closePlayer(); return; }
   if (action === 'keep') {
+    // V3.0: 显式记录“保持现状”选择（区分于未弹出优化页）
+    try {
+      var logK = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]');
+      (fb.tones || []).forEach(function(toneInfo) {
+        if (!toneInfo) return;
+        for (var i = logK.length - 1; i >= 0; i--) {
+          if (logK[i].timestamp === fb.timestamp && logK[i].toneId === toneInfo.toneId && logK[i].musicId === toneInfo.musicId) { logK[i].keepChoice = true; break; }
+        }
+      });
+      localStorage.setItem('wuyin_healing_records', JSON.stringify(logK));
+    } catch(e) {}
     closeOptimizationOverlay();
     closePlayer();
     showToast('已保存您的反馈');
@@ -9500,7 +9410,7 @@ function saveEditName() {
   var name = document.getElementById('editNameInput').value.trim();
   if (name) {
     avatarName = name;
-    document.getElementById('profileUserName').textContent = name + '的伙伴';
+    document.getElementById('profileUserName').textContent = name;
     // Update chat topbar
     document.querySelector('.chat-topbar-title').textContent = '与' + name + '聊天';
     showToast('名称已更新');
@@ -9900,6 +9810,7 @@ function openQuestionnaire() {
 }
 
 function closeQuestionnaire() {
+  if (window.OY) window.OY.noteInactive('quiz');
   try {
     // ✅ 1) 移除 active class + 强制设 display:none + style 恢复
     var overlay = document.getElementById('questionnaireOverlay');
@@ -10180,6 +10091,7 @@ function selectFeeling(idx) {
 }
 
 function showQuestionnaireResults() {
+  if (window.OY) window.OY.noteInactive('quiz');
   document.getElementById('questionnaireBody').style.display = 'none';
   document.getElementById('questionnaireNav').style.display = 'none';
   // ✅ 彻底移除结果页的 q-top（右上角"第 1 题/共 17 题 已完成 6%"）以及进度条/导航
@@ -10469,12 +10381,14 @@ function recordHealingDuration(mins) {
   var stats = JSON.parse(localStorage.getItem('wuyin_usage_stats') || '{}');
   stats.healingMins = (stats.healingMins || 0) + mins;
   localStorage.setItem('wuyin_usage_stats', JSON.stringify(stats));
+  if (window.OY) OY.recordUsage('healing', mins);
 }
 
 function recordChatDuration(mins) {
   var stats = JSON.parse(localStorage.getItem('wuyin_usage_stats') || '{}');
   stats.chatMins = (stats.chatMins || 0) + mins;
   localStorage.setItem('wuyin_usage_stats', JSON.stringify(stats));
+  if (window.OY) OY.recordUsage('chat', mins);
 }
 
 function drawDurationChart(period) {
@@ -11500,6 +11414,21 @@ function showVoiceSettings() {
 }
 
 // ========== V10 弹窗 · 编辑昵称 ==========
+// ✅ 我的页头像区昵称：优先取账户昵称（OY.current().name），否则回退 wuyin_user_name
+function renderMeHeaderName(){
+  try {
+    var nm = '';
+    if (window.OY && typeof window.OY.current === 'function' && window.OY.current() && window.OY.current().name) nm = window.OY.current().name;
+    if (!nm) nm = localStorage.getItem('wuyin_user_name') || '';
+    if (!nm) return;
+    var sib = document.getElementById('profileUserName');
+    if (sib) sib.textContent = nm;
+    var sub = document.getElementById('profileUserNameLegacy');
+    if (sub) sub.textContent = nm;
+    var el = document.querySelector('.me-header .info .name');
+    if (el) el.textContent = nm;
+  } catch(e){}
+}
 var _profileNameBeforeEdit = '';
 function openEditName(){
   _profileNameBeforeEdit = (localStorage.getItem('wuyin_user_name') || document.querySelector('.me-header .info .name')?.textContent || '').trim();
@@ -11531,6 +11460,9 @@ function saveEditName(){
   var chatTitle = document.querySelector('.chat-topbar-title');
   if (chatTitle) chatTitle.textContent = '与' + v + '聊天';
   closeEditName();
+  // ✅ 同步账户列表昵称（持久化，切换用户后不丢失）
+  try { if (window.OY && typeof window.OY.uid === 'function' && typeof window.OY.renameUser === 'function') window.OY.renameUser(window.OY.uid(), v); } catch(e){}
+  try { if (typeof renderMeHeaderName === 'function') renderMeHeaderName(); } catch(e){}
   showToast && showToast('已保存');
   // 同步刷新主页招呼语
   try { updateHomeV10(); } catch(e) {}
@@ -11588,6 +11520,7 @@ function saveV10ApiKey(){
 var _qzMode = 'first'; // 'first' 首次 / 'monthly' 每月
 function openQzModal(mode){
   _qzMode = mode || 'first';
+  if (window.OY) window.OY.noteActive('quiz');
   var titleEl = document.getElementById('qzTitle');
   var briefEl = document.getElementById('qzBrief');
   var btnEl = document.getElementById('qzStartBtn');
@@ -11604,6 +11537,7 @@ function openQzModal(mode){
   if (el) el.classList.add('active');
 }
 function closeQzModal(){
+  if (window.OY) window.OY.noteInactive('quiz');
   var el = document.getElementById('qzModal');
   if (el) el.classList.remove('active');
 }
@@ -11749,6 +11683,7 @@ function showQuestionnaireFromProfile() {
     if (actionBtns) actionBtns.style.display = 'none';
     renderQuestion();
   }
+  if (window.OY) window.OY.noteActive('quiz');
   document.getElementById('questionnaireOverlay').classList.add('active');
 }
 
@@ -11853,60 +11788,6 @@ function updateQuestionnaireStatus() {
   }
 }
 
-// ========== FEATURE 8: PUZZLE COLLECTION ==========
-var PUZZLE_SVGS = {
-  jue: '<svg viewBox="0 0 40 40"><path d="M20 5 Q25 15 35 12 Q30 20 35 28 Q25 25 20 35 Q15 25 5 28 Q10 20 5 12 Q15 15 20 5" fill="#5A8E5A" opacity="0.8"/></svg>',
-  zhi: '<svg viewBox="0 0 40 40"><path d="M20 35 Q12 25 15 15 Q20 20 25 15 Q28 25 20 35" fill="#C85A3D" opacity="0.8"/><circle cx="20" cy="12" r="4" fill="#C85A3D" opacity="0.6"/></svg>',
-  gong: '<svg viewBox="0 0 40 40"><path d="M8 32 L12 20 L20 12 L28 20 L32 32 Z" fill="#8A7A3A" opacity="0.8"/><circle cx="20" cy="16" r="3" fill="#8A7A3A" opacity="0.5"/></svg>',
-  shang: '<svg viewBox="0 0 40 40"><path d="M10 25 Q15 18 20 22 Q25 18 30 25" stroke="#6E7A8F" stroke-width="2" fill="none" opacity="0.8"/><path d="M8 30 Q15 22 20 26 Q25 22 32 30" stroke="#6E7A8F" stroke-width="2" fill="none" opacity="0.6"/></svg>',
-  yu: '<svg viewBox="0 0 40 40"><path d="M10 20 Q15 16 20 20 Q25 24 30 20" stroke="#4A7FA5" stroke-width="2" fill="none" opacity="0.8"/><path d="M8 26 Q14 22 20 26 Q26 30 32 26" stroke="#4A7FA5" stroke-width="2" fill="none" opacity="0.6"/></svg>',
-};
-
-function loadPuzzlePieces() {
-  var ids = ['jue','zhi','gong','shang','yu'];
-  var count = 0;
-  ids.forEach(function(id) {
-    var collected = parseInt(localStorage.getItem('wuyin_collected_' + id) || '0');
-    var region = document.getElementById('scroll-' + id);
-    var countEl = document.getElementById('scroll-count-' + id);
-    if (!region) return;
-    region.classList.remove('g0', 'g1', 'g2', 'g3', 'g4');
-    var level = 0;
-    if (collected >= 10) { level = 4; count++; }
-    else if (collected >= 6) { level = 3; count++; }
-    else if (collected >= 3) { level = 2; count++; }
-    else if (collected >= 1) { level = 1; count++; }
-    else { level = 0; }
-    region.classList.add('g' + level);
-    if (countEl) countEl.textContent = '已听 ' + collected + ' 次';
-    // 清除旧sparkle
-    region.querySelectorAll('.scroll-sparkle').forEach(function(s) { s.remove(); });
-    // 添加sparkle动画（10次+）
-    if (level === 4) {
-      for (var s = 0; s < 5; s++) {
-        var sparkle = document.createElement('div');
-        sparkle.className = 'scroll-sparkle';
-        sparkle.style.left = (15 + Math.random() * 70) + '%';
-        sparkle.style.top = (15 + Math.random() * 70) + '%';
-        sparkle.style.animationDelay = (Math.random() * 1.5) + 's';
-        region.appendChild(sparkle);
-      }
-    }
-  });
-  var progressEl = document.getElementById('puzzleProgress');
-  if (progressEl) progressEl.textContent = '完成度 ' + count + '/5';
-  var profileProgress = document.getElementById('profilePuzzleProgress');
-  if (profileProgress) profileProgress.textContent = '画卷完成度 ' + count + '/5';
-  var congratsEl = document.getElementById('puzzleCongrats');
-  if (congratsEl) congratsEl.style.display = count >= 5 ? 'block' : 'none';
-}
-function recordPuzzleCollection(wuyinId) {
-  var key = 'wuyin_collected_' + wuyinId;
-  var count = parseInt(localStorage.getItem(key) || '0');
-  count++;
-  localStorage.setItem(key, count.toString());
-  loadPuzzlePieces();
-}
 
 // ========== FEATURE 9: VOICE DIARY ==========
 function loadVoiceDiary() {
@@ -13312,6 +13193,28 @@ var HEALTH_QUOTES = [
   '饮食有节，起居有常',
   '动静结合，延年益寿',
 ];
+// ✅ 连续天数(自动)：按 wuyin_usage_daily 每天有疗愈/对话/问卷行为即算 1 天，向前累计连续使用天数
+// ✅ 连续天数(自动)：按 wuyin_usage_daily 每天有疗愈/对话/问卷行为即算 1 天，向前累计连续使用天数
+function getConsecutiveUsageDays(){
+  try {
+    var all = JSON.parse(localStorage.getItem('wuyin_usage_daily') || '{}');
+    var active = [];
+    Object.keys(all).forEach(function(k){ var x = all[k] || {}; if (((x.healing||0)+(x.chat||0)+(x.quiz||0)) > 0) active.push(k); });
+    if (!active.length) return 0;
+    active.sort();
+    var D = function(str){ var p = String(str).split('-'); return new Date(+p[0], (+p[1]||1)-1, +(p[2]||1)); };
+    var same = function(a, b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); };
+    var oneDay = 24*3600*1000;
+    var streak = 1;
+    for (var i = active.length - 1; i > 0; i--) {
+      var cur = D(active[i]), prev = D(active[i-1]);
+      var diff = Math.round((cur - prev) / oneDay);
+      if (diff === 1) streak++;
+      else break;
+    }
+    return streak;
+  } catch(e) { return 0; }
+}
 function getCheckinData() {
   var data = JSON.parse(localStorage.getItem('wuyin_checkin') || '{"streak":0,"lastDate":"","total":0}');
   return data;
@@ -13582,7 +13485,7 @@ function initNewFeatures() {
   try { updateRecordsStats(); } catch(e) {}
   try { renderQuestionnaireHistory(); } catch(e) {}
   updateCheckinUI();
-  loadPuzzlePieces();
+  try { if (typeof loadPuzzlePieces === 'function') loadPuzzlePieces(); } catch(e){}
   loadVoiceDiary();
   updateAvatarState();
   initQuestionnaire();
