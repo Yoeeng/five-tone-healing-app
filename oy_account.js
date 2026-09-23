@@ -510,13 +510,19 @@
       var chatT = (typeof __chatTiming === 'function') ? __chatTiming(D, TR) : { daily: {} };
       // 从疗愈记录按日汇总实际聆听秒数（含试听，因试听用户确实花费了时间）
       var healByDay = {};
-      (D.healing_records || []).forEach(function(r){
+      var healSess = {};
+      (D.healing_records || []).forEach(function(r, idx){
         if (!r) return;
+        if (__isTrial(r, completeTs)) return; // 试听不计入使用时长日明细的疗愈分钟
         var dk = __dateOf(r.timestamp != null ? r.timestamp : r.date);
         if (!dk) return;
         var sec = (typeof r.actualSec === 'number' && r.actualSec > 0) ? r.actualSec : 0;
-        if (sec > 0) healByDay[dk] = (healByDay[dk] || 0) + sec;
+        // 组合疗愈同一会话按调式拆成多行(相同timestamp且actualSec=整会话时长)：按会话归组只计一次
+        var key = (r.timestamp != null) ? ('t' + r.timestamp) : ('x' + idx);
+        if (!healSess[key]) healSess[key] = { sec: 0, dk: dk };
+        if (sec > healSess[key].sec) healSess[key].sec = sec;
       });
+      Object.keys(healSess).forEach(function(k){ var s = healSess[k]; if (s.sec > 0) healByDay[s.dk] = (healByDay[s.dk] || 0) + s.sec; });
       var qS = 0, sH = 0, sC = 0, sQ = 0, days = 0, firstTs = null, lastTs = null;
       var qzUsed = 0;
       var _qfU = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
@@ -533,7 +539,7 @@
         var hSec = x.healing || 0, hMin = x.healingMins || 0;
         var cSec = x.chat || 0, cMin = x.chatMins || 0;
         var qSec = x.quiz || 0, qMin = x.quizMins || 0;
-        var h = Math.max(hSec, healByDay[k] || 0);
+        var h = healByDay[k] || 0;
         var q = Math.max(qSec, Math.round(qMin * 60)); if (k === _qfUDate && _qfUTotal > q) q = _qfUTotal;
         // 对话时长：优先各轮实际对话时长，其次 heartbeat 秒数，最后 recordUsage 分钟数
         var c = chatT.daily[k] || 0;
@@ -1078,7 +1084,7 @@
     setPin: function(oldP, newP){ if (!OY.pinOk(oldP)) return false; var s = String(newP||'').trim(); if (!s) return false; localStorage.setItem('wuyin_admin_pin', s); return true; }
   };
   window.OY = OY; window.__appToast = toast;
-  ensureDefault(); __purgeJunkKeys(); migrateLegacy(); __initHeartbeat();
+  ensureDefault(); __purgeJunkKeys(); try { if (rawGet('elderMode') !== null) rawRem('elderMode'); } catch(e){} migrateLegacy(); __initHeartbeat();
   // 运行时自检 + 定时迁移兜底（防止缓存旧代码/包装器失效导致数据写入无前缀键）
   __selfCheck();
   setInterval(__periodicMigrate, 8000);

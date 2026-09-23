@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260923u"></script>
-<script src="oy_admin.js?v=20260923u"></script>
+<script src="oy_account.js?v=20260923z"></script>
+<script src="oy_admin.js?v=20260923z"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4048,12 +4048,6 @@
           <div class="val">未开启</div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
         </div>
-        <div class="me-row" onclick="openFamilyCircle()">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div class="lbl">家庭关爱圈</div>
-          <div class="val">邀请家人</div>
-          <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
-        </div>
       </div>
 
       <!-- 卡 4：系统 -->
@@ -4948,7 +4942,7 @@ var chatSession = {
 
 function startChatSession() {
   chatSession.active = true;
-  if (window.OY) window.OY.noteActive('chat');
+  // ✅ 不再在进入聊天 tab 时立即启动对话计时（未发消息不计时）；改为发送首条消息时才 noteActive('chat')
   chatSession.startTime = Date.now();
   // 研究数据：记录本轮会话起点（消息数基线，用于计算本轮消息条数）
   window.__oyChatStart = { ts: chatSession.startTime, msgs: (chatHistory ? chatHistory.length : 0), users: (chatHistory ? chatHistory.filter(function(m){ return m.role === 'user'; }).length : 0) };
@@ -6195,6 +6189,8 @@ function sendChatMessage(text) {
     input.value = '';
   }
   addUserMsg(text);
+  // ✅ 仅当用户真正发送首条消息后才开始对话计时（进入聊天界面未发消息不计时）
+  if (window.OY) window.OY.noteActive('chat');
   chatHistory.push({ role: 'user', content: text });
   if (typeof resetIdleTimer === 'function') resetIdleTimer();
   updateAvatarState();
@@ -6772,79 +6768,85 @@ function updateRecordsHero() {
   var qResult = getQuestionnaireResult();           // 问卷（已完成的真实结果）
   var chatDom = getDominantChatEmotion(24 * 30);    // 近30天聊天主导情志
 
-  // ✅ 从两个来源汇总"近期主导情志"（不基于推荐调式）
-  // 优先级：问卷 > 聊天；并列时优先问卷
-  var dominantEmotion = null;
-  var dominantSource = null;
-  var dominantWuyin = null;
-  if (qResult && qResult.wuyin) {
-    dominantEmotion = qResult.wuyin.emotion;   // 怒/喜/思/忧/恐
-    dominantWuyin = qResult.wuyin;
-    dominantSource = 'questionnaire';
-  } else if (chatDom && chatDom.wuyinId) {
-    var ci = WUYIN_DATA.find(function(w) { return w.id === chatDom.wuyinId; });
-    if (ci) {
-      dominantEmotion = ci.emotion;
-      dominantWuyin = ci;
-      dominantSource = 'chat';
-    }
+  // ✅ 从问卷收集 top-1/top-2 情志维度（按分数从高到低最多取两个；统一用五志，不用五脏）
+  var qBiases = [];
+  if (qResult) {
+    var qIds = ((qResult.prominentIds && qResult.prominentIds.length) ? qResult.prominentIds : (qResult.maxIds || [])).slice();
+    qIds.sort(function(a, b){ return (qResult.scores[b] || 0) - (qResult.scores[a] || 0); });
+    qIds.forEach(function(id){ var w = WUYIN_DATA.find(function(x){ return x.id === id; }); if (w && qBiases.length < 2) qBiases.push(w); });
+    if (!qBiases.length && qResult.wuyin) qBiases.push(qResult.wuyin);
   }
+  var dominantEmotion = qBiases.length ? qBiases[0].emotion : null; // 主情志（五志）
+  var dominantWuyin = qBiases.length ? qBiases[0] : null;
 
-  // ✅ 推荐调式：取自 getTodayRecommendation（来自真实数据源）
+  // ✅ 推荐调式：取自 getTodayRecommendation（含组合双调式）；缺失时回退主导情志调式
   var rec = getTodayRecommendation();
-  var primaryItem = rec && rec.primaryItem ? rec.primaryItem : null;
+  var recTones = [];
+  if (rec && rec.cards && rec.cards.length) {
+    var c0 = rec.cards[0];
+    if (c0.maxIds && c0.maxIds.length >= 2) {
+      c0.maxIds.forEach(function(id){ var w = WUYIN_DATA.find(function(x){ return x.id === id; }); if (w && recTones.indexOf(w) < 0) recTones.push(w); });
+    } else if (c0.wuyin) { recTones.push(c0.wuyin); }
+  }
+  if (!recTones.length && dominantWuyin) recTones.push(dominantWuyin);
+  var primaryItem = recTones[0] || null;
 
-  // ✅ 描述文字：仅基于真实来源组装
+  // ✅ 描述文字：仅基于真实来源组装（统一用五志，不用五脏）
   var descParts = [];
   var isAllBalanced5 = qResult && qResult.maxIds && qResult.maxIds.length >= 5;
-  if (qResult && qResult.wuyin) {
-    // ✅ 5 个并列（情志平衡）：直接展示"情志平衡（5 音皆宜）"
+  if (qBiases.length) {
     if (isAllBalanced5) {
       descParts.push('情志测评：平衡（5 音皆宜）');
+    } else if (qBiases.length >= 2) {
+      descParts.push('情志测评：' + qBiases[0].name + '（' + qBiases[0].emotion + '）+ ' + qBiases[1].name + '（' + qBiases[1].emotion + '）');
     } else {
-      descParts.push('情志测评：' + qResult.wuyin.name + '（' + qResult.wuyin.organ + '）');
+      descParts.push('情志测评：' + qBiases[0].name + '（' + qBiases[0].emotion + '）');
     }
   }
   if (chatDom && chatDom.wuyinId && !isAllBalanced5) {
-    // ✅ 平衡状态时，聊天情志仍可显示（即便平衡，用户最近聊天情绪可能也是参考）
     var chatItem2 = WUYIN_DATA.find(function(w) { return w.id === chatDom.wuyinId; });
     if (chatItem2) {
       descParts.push('近30天对话以' + chatItem2.emotion + '为主（' + chatDom.count + '次）');
     }
   }
+  // ✅ 推荐调式：以最近推荐为准；双调式时展示两者（如 宫音（思）+羽音（恐））
+  if (recTones.length) {
+    descParts.push('推荐调式' + recTones.map(function(w){ return w.name + '（' + w.emotion + '）'; }).join('+'));
+  }
 
   if (dominantEmotion && dominantWuyin) {
-    // ✅ 修复并列：5 个都并列（情志平衡）时，标题直接展示"情志平衡"
+    // ✅ 标题：单维显示「思」；双维显示「思+恐」
     if (isAllBalanced5) {
       titleEl.textContent = '近期情志平衡';
+    } else if (qBiases.length >= 2) {
+      titleEl.textContent = '近期偏向「' + qBiases[0].emotion + '+' + qBiases[1].emotion + '」';
     } else {
-      // ✅ 标题：直接展示用户的主导情志（真实数据）
       titleEl.textContent = '近期偏向「' + dominantEmotion + '」';
     }
 
     // ✅ 描述：列出真实数据来源
-    if (descParts.length > 0) {
-      descEl.textContent = descParts.join('；') + '。';
-    } else {
-      descEl.textContent = '暂无更多情志数据。';
-    }
+    descEl.textContent = (descParts.length > 0) ? descParts.join('；') + '。' : '暂无更多情志数据。';
 
-    // ✅ 推荐调式：5 个并列（情志平衡）时不显示单音圆圈（按用户"一个推荐卡片只能 2 调式"要求，单一圆圈不准确）
+    // ✅ 推荐调式圆圈：显示 五志（而非五脏）
     if (recLineEl && recNameEl && recOrganEl) {
       if (isAllBalanced5) {
         recLineEl.style.display = 'flex';
         recNameEl.textContent = '五音皆宜';
         recOrganEl.textContent = '全';
         recOrganEl.style.background = 'linear-gradient(135deg, var(--yue-jue), var(--yue-zhi), var(--yue-gong), var(--yue-shang), var(--yue-yu))';
-      } else if (primaryItem) {
+      } else if (recTones.length) {
         recLineEl.style.display = 'flex';
-        recNameEl.textContent = primaryItem.name;
-        recOrganEl.textContent = (WUYIN_ACCENT_MAP[primaryItem.id] || WUYIN_ACCENT_MAP.jue).organ;
-        recOrganEl.style.background = (WUYIN_ACCENT_MAP[primaryItem.id] || WUYIN_ACCENT_MAP.jue).color;
+        recNameEl.textContent = recTones.map(function(w){ return w.name; }).join('+');
+        recOrganEl.textContent = recTones.map(function(w){ return w.emotion; }).join('+');
+        if (recTones.length >= 2) {
+          recOrganEl.style.background = 'linear-gradient(135deg,' + (WUYIN_ACCENT_MAP[recTones[0].id]||WUYIN_ACCENT_MAP.jue).color + ',' + (WUYIN_ACCENT_MAP[recTones[1].id]||WUYIN_ACCENT_MAP.jue).color + ')';
+        } else {
+          recOrganEl.style.background = (WUYIN_ACCENT_MAP[recTones[0].id] || WUYIN_ACCENT_MAP.jue).color;
+        }
       } else {
         recLineEl.style.display = 'flex';
         recNameEl.textContent = dominantWuyin.name;
-        recOrganEl.textContent = (WUYIN_ACCENT_MAP[dominantWuyin.id] || WUYIN_ACCENT_MAP.jue).organ;
+        recOrganEl.textContent = dominantWuyin.emotion;
         recOrganEl.style.background = (WUYIN_ACCENT_MAP[dominantWuyin.id] || WUYIN_ACCENT_MAP.jue).color;
       }
     }
@@ -9404,9 +9406,19 @@ function toggleElderMode(){
   if(!sw)return;
   sw.classList.toggle('on');
   document.body.classList.toggle('v10-elder',sw.classList.contains('on'));
-  try{localStorage.setItem('elderMode',sw.classList.contains('on')?'1':'0')}catch(e){}
+  try{localStorage.setItem('wuyin_elder_mode',sw.classList.contains('on')?'1':'0')}catch(e){}
   showToast(sw.classList.contains('on')?'长辈模式已开启（字体更大）':'长辈模式已关闭');
 }
+// 长辈模式：按当前用户持久化键恢复显示
+function applyElderMode(){
+  var v = '0';
+  try { v = localStorage.getItem('wuyin_elder_mode') || '0'; } catch(e){}
+  var on = String(v) === '1';
+  var swE = document.getElementById('elderSwitch');
+  if (swE) swE.classList.toggle('on', on);
+  if (on) document.body.classList.add('v10-elder'); else document.body.classList.remove('v10-elder');
+}
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', applyElderMode); } else { applyElderMode(); }
 function toggleNotif(t){
   if(t==='push'){
     var sw=document.getElementById('pushSwitch');
@@ -11891,11 +11903,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -11965,11 +11983,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -12039,11 +12063,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -12113,11 +12143,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -12187,11 +12223,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -12261,11 +12303,17 @@ function __diaryRecords(){
   var u = __unionHealingDiary();
   var out = u.vd.slice();
   // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
-  var seen = {};
-  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  var seen = {}, seenSess = {}, emitSet = {};
+  out.forEach(function(d){ if (d && d.date) { seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; if (d.time) seenSess[d.date + '|' + d.time] = 1; } });
   (u.hr).forEach(function(r){
     if (!r || r.action === 'reblock' || r.action === 'unblock') return;
-    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    var rDate = r.date || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return dd.getFullYear()+'-'+(dd.getMonth()+1<10?'0':'')+(dd.getMonth()+1)+'-'+(dd.getDate()<10?'0':'')+dd.getDate();})() : '');
+    var rTime = r.time || (r.timestamp ? (function(){var dd=new Date(r.timestamp);return (dd.getHours()<10?'0':'')+dd.getHours()+':'+(dd.getMinutes()<10?'0':'')+dd.getMinutes();})() : '');
+    var sk = rDate + '|' + rTime;
+    // 该会话已在 voice_diary 覆盖（组合调式拆多行/单模式已被日记记录）→ 跳过，避免重复日记（如多余"组合羽音"）
+    if (sk && (seenSess[sk] || emitSet[sk])) return;
+    if (sk) emitSet[sk] = 1;
+    var k = (r.toneId||'') + '|' + rDate + '|' + (r.isDual?1:0);
     if (seen[k]) return;
     seen[k] = 1;
     var rec = {
@@ -14106,16 +14154,9 @@ setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
     var tabbar = document.getElementById('tabbar');
     if (tabbar) tabbar.style.display = 'flex';
 
-    // ✅ 自动弹出五态情志测评弹窗（如果用户未完成测评）
-    // 延迟 1.5 秒让 onboard 动画完成，避免遮挡
+    // ✅（移除引导页自动弹问卷窗口；首页的情志测评入口保留）
+    // 同步推荐来源标签 + 推荐卡片（onboard 结束后第一帧就要看到正确的推荐）
     setTimeout(function() {
-      try {
-        var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
-        if (!completed && home && home.classList.contains('active')) {
-          if (typeof openQzModal === 'function') openQzModal('first');
-        }
-      } catch(e) { /* ignore */ }
-      // 同步推荐来源标签 + 推荐卡片（onboard 结束后第一帧就要看到正确的推荐）
       try { renderRecSourceBadges(); } catch(e) {}
       try { renderHealingRecCards(); } catch(e) {}
     }, 1500);
