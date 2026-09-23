@@ -2,13 +2,32 @@
   if (window.__oyReady) return; window.__oyReady = true;
   var LS = window.localStorage;
   if (!LS) return;
-  var rawGet = LS.getItem.bind(LS), rawSet = LS.setItem.bind(LS), rawRem = LS.removeItem.bind(LS), rawKey = LS.key.bind(LS);
+  // 原生方法引用: 改绑 Storage.prototype, 避免受后续 shim/实例同名属性影响
+  var __proto = window.Storage.prototype;
+  var rawGet = __proto.getItem.bind(LS), rawSet = __proto.setItem.bind(LS), rawRem = __proto.removeItem.bind(LS), rawKey = __proto.key.bind(LS);
   var GLOBAL = { 'wuyin_users':1,'wuyin_current_user':1,'wuyin_schema_version':1,'wuyin_dashscope_api_key':1,'wuyin_admin_pin':1 };
   var cur = null;
+  function __defaultUid(){
+    // 权威路由: 以持久化的当前用户 wuyin_current_user 为准（跨页面/异步回调也不忘本）
+    try {
+      var pUid = rawGet('wuyin_current_user');
+      if (pUid !== null) {
+        var okU = getUsers().some(function(x){ return String(x.id) === String(pUid); });
+        if (okU) return String(pUid);
+      }
+    } catch(e){}
+    if (cur) return String(cur);
+    try { var uu = getUsers(); if (uu && uu.length) return String(uu[0].id); } catch(e){}
+    return '1';
+  }
+  function __legacyOwnerId(){
+    try { var uu = getUsers(); if (uu && uu.length) return String(uu[0].id); } catch(e){}
+    return '1';
+  }
   function resolveKey(k){
     if (typeof k !== 'string') return k;
     if (GLOBAL[k]) return k;
-    if (cur && k.indexOf('wuyin_') === 0) return 'wuyin' + cur + ':' + k.slice(6);
+    if (k.indexOf('wuyin_') === 0) return 'wuyin' + __defaultUid() + ':' + k.slice(6);
     return k;
   }
   function toast(msg){
@@ -22,13 +41,45 @@
   function saveUsers(u){ localStorage.setItem('wuyin_users', JSON.stringify(u)); }
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
   function todayStr(){ var d = new Date(), m = d.getMonth()+1, dd = d.getDate(); return d.getFullYear() + '-' + (m<10?'0'+m:m) + '-' + (dd<10?'0'+dd:dd); }
-  LS.getItem = function(k){ return rawGet(resolveKey(k)); };
-  LS.removeItem = function(k){ return rawRem(resolveKey(k)); };
-  LS.setItem = function(k, v){
+  function __isEmptyContainer(s){
+    if (s === null || s === undefined) return false;
+    try { var o = JSON.parse(s); return (Array.isArray(o) && o.length === 0) || (typeof o === 'object' && o !== null && Object.keys(o).length === 0); } catch(e){ return false; }
+  }
+  // 与 __readUserData 的兜底语义一致：当前用户前缀键为空数组/空对象时，回退读取无前缀旧值，
+  // 避免"App 界面显示空白、后台导出却有数据"的读写分叉
+  // ⚠️ 必须用 defineProperty 而非 `LS.setItem = fn`：手机浏览器会把同名方法名当存储键写入(getItem/setItem/removeItem垃圾键)
+  // 定义在 Storage.prototype(所有 Storage 实例共享): 不会把方法名写成存储键
+  function __delInst(name){ try{ if (Object.prototype.hasOwnProperty.call(LS, name)) delete LS[name]; }catch(e){} }
+  function __defStoreMethod(name, fn){
+    // 清掉实例上已产生的同名自有属性(垃圾键来源)
+    __delInst(name); try{ (window.Storage.prototype)[name] = fn; }catch(e){ console.warn('[oy] proto def failed', name, e); }
+  }
+  __defStoreMethod('getItem', function(k){
+    var rk = resolveKey(k);
+    if (rk === k) return rawGet(k);
+    var v = rawGet(rk);
+    // 多用户严格隔离：未加前缀的旧业务键只归属“唯一所有者”
+    // 非所有者用户只读自己的前缀键，绝不允许读/合并无前缀共享值，防止串台
+    if (typeof __legacyOwnerId === 'function' && String(__defaultUid()) !== __legacyOwnerId()){
+      return v;
+    }
+    var lv = rawGet(k);
+    if (v != null && lv != null && v !== lv) {
+      var vm, lm, ok = true;
+      try { vm = JSON.parse(v); } catch(e){ ok = false; }
+      try { lm = JSON.parse(lv); } catch(e){ ok = false; }
+      if (ok && Array.isArray(vm) && Array.isArray(lm)) return JSON.stringify(__unionValues(vm, lm));
+    }
+    if (v === null || v === undefined) return lv;
+    if (__isEmptyContainer(v)) return (lv === null || lv === undefined) ? v : lv;
+    return v;
+  });
+  __defStoreMethod('removeItem', function(k){ return rawRem(resolveKey(k)); });
+  __defStoreMethod('setItem', function(k, v){
     var kk = resolveKey(k);
     try { rawSet(kk, v); }
     catch(err){ if (err && (err.name==='QuotaExceededError' || err.code===22 || err.code===1014)) toast('存储空间已满，请导出后清理数据'); else throw err; }
-  };
+  });
   function makeUid(){ var u = getUsers(), mx = 0; u.forEach(function(x){ if (Number(x.id) > mx) mx = Number(x.id); }); return mx + 1; }
   function createUser(name){
     var u = getUsers(), uid = makeUid();
@@ -44,19 +95,122 @@
     if (uid === null || !u.some(function(x){ return String(x.id) === String(uid); })) localStorage.setItem('wuyin_current_user', String(u[0].id));
     cur = String(localStorage.getItem('wuyin_current_user'));
   }
+  // 合并两条值：绝不丢失数据。数组按关键字段去重并集；对象补齐缺失键；其余优先保留带前缀(较新)值
+    function __unionValues(ex, lg){
+    if (Array.isArray(ex) && Array.isArray(lg)){
+      var map = {};
+      ex.forEach(function(it){ map[__mergeKey(it)] = it; });
+      lg.forEach(function(it){ map[__mergeKey(it)] = it; });
+      return Object.keys(map).map(function(k){ return map[k]; });
+    }
+    if (ex && lg && typeof ex === 'object' && typeof lg === 'object' && !Array.isArray(ex) && !Array.isArray(lg)){
+      var o = JSON.parse(JSON.stringify(ex));
+      Object.keys(lg).forEach(function(k){ if (!Object.prototype.hasOwnProperty.call(o, k)) o[k] = lg[k]; });
+      return o;
+    }
+    // 其余：优先保留带前缀(较新)值；若带前缀缺失则用无前缀值
+    return (ex === null || ex === undefined) ? lg : ex;
+  }
+  function __mergeKey(it){
+    if (it && typeof it === 'object') return 't' + (it.timestamp || it.ts || it.time || it.date || '') + (it.id || '');
+    return 'v' + JSON.stringify(it);
+  }
+  function __mergeLegacyValue(existingRaw, legacyRaw){
+    var ex, lg;
+    try { ex = JSON.parse(existingRaw); } catch(e){ ex = existingRaw; }
+    try { lg = JSON.parse(legacyRaw); } catch(e){ lg = legacyRaw; }
+    if (Array.isArray(ex) && Array.isArray(lg)){
+      var map = {};
+      ex.forEach(function(it){ map[__mergeKey(it)] = it; });
+      lg.forEach(function(it){ map[__mergeKey(it)] = it; });
+      return JSON.stringify(Object.keys(map).map(function(k){ return map[k]; }));
+    }
+    if (ex && lg && typeof ex === 'object' && typeof lg === 'object' && !Array.isArray(ex) && !Array.isArray(lg)){
+      var o = JSON.parse(JSON.stringify(ex));
+      Object.keys(lg).forEach(function(k){ if (!Object.prototype.hasOwnProperty.call(o, k)) o[k] = lg[k]; });
+      return JSON.stringify(o);
+    }
+    return existingRaw; // 兜底：优先保留带前缀(通常更新)的值
+  }
   function migrateLegacy(){
-    if (localStorage.getItem('wuyin_schema_version') === '1' || !cur) return;
+    var owner = (typeof __legacyOwnerId === 'function') ? __legacyOwnerId() : '1';
     var n = 0, keys = [];
     for (var i=0;i<LS.length;i++){ var k = rawKey(i); if (k && typeof k === 'string') keys.push(k); }
+    var hasUnprefixed = keys.some(function(k){
+      return !GLOBAL[k] && k.charAt(5) !== ':' && k.indexOf('wuyin_') === 0;
+    });
+    if (localStorage.getItem('wuyin_schema_version') === '1' && !hasUnprefixed) return;
+    // 无前缀旧键只归属“唯一所有者(owner)”，绝不迁给当前用户，避免被其他用户读到 → 串台
     keys.forEach(function(k){
       if (GLOBAL[k] || k.charAt(5) === ':') return;
       if (k.indexOf('wuyin_') !== 0) return;
       var v = rawGet(k);
-      if (v !== null){ rawSet('wuyin' + cur + ':' + k.slice(6), v); rawRem(k); n++; }
+      if (v === null) return;
+      var pk = 'wuyin' + owner + ':' + k.slice(6);
+      var ex = rawGet(pk);
+      // 带前缀为空 → 直接采纳旧值；否则合并两份(不覆盖)，再删除无前缀副本，收敛为单一来源
+      rawSet(pk, (ex === null) ? v : __mergeLegacyValue(ex, v));
+      rawRem(k); n++;
     });
     localStorage.setItem('wuyin_schema_version', '1');
-    if (n) console.log('[oy] migrated:', n);
+    if (n) console.log('[oy] merged unprefixed into owner user:', n);
   }
+  // ===== 清理被污染的方法名垃圾键（getItem/setItem/removeItem 被手机浏览器当成键写入）=====
+  function __purgeJunkKeys(){
+    try {
+      var jk = { getItem:1, setItem:1, removeItem:1, key:1, length:1 };
+      for (var i=LS.length-1;i>=0;i--){
+        var k = rawKey(i);
+        if (k === null || k === undefined) continue;
+        if (jk[k]) { rawRem(k); }
+      }
+    } catch(e){ console.warn('[oy] purge junk keys error:', e); }
+  }
+
+  // ===== 运行时自检 + 定时迁移兜底 =====
+  // 自检: 验证 setItem 是否正确加前缀（防止旧缓存代码/包装器被覆盖导致串台）
+  function __selfCheck(){
+    try {
+      var probe = 'wuyin___probe_' + Date.now();
+      localStorage.setItem(probe, '1');
+      var uid = __defaultUid();
+      var hit = false, rawKeys = [];
+      for (var i=0;i<LS.length;i++){ var kk = rawKey(i); if (kk) rawKeys.push(kk); if (kk === 'wuyin'+uid+':'+probe.slice(6)) hit = true; }
+      rawKeys.forEach(function(k){ if (k.indexOf('__probe_') >= 0 || k.indexOf('___probe_') >= 0) rawRem(k); });
+      if (!hit){
+        console.warn('[oy] SELF-CHECK FAIL: setItem 未加前缀，强制重新安装包装器');
+        __installWrappers();
+      }
+    } catch(e){ console.warn('[oy] self-check error:', e); }
+  }
+  // 定时迁移兜底: 每 8 秒扫描一次无前缀业务键，发现即迁移（兼容旧代码写入/缓存异常）
+  function __periodicMigrate(){ try { migrateLegacy(); } catch(e){} }
+  // 重新安装 localStorage 包装器（自检失败时调用）
+  function __installWrappers(){
+    __defStoreMethod('getItem', function(k){
+      var rk = resolveKey(k);
+      if (rk === k) return rawGet(k);
+      var v = rawGet(rk);
+      if (typeof __legacyOwnerId === 'function' && String(__defaultUid()) !== __legacyOwnerId()){ return v; }
+      var lv = rawGet(k);
+      if (v != null && lv != null && v !== lv) {
+        var vm, lm, ok = true;
+        try { vm = JSON.parse(v); } catch(e){ ok = false; }
+        try { lm = JSON.parse(lv); } catch(e){ ok = false; }
+        if (ok && Array.isArray(vm) && Array.isArray(lm)) return JSON.stringify(__unionValues(vm, lm));
+      }
+      if (v === null || v === undefined) return lv;
+      if (__isEmptyContainer(v)) return (lv === null || lv === undefined) ? v : lv;
+      return v;
+    });
+    __defStoreMethod('removeItem', function(k){ return rawRem(resolveKey(k)); });
+    __defStoreMethod('setItem', function(k, v){
+      var kk = resolveKey(k);
+      try { rawSet(kk, v); }
+      catch(err){ if (err && (err.name==='QuotaExceededError' || err.code===22 || err.code===1014)) toast('存储空间已满，请导出后清理数据'); else throw err; }
+    });
+  }
+
   // ===== 使用时长：心跳计时（秒）=====
   var __active = {};
   function __noteActive(kind){ if (kind === 'healing' || kind === 'chat' || kind === 'quiz') __active[kind] = true; }
@@ -162,7 +316,29 @@
   }
   function __readUserData(id){
     var out = {}, pre = 'wuyin' + id + ':';
+    // 第一遍：读取该用户前缀的键（优先）
     for (var i=0;i<LS.length;i++){ var k = rawKey(i); if (typeof k === 'string' && k.indexOf(pre) === 0){ var v = rawGet(k); if (v === null) continue; var nm = k.slice(pre.length); try { out[nm] = JSON.parse(v); } catch(e){ out[nm] = v; } } }
+    // 第二遍：无前缀旧键只归属“唯一所有者”。仅当本用户就是 owner 时才兜底读无前缀键，
+    // 其他用户绝不可读/合并无前缀共享值，保证多用户数据严格隔离不串台
+    var isOwner = (typeof __legacyOwnerId === 'function') ? (String(id) === __legacyOwnerId()) : false;
+    if (isOwner) {
+      for (var j=0;j<LS.length;j++){
+        var k2 = rawKey(j);
+        if (typeof k2 !== 'string') continue;
+        if (GLOBAL[k2] || k2.charAt(5) === ':') continue;
+        if (k2.indexOf('wuyin_') !== 0) continue;
+        var nm2 = k2.slice(6);
+        var v2 = rawGet(k2);
+        if (v2 === null) continue;
+        var lg2; try { lg2 = JSON.parse(v2); } catch(e){ lg2 = v2; }
+        if (out.hasOwnProperty(nm2)) {
+          // 带前缀与无前缀并集合并：数组按时间戳去重，对象补缺失键，保证历史不丢、不重复
+          out[nm2] = __unionValues(out[nm2], lg2);
+        } else {
+          out[nm2] = lg2;
+        }
+      }
+    }
     return out;
   }
   function __fbChoice(r){
@@ -209,10 +385,11 @@
   // 从当前 answers（84/50 数组）计算情绪得分，供无 history 时复用计分与推荐
   function __curQuestionnaire(D){
     var answers = D.questionnaire_answers;
-    if (!Array.isArray(answers) || answers.length < 50) { var qz = D.qingzhi; if (Array.isArray(qz) && qz.length >= 5) { var qzScores = { jue:qz[0], zhi:qz[1], gong:qz[2], shang:qz[3], yu:qz[4] }; return { scores: qzScores, answers: answers || [], ts: Number(D.questionnaire_completed_time)||0 }; } return null; }
+    if (!Array.isArray(answers) || answers.length < 1) { var qz0 = D.qingzhi; if (Array.isArray(qz0) && qz0.length >= 5) { var qzScores = { jue:qz0[0], zhi:qz0[1], gong:qz0[2], shang:qz0[3], yu:qz0[4] }; return { scores: qzScores, answers: answers || [], ts: Number(D.questionnaire_completed_time) || Date.now() }; } return null; }
     var emotionAnswers = [];
     if (answers.length >= 78) { for (var r = 0; r < 5; r++) for (var q = 0; q < 10; q++) emotionAnswers.push(answers[r * 17 + q]); }
-    else emotionAnswers = answers.slice(0, 50);
+    else if (answers.length >= 50) { emotionAnswers = answers.slice(0, 50); }
+    else { var fullRounds = Math.floor(answers.length / 17); for (var rp = 0; rp < Math.min(fullRounds, 5); rp++) for (var qp = 0; qp < 10; qp++) { var ix = rp * 17 + qp; if (ix < answers.length && answers[ix] != null) emotionAnswers.push(answers[ix]); } if (!emotionAnswers.length && answers.length >= 1) emotionAnswers = answers.slice(0, Math.min(50, answers.length)); }
     var scores = { jue:0, zhi:0, gong:0, shang:0, yu:0 };
     emotionAnswers.forEach(function(ans, idx){
       if (typeof ans !== 'number' || ans < 0 || ans > 4) return;
@@ -222,7 +399,7 @@
     var hasEmo = false; for (var k2 in scores) if (scores[k2] > 0) { hasEmo = true; break; }
     if (!hasEmo) { var qz2 = D.qingzhi; if (Array.isArray(qz2) && qz2.length >= 5) { scores = { jue:qz2[0], zhi:qz2[1], gong:qz2[2], shang:qz2[3], yu:qz2[4] }; } }
     // 返回完整 answers（含躯体），供 __scoreQuestionnaire 计算情绪阳性数 + 躯体化七因子/总分/阳性数
-    return { scores: scores, answers: answers, ts: Number(D.questionnaire_completed_time)||0 };
+    return { scores: scores, answers: answers, ts: Number(D.questionnaire_completed_time) || (answers.length < 50 && answers.length >= 1 ? Date.now() : 0) };
   }
   // 问卷推荐：两种情志均分(分数/10)差<=0.3 都推荐（与大卡片 prominentIds 阈值一致，原分数差<=3）
   function __qRecTones(sc){
@@ -238,11 +415,12 @@
   // ===== 对话轮次计时：每轮 = 本轮首条用户消息 → 该轮分析结束（点击"结束并推荐"）=====
   // 返回 { rounds:[{idx,date,startTs,endTs,durationSec,msgCount,userMsgCount,src}], daily:{date:sec} }
   function __chatTiming(D, TR){
-    var AH = (D.ai_chat_history || []).filter(function(x){ return x && x.timestamp; })
+    var AH = (D.ai_chat_history || []).filter(function(x){ return x && (x.timestamp || x.ts); })
       .map(function(x){ return { t: x.timestamp || x.ts || 0, src: x }; })
       .sort(function(a,b){ return a.t - b.t; });
-    var msgs = (D.chat_messages || []).filter(function(m){ return m && m.role !== 'recommendation' && m.time; })
-      .map(function(m){ return { t: m.time, role: m.role }; })
+    // 兼容多种时间字段名：time / ts / timestamp / createdAt
+    var msgs = (D.chat_messages || []).filter(function(m){ return m && m.role !== 'recommendation' && (m.time || m.ts || m.timestamp || m.createdAt); })
+      .map(function(m){ return { t: m.time || m.ts || m.timestamp || m.createdAt, role: m.role }; })
       .sort(function(a,b){ return a.t - b.t; });
     // 先用全量分析计算每轮（确保本轮下界取自真实的前一轮分析，即便前一轮不在 TR 范围内），再按 TR 过滤输出，
     // 从而"单独导出当日"与"导出全部"中的该日数值保持一致
@@ -254,6 +432,23 @@
       var startTs = firstUser != null ? firstUser : lower;
       var durSec = (firstUser != null) ? Math.max(0, Math.round((h.t - firstUser) / 1000)) : 0;
       rawRounds.push({ t: h.t, date: h.src.date || __dateOf(h.src.timestamp) || '', src: h.src, startTs: startTs, endTs: h.t, durationSec: durSec, msgCount: n, userMsgCount: un });
+    });
+    // 兜底：若某轮未匹配到消息（msgCount=0 或 durationSec=0），从 usage_daily 取该日对话秒数，
+    // 并按各轮均分；消息数则取 chat_messages 中该日的全部消息数
+    var ud = D.usage_daily || {};
+    rawRounds.forEach(function(r){
+      if (r.msgCount === 0 || r.durationSec === 0){
+        var dk = r.date;
+        var dayMsgs = (D.chat_messages || []).filter(function(m){ return m && m.role !== 'recommendation' && __dateOf(m.time || m.ts || m.timestamp || m.createdAt) === dk; });
+        if (r.msgCount === 0) { r.msgCount = dayMsgs.length; r.userMsgCount = dayMsgs.filter(function(m){ return m.role === 'user'; }).length; }
+        if (r.durationSec === 0){
+          var ux = ud[dk] || {};
+          var chatSec = Math.max(ux.chat || 0, Math.round((ux.chatMins || 0) * 60));
+          // 该日可能有多轮，按轮数均分（仅用于兜底估算）
+          var roundsThisDay = rawRounds.filter(function(x){ return x.date === dk; }).length || 1;
+          r.durationSec = Math.round(chatSec / roundsThisDay);
+        }
+      }
     });
     var rounds = [], daily = {};
     rawRounds.forEach(function(r, i){
@@ -309,17 +504,40 @@
     }
 
     // 二、使用时长（读秒计时：疗愈/问卷按在APP内实际停留秒数；对话=各轮实际对话时长之和）
+    // 疗愈时长数据源：①usage_daily 心跳/recordUsage ②healing_records 实际聆听时长（取三者较大值，确保与疗愈记录一致）
     if (C.usage){
       var all = D.usage_daily || {}, rows = [];
       var chatT = (typeof __chatTiming === 'function') ? __chatTiming(D, TR) : { daily: {} };
+      // 从疗愈记录按日汇总实际聆听秒数（含试听，因试听用户确实花费了时间）
+      var healByDay = {};
+      (D.healing_records || []).forEach(function(r){
+        if (!r) return;
+        var dk = __dateOf(r.timestamp != null ? r.timestamp : r.date);
+        if (!dk) return;
+        var sec = (typeof r.actualSec === 'number' && r.actualSec > 0) ? r.actualSec : 0;
+        if (sec > 0) healByDay[dk] = (healByDay[dk] || 0) + sec;
+      });
       var qS = 0, sH = 0, sC = 0, sQ = 0, days = 0, firstTs = null, lastTs = null;
       var qzUsed = 0;
-      Object.keys(all).sort().forEach(function(k){
+      var _qfU = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
+      var _qfUTotal = _qfU ? _qfU.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
+      var _qfUDate = _qfU ? __dateOf(_qfU.updatedAt) : '';
+      // 遍历 usage_daily 与 healByDay 的日期并集
+      var dayKeys = {};
+      Object.keys(all).forEach(function(k){ dayKeys[k] = 1; });
+      Object.keys(healByDay).forEach(function(k){ dayKeys[k] = 1; });
+      Object.keys(dayKeys).sort().forEach(function(k){
         var x = all[k] || {};
         if (!__inTR(k, TR)) return;
-        var h = x.healing || 0, q = x.quiz || 0;
-        // 对话时长以该日各轮之和为准（与"AI对话分析"实际对话时长一致）；该日无对话轮次则为 0，不采用停留读秒值
+        // 合并 heartbeat 秒数 + recordUsage 分钟数 + 疗愈记录实际时长（取较大值）
+        var hSec = x.healing || 0, hMin = x.healingMins || 0;
+        var cSec = x.chat || 0, cMin = x.chatMins || 0;
+        var qSec = x.quiz || 0, qMin = x.quizMins || 0;
+        var h = Math.max(hSec, healByDay[k] || 0);
+        var q = Math.max(qSec, Math.round(qMin * 60)); if (k === _qfUDate && _qfUTotal > q) q = _qfUTotal;
+        // 对话时长：优先各轮实际对话时长，其次 heartbeat 秒数，最后 recordUsage 分钟数
         var c = chatT.daily[k] || 0;
+        if (!c) c = Math.max(cSec, Math.round(cMin * 60));
         rows.push({ date: k, healing: h, chat: c, quiz: q, total: h + c + q });
         sH += h; sC += c; sQ += q; qzUsed += c;
         if (h + c + q > 0){ days++; if (firstTs == null || (x.firstTs||0) < firstTs) firstTs = x.firstTs || null; }
@@ -337,7 +555,7 @@
       // 调式/曲目/情境用“+”连接（如 羽音+宫音）。单模式每条独立一行。
       var groups = {}, order = [];
       hr.forEach(function(r){
-        var actualSec = (typeof r.actualSec === 'number') ? r.actualSec : null;
+        var actualSec = (typeof r.actualSec === 'number' && r.actualSec > 0) ? r.actualSec : null;
         var trial = __isTrial(r, completeTs);
         var selfDur = (typeof r.durationMin === 'number') ? r.durationMin : (trial ? 1 : null);
         var date = r.date || __dateOf(r.timestamp) || '';
@@ -446,7 +664,7 @@
       });
       var qh = (D.questionnaire_history || []).filter(function(x){ return x && __inTR(x.date, TR); });
       var qrows = qh.map(function(x){
-        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', scores: x.scores || null }, __scoreQuestionnaire(x));
+        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', scores: x.scores || null, quizFillSec: (typeof x.quizFillSec === 'number') ? x.quizFillSec : 0, quizRounds: (Array.isArray(x.quizRounds)) ? x.quizRounds : [] }, __scoreQuestionnaire(x));
       });
       // 兜底：首次问卷未归档 history，但存在当前题库（wuyin_questionnaire_answers）或当前五态 qingzhi。
       // 生成一条"当前情志测评"记录，并从真实答案计算情绪总分/阳性数 + 躯体化七因子/总分/阳性数。
@@ -455,7 +673,9 @@
         if (curQ2 && curQ2.scores) {
           var qDate2 = __dateOf(curQ2.ts) || todayStr();
           var sc2 = __scoreQuestionnaire({ scores: curQ2.scores, answers: curQ2.answers });
-          var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评', scores: curQ2.scores, isCurrent: true }, sc2);
+          var _cf = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
+          var _cft = _cf ? _cf.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
+          var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评', scores: curQ2.scores, isCurrent: true, quizFillSec: _cft, quizRounds: _cf ? _cf.rounds.slice() : [] }, sc2);
           qrows.push(qrow2);
         }
       }
@@ -475,7 +695,9 @@
         };
       }
       // AI 情绪识别明细已并入"AI对话"板块，此处不再重复逐条，仅保留词云频次统计
-      R.blocks.emotion = { summary: { keywordFreq: kw, wutaiDist: wutai }, biasCard: bias, questionnaire: qrows };
+      var _qFill = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
+      var quizFillSec = _qFill ? (_qFill.rounds||[]).reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
+      R.blocks.emotion = { summary: { keywordFreq: kw, wutaiDist: wutai, quizFillSec: quizFillSec, quizRounds: _qFill ? _qFill.rounds.slice() : [] }, biasCard: bias, questionnaire: qrows };
     }
 
     // 六、疗愈评分趋势（按次，取自疗愈日记）
@@ -644,6 +866,10 @@
           + ' | ' + bv('心血管') + ' | ' + bv('脑神经') + ' | ' + bv('消化') + ' | ' + bv('呼吸') + ' | ' + bv('泌尿') + ' | ' + bv('四肢肌肉') + ' | ' + bv('其他')
           + ' | ' + dv(x.bodyTotal) + ' | ' + dv(x.bodyPositive));
       });
+      if (B.emotion.summary && B.emotion.summary.quizRounds && B.emotion.summary.quizRounds.length){
+        L.push('  ── 问卷填写时长（最近一次测评，逐轮秒数）──');
+        L.push('  各轮：' + B.emotion.summary.quizRounds.map(function(s,i){ return 'R' + (i+1) + '=' + s + '秒'; }).join('、') + '；合计：' + B.emotion.summary.quizFillSec + '秒');
+      }
     }
     if (B.rating){
       L.push('');
@@ -737,12 +963,13 @@
       var rows6 = [];
       reps.forEach(function(r){ if (r.blocks.emotion) r.blocks.emotion.questionnaire.forEach(function(x){
         var sc = x.scores || {};
-        rows6.push([r.userCode, x.date, x.time, x.title || '', sc.jue != null ? sc.jue : '', sc.zhi != null ? sc.zhi : '', sc.gong != null ? sc.gong : '', sc.shang != null ? sc.shang : '', sc.yu != null ? sc.yu : '',
+        rows6.push([r.userCode, x.date, x.time, x.title || '',
+          (x.quizFillSec != null ? +(x.quizFillSec/60).toFixed(1) : ''), (x.quizFillSec != null ? x.quizFillSec : ''), (Array.isArray(x.quizRounds) && x.quizRounds.length ? x.quizRounds.map(function(s2,i2){ return 'R' + (i2+1) + '=' + s2; }).join(';') : ''), sc.jue != null ? sc.jue : '', sc.zhi != null ? sc.zhi : '', sc.gong != null ? sc.gong : '', sc.shang != null ? sc.shang : '', sc.yu != null ? sc.yu : '',
           x.emotionTotal != null ? x.emotionTotal : '', x.emotionPositive != null ? x.emotionPositive : '',
           (x.body && x.body['心血管'] != null) ? x.body['心血管'] : '', (x.body && x.body['脑神经'] != null) ? x.body['脑神经'] : '', (x.body && x.body['消化'] != null) ? x.body['消化'] : '', (x.body && x.body['呼吸'] != null) ? x.body['呼吸'] : '', (x.body && x.body['泌尿'] != null) ? x.body['泌尿'] : '', (x.body && x.body['四肢肌肉'] != null) ? x.body['四肢肌肉'] : '', (x.body && x.body['其他'] != null) ? x.body['其他'] : '',
           x.bodyTotal != null ? x.bodyTotal : '', x.bodyPositive != null ? x.bodyPositive : '']);
       }); });
-      sec('情志测评(问卷渠道)：情绪总分=喜怒忧思恐五因子和，情绪阳性=50题中选3-4数量；心血管/脑神经/消化/呼吸/泌尿/四肢肌肉/其他=34题按医学因子得分，躯体化总分=7因子和，阳性=34题中选3-4数量', ['编号','日期','时间','类型','角(怒)','徵(喜)','宫(思)','商(忧)','羽(恐)','情绪总分','情绪阳性数','心血管','脑神经','消化','呼吸','泌尿','四肢肌肉','其他','躯体化总分','躯体化阳性数'], rows6);
+      sec('情志测评(问卷渠道)：情绪总分=喜怒忧思恐五因子和，情绪阳性=50题中选3-4数量；心血管/脑神经/消化/呼吸/泌尿/四肢肌肉/其他=34题按医学因子得分，躯体化总分=7因子和，阳性=34题中选3-4数量', ['编号','日期','时间','类型','问卷填写时长(分钟)','问卷填写时长(秒)','问卷逐轮秒数','角(怒)','徵(喜)','宫(思)','商(忧)','羽(恐)','情绪总分','情绪阳性数','心血管','脑神经','消化','呼吸','泌尿','四肢肌肉','其他','躯体化总分','躯体化阳性数'], rows6);
     }
     // ⑦ 推荐命中（问卷/AI/时辰三来源）
     if (any && any.recommend){
@@ -760,7 +987,8 @@
     current: function(){ return getUsers().filter(function(x){ return String(x.id) === String(cur); })[0] || null; },
     uid: function(){ return cur; },
     createUser: createUser,
-    switchUser: function(id){ var u = getUsers(); if (u.some(function(x){ return String(x.id) === String(id); })) localStorage.setItem('wuyin_current_user', String(id)); location.reload(); },
+    switchUser: function(id){ var u = getUsers(); if (u.some(function(x){ return String(x.id) === String(id); })){ rawSet('wuyin_current_user', String(id)); cur = String(id); } location.reload(); },
+    activateUser: function(id){ var u = getUsers(); if (u.some(function(x){ return String(x.id) === String(id); })){ rawSet('wuyin_current_user', String(id)); cur = String(id); try { migrateLegacy(); } catch(e){} } },
     renameUser: function(id, name){ name = String(name||'').trim(); if(!name) return; var u = getUsers(); u.forEach(function(x){ if (String(x.id)===String(id)){ x.name = name; x.lastActive = Date.now(); } }); saveUsers(u); },
     deleteUser: function(id){
       var u = getUsers();
@@ -769,7 +997,7 @@
       var keys = []; for (var i=0;i<LS.length;i++){ var k = rawKey(i); if (typeof k === 'string') keys.push(k); }
       keys.forEach(function(k){ if (k.indexOf('wuyin' + id + ':') === 0) rawRem(k); });
       saveUsers(next);
-      if (String(cur) === String(id)) localStorage.setItem('wuyin_current_user', String(next[0].id));
+      if (String(cur) === String(id)) rawSet('wuyin_current_user', String(next[0].id));
       location.reload();
     },
     download: function(fn, text, mime){ var b = new Blob([text], { type: mime || 'application/json' }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fn; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800); },
@@ -821,12 +1049,39 @@
       d.sessions = (d.sessions || 0) + 1; d.lastDate = today; all[today] = d;
       localStorage.setItem('wuyin_usage_daily', JSON.stringify(all));
     },
-    todayUsage: function(){ var all = readJSON('wuyin_usage_daily', {}), d = all[todayStr()] || {}; d.healingMins=(d.healing||0)/60; d.chatMins=(d.chat||0)/60; d.quizMins=(d.quiz||0)/60; d.total=(d.healing||0)+(d.chat||0)+(d.quiz||0); return d; },
-    totalUsage: function(){ var all = readJSON('wuyin_usage_daily', {}), h=0,c=0,q=0; Object.keys(all).forEach(function(k){ h+=(all[k].healing||0); c+=(all[k].chat||0); q+=(all[k].quiz||0); }); return { healingMins:h/60, chatMins:c/60, quizMins:q/60, healing:h, chat:c, quiz:q, total:h+c+q }; },
+    todayUsage: function(){ var D = __readUserData(cur); var all = D.usage_daily || {}, d = all[todayStr()] || {}; var tdStr=todayStr(); var healToday=0; (D.healing_records||[]).forEach(function(r){ if(!r) return; if(__dateOf(r.timestamp!=null?r.timestamp:r.date)===tdStr){ var s=(typeof r.actualSec==='number' && r.actualSec>0)?r.actualSec:0; if(s>0) healToday+=s; } }); var h=Math.max(d.healing||0, healToday); var q=Math.max(d.quiz||0, Math.round((d.quizMins||0)*60)); var c=0; try { var cT=(typeof __chatTiming==='function')?__chatTiming(D,{mode:'full'}):{daily:{}}; var td=(cT.daily||{})[tdStr]; if (td) c=td; } catch(e){ c=0; } if (!c) c=Math.max(d.chat||0, Math.round((d.chatMins||0)*60)); d.chat=c; d.healingMins=h/60; d.chatMins=c/60; d.quizMins=q/60; d.total=h+c+q; return d; },
+    // 该用户所有轮次的实际对话时长总和（与"AI对话分析"导出一致），而非"切入AI界面即读秒"的停留值
+    chatTotalSec: function(uid){
+      try {
+        var D = __readUserData(uid);
+        var cT = (typeof __chatTiming === 'function') ? __chatTiming(D, { mode:'full' }) : { rounds: [] };
+        var sum = 0; cT.rounds.forEach(function(r){ sum += (r.durationSec || 0); });
+        return sum;
+      } catch(e){ return 0; }
+    },
+    // 暴露当前用户的 usage_daily 原始数据（供后台计算使用天数），走 __readUserData 兜底
+    rawUsageDaily: function(){ return (__readUserData(cur) || {}).usage_daily || {}; },
+    totalUsage: function(){
+      var D = __readUserData(cur);
+      var all = D.usage_daily || {}, h=0,cQuiz=0,q=0;
+      Object.keys(all).forEach(function(k){ var x=all[k]||{}; h+=(x.healing||0); cQuiz+=Math.max(x.chat||0, Math.round((x.chatMins||0)*60)); q+=Math.max(x.quiz||0, Math.round((x.quizMins||0)*60)); });
+      // 疗愈时长兜底：从疗愈记录汇总实际聆听秒数，取较大值确保与疗愈记录一致
+      var healRecSec = 0;
+      (D.healing_records || []).forEach(function(r){ if(!r) return; var s=(typeof r.actualSec==='number' && r.actualSec>0)?r.actualSec:0; if(s>0) healRecSec+=s; });
+      h = Math.max(h, healRecSec);
+      // 对话时长以该用户各轮之和为准（有轮次用轮次和，避免切入即计时虚增；无历史轮次则保留读秒值兜底）
+      var c = cur ? this.chatTotalSec(cur) : 0;
+      if (!c) c = cQuiz;
+      return { healingMins:h/60, chatMins:c/60, quizMins:q/60, healing:h, chat:c, quiz:q, total:h+c+q };
+    },
     pinOk: function(pin){ var p = localStorage.getItem('wuyin_admin_pin'); if (p === null || p === ''){ localStorage.setItem('wuyin_admin_pin', '9527'); return String(pin) === '9527'; } return String(pin) === String(p); },
     setPin: function(oldP, newP){ if (!OY.pinOk(oldP)) return false; var s = String(newP||'').trim(); if (!s) return false; localStorage.setItem('wuyin_admin_pin', s); return true; }
   };
   window.OY = OY; window.__appToast = toast;
-  ensureDefault(); migrateLegacy(); __initHeartbeat();
+  ensureDefault(); __purgeJunkKeys(); migrateLegacy(); __initHeartbeat();
+  // 运行时自检 + 定时迁移兜底（防止缓存旧代码/包装器失效导致数据写入无前缀键）
+  __selfCheck();
+  setInterval(__periodicMigrate, 8000);
+  setInterval(__selfCheck, 30000);
   if (document.addEventListener) document.addEventListener('visibilitychange', function(){ if (document.visibilityState !== 'visible') __noteInactive(); });
 })();

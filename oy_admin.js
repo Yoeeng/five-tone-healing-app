@@ -101,6 +101,7 @@
         '<div class="step">④ 导出格式</div><div>' + fmtBtns + '</div>' +
         '<div class="oyRow" style="margin-top:10px"><button class="primary big" data-act="doExport">开始导出</button></div>' +
         '<div class="dl">可读文本：中文分节排版，直接阅读｜JSON：原始完整数据，供程序处理｜CSV表格：单个文件内按逻辑分多个表格，Excel/WPS 可打开</div></div>' +
+      '<div class="sec"><button data-act="diag" class="big">⚡ 一键诊断（数据是否完整）</button><div class="dl">诊断会检查每个用户各块数据量及原始 localStorage 键是否存在，结果以弹窗展示。</div></div>' +
       '<div class="sec"><div class="t">使用时长 <button data-act="unit" style="font-size:12px;padding:3px 8px">' + (du === 'sec' ? '秒钟' : '分钟') + '</button></div><div class="dl">' +
       '今日：疗愈 ' + ufmt(today.healing) + '；对话 ' + ufmt(today.chat) + '；问卷 ' + ufmt(today.quiz) + '（合计 ' + ufmt(today.total) + '）<br>' +
       '累计：疗愈 ' + ufmt(tot.healing) + '；对话 ' + ufmt(tot.chat) + '；问卷 ' + ufmt(tot.quiz) + '<br>' +
@@ -113,12 +114,10 @@
   }
   function usageDays(){
     var OY = window.OY; if (!OY) return 0;
-    var all = OY.totalUsage();
-    // 从 usage_daily 计算有使用的天数
     var days = 0;
     try {
-      var raw = localStorage.getItem('wuyin_usage_daily');
-      if (raw){ var o = JSON.parse(raw); Object.keys(o).forEach(function(k){ var x = o[k]||{}; if ((x.healing||0)+(x.chat||0)+(x.quiz||0) > 0) days++; }); }
+      var all = (typeof OY.rawUsageDaily === 'function') ? OY.rawUsageDaily() : {};
+      Object.keys(all).forEach(function(k){ var x = all[k]||{}; var h=Math.max(x.healing||0, Math.round((x.healingMins||0)*60)); var c=Math.max(x.chat||0, Math.round((x.chatMins||0)*60)); var q=Math.max(x.quiz||0, Math.round((x.quizMins||0)*60)); if (h+c+q > 0) days++; });
     } catch(e){}
     return days;
   }
@@ -159,6 +158,7 @@
       }
       if (act === 'exf'){ exFmt = el.getAttribute('data-v'); render(); return; }
       if (act === 'doExport'){ doExport(); return; }
+      if (act === 'diag'){ doDiag(); return; }
     });
     m.addEventListener('click', function(e){ if (e.target === m) m.className = ''; });
     // PIN
@@ -169,6 +169,46 @@
     document.getElementById('oyPinCancel').addEventListener('click', function(){ p.className = ''; });
     // 回车提交
     document.getElementById('oyPinInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') document.getElementById('oyPinOk').click(); });
+  }
+  
+  function doDiag(){
+    var OY = window.OY; if (!OY) return;
+    var lines = [];
+    var keys = []; for (var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if (k) keys.push(k); }
+    var pref = {}; keys.forEach(function(k){ var m=/^(wuyin\d+):/.exec(k); var g = m ? m[1] : '(全局/无前缀)'; (pref[g]=pref[g]||[]).push(k); });
+    lines.push('■ localStorage 键 (共'+keys.length+'个):');
+    Object.keys(pref).forEach(function(g){ lines.push('  ' + g + ': ' + pref[g].length + '个'); });
+    // 列出无前缀的【业务】键（用正则 /^wuyin\d+:/ 判定，与分组逻辑一致；修正 charAt 索引 bug）
+    var GLOBAL = { 'wuyin_users':1,'wuyin_current_user':1,'wuyin_schema_version':1,'wuyin_dashscope_api_key':1,'wuyin_admin_pin':1 };
+    var isPrefixed = function(k){ return /^wuyin\d+:/.test(k); };
+    var unprefBiz = keys.filter(function(k){ return !isPrefixed(k) && !GLOBAL[k]; });
+    if (unprefBiz.length){ lines.push('  ⚠️ 无前缀业务键 (' + unprefBiz.length + '个):'); unprefBiz.forEach(function(k){ lines.push('      [' + k + ']'); });
+      lines.push('      → 判断标准: 不以 wuyin数字: 开头，且不属于全局键'); } else { lines.push('  ✅ 无前缀业务键: 0 个'); }
+    // 前缀 shim 生效自检: 写入测试键 check 是否被改写成 wuyin{uid}: 前缀
+    try {
+      var _uid = (OY.uid && OY.uid()) || String((OY.users()||[])[0] && (OY.users())[0].id || 1);
+      var _probe = 'wuyin_selfcheck_' + Date.now();
+      localStorage.setItem(_probe, '1');
+      var _hit = keys.concat(Array.from({length:localStorage.length},function(_,i){return localStorage.key(i);})).indexOf('wuyin'+_uid+':'+_probe.slice(6)) >= 0;
+      // 清理探针键
+      for (var i2=0;i2<localStorage.length;i2++){ var kk=localStorage.key(i2); if (kk && kk.indexOf('selfcheck_') >= 0){ localStorage.removeItem(kk); } }
+      lines.push('  前缀 shim 自检: ' + (_hit ? '✅ 生效' : '❌ 未生效(写入可能绕过前缀)'));
+    } catch(e){ lines.push('  前缀 shim 自检: 错误 - ' + (e&&e.message||e)); }
+    (OY.users()||[]).forEach(function(u){
+      lines.push(''); lines.push('■ 用户' + u.id + ' (' + (u.name||'') + '):');
+      try {
+        var rep = OY.buildReport(String(u.id), {}); var b = rep.blocks||{};
+        lines.push('  profile: 创建=' + (b.profile&&b.profile.createdAtStr||'空') + ' 最后=' + (b.profile&&b.profile.lastActiveStr||'空'));
+        lines.push('  usage(使用时长): daily=' + (b.usage&&b.usage.daily&&b.usage.daily.length) + '条 合计=' + (b.usage&&b.usage.summary&&b.usage.summary.totalSec) + '秒');
+        lines.push('  healing(疗愈): ' + (b.healing&&b.healing.detail&&b.healing.detail.length) + '条');
+        lines.push('  chat(对话分析): ' + (b.chat&&b.chat.detail&&b.chat.detail.length) + '条 总时长=' + (b.chat&&b.chat.summary&&b.chat.summary.totalSec) + '秒');
+        lines.push('  emotion(情志): 问卷=' + (b.emotion&&b.emotion.questionnaire&&b.emotion.questionnaire.length) + '条 关键词=' + Object.keys((b.emotion&&b.emotion.summary&&b.emotion.summary.keywordFreq)||{}).length + '个');
+        lines.push('  rating(评分): ' + (b.rating&&b.rating.detail&&b.rating.detail.length) + '条');
+        lines.push('  recommend(命中): ' + (b.recommend&&b.recommend.detail&&b.recommend.detail.length) + '条 命中率=' + (b.recommend&&b.recommend.summary&&b.recommend.summary.hitRate));
+      } catch(err){ lines.push('  buildReport 出错: ' + (err&&err.message||err)); }
+    });
+    lines.push(''); lines.push('原始键 wuyin{id}:usage_daily 是否存在: ' + keys.some(function(k){ return /^wuyin\d+:usage_daily$/.test(k); }));
+    alert(lines.join('\n'));
   }
   function doExport(){
     var OY = window.OY; if (!OY) return;
@@ -202,12 +242,15 @@
   }
   // 长按 .me-header 进入（1.1s），抑制随后的点击
   function bindEntry(){
-    var hd = document.querySelector('.me-header'); if (!hd) return;
+    // 已切换到“我的→系统→后台管理”按钮入口，禁用原长按头像入口
+    return; var hd = document.querySelector('.me-header'); if (!hd) return;
     var timer = null, held = false;
     hd.addEventListener('pointerdown', function(){ held = false; timer = setTimeout(function(){ held = true; showPin(); }, 1100); });
     hd.addEventListener('pointerup', function(ev){ clearTimeout(timer); ev.stopPropagation(); if (held){ held = false; if (ev) { ev.preventDefault(); if (window.__oyJustAdmin) {} window.__oyJustAdmin = true; } } });
     hd.addEventListener('pointercancel', function(){ clearTimeout(timer); });
   }
+  // 后台管理入口改为普通按钮（window.__oyOpenAdmin），不再用长按头像
+  window.__oyOpenAdmin = function(){ if (typeof showPin === 'function') showPin(); };
   // 包裹 openEditName：长按进入后台时抑制编辑名字弹窗
   window.addEventListener('DOMContentLoaded', function(){
     injectStyle(); buildOverlay(); bindEntry();

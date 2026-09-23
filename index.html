@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js"></script>
-<script src="oy_admin.js"></script>
+<script src="oy_account.js?v=20260923u"></script>
+<script src="oy_admin.js?v=20260923u"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4069,9 +4069,14 @@
           <div class="lbl">使用帮助</div>
           <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
         </div>
-        <div class="me-row" onclick="showToast('已退出登录')">
+        <div class="me-row" onclick="__oyOpenAdmin()">
+          <div class="ic" style="color:var(--v10-cinnabar)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 17h18M5 7h.01M8 7h.01M3 12h.01M7 12h.01M11 12h.01M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linecap="round"/></svg></div>
+          <div class="lbl" style="color:var(--v10-cinnabar)">后台管理</div>
+          <div class="arrow" style="color:var(--v10-cinnabar)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="me-row" onclick="openUserSwitcher()">
           <div class="ic" style="color:var(--v10-cinnabar)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div class="lbl" style="color:var(--v10-cinnabar)">退出登录</div>
+          <div class="lbl" style="color:var(--v10-cinnabar)">切换用户</div>
           <div class="arrow" style="color:var(--v10-cinnabar)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
         </div>
       </div>
@@ -4689,21 +4694,11 @@
 // 覆盖原生 localStorage 方法，自动捕获隐私模式/存储满/无痕模式下的异常
 (function() {
   if (typeof Storage === 'undefined') return;
-  var _get = Storage.prototype.getItem;
-  var _set = Storage.prototype.setItem;
-  var _remove = Storage.prototype.removeItem;
-  Storage.prototype.getItem = function(key) {
-    try { return _get.call(this, key); }
-    catch (e) { console.warn('[storage] getItem failed:', key, e); return null; }
-  };
-  Storage.prototype.setItem = function(key, value) {
-    try { _set.call(this, key, value); return true; }
-    catch (e) { console.warn('[storage] setItem failed:', key, e); return false; }
-  };
-  Storage.prototype.removeItem = function(key) {
-    try { _remove.call(this, key); return true; }
-    catch (e) { console.warn('[storage] removeItem failed:', key, e); return false; }
-  };
+  // 定义在原型上但把实际调用委托给【调用时刻】的实例方法：若 oy_account 已装按用户前缀 shim 就用它；
+  // 否则回退到原生方法（每次调用时取，绝不在加载期捕获，避免绕过前缀路由导致串台/切换无效）。
+  // 前缀 shim 完全由 oy_account.js 定义在 Storage.prototype 上(统一走前缀路由),
+  // 此处不再覆盖 Storage.prototype, 避免与 oy 前缀 shim 冲突/产物垃圾键。
+  // 仅保留 safeJsonParse 工具。
   // 安全 JSON 解析工具
   window.safeJsonParse = function(str, fallback) {
     if (str === null || str === undefined || str === '') return fallback;
@@ -4717,6 +4712,7 @@
 // 任一可用，hasApiKey() 都返回 true
 var API_KEY_STORAGE = 'wuyin_dashscope_api_key';
 var SERVER_KEY_READY = false;
+var SERVER_KEY_PROBED = false;
 // ✅ 进入页面立即预下载所有疗愈音频到 Cache API（第二次访问秒开）
 (function prefetchAllAudio() {
   if (!('caches' in window)) return;
@@ -4740,13 +4736,14 @@ var SERVER_KEY_READY = false;
   try {
     fetch('/chat', { method: 'GET', cache: 'no-store' })
       .then(function (r) {
-        if (!r.ok) { SERVER_KEY_READY = false; console.warn('[key] GET /chat 状态=' + r.status); return; }
+        if (!r.ok) { SERVER_KEY_READY = false; SERVER_KEY_PROBED = true; console.warn('[key] GET /chat 状态=' + r.status); return; }
         return r.json().then(function (d) {
           SERVER_KEY_READY = !!(d && d.serverKeyConfigured);
+          SERVER_KEY_PROBED = true;
           console.log('[key] 服务端 Key ' + (SERVER_KEY_READY ? '已就绪（Cloudflare Pages env）' : '未配置'));
         });
       })
-      .catch(function (e) { console.warn('[key] 服务端探测失败', e); });
+      .catch(function (e) { SERVER_KEY_PROBED = true; console.warn('[key] 服务端探测失败', e); });
   } catch (e) {}
 })();
 function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
@@ -4758,17 +4755,24 @@ function hasApiKey() {
 function setApiKey(key) { if (!key || key.indexOf('sk-') !== 0) return false; return localStorage.setItem(API_KEY_STORAGE, key); }
 function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); }
 // V3.0 unified chat API: try /chat proxy first, fallback to direct DashScope API
-async function callChatAPI(body) {
+async function callChatAPI(body, timeoutMs) {
+  timeoutMs = timeoutMs || 25000;
   var apiKey = getApiKey();
   try {
+    var c1 = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var t1 = c1 ? setTimeout(function(){ c1.abort(); }, timeoutMs) : null;
     var resp = await fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({}, body, { apiKey: apiKey }))
+      body: JSON.stringify(Object.assign({}, body, { apiKey: apiKey })),
+      signal: c1 ? c1.signal : undefined
     });
+    if (t1) clearTimeout(t1);
     if (resp.ok) return await resp.json();
   } catch(e) { }
   if (!apiKey || apiKey.indexOf('sk-') !== 0) throw new Error('No API Key');
+  var c2 = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var t2 = c2 ? setTimeout(function(){ c2.abort(); }, timeoutMs) : null;
   var directResp = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -4780,8 +4784,10 @@ async function callChatAPI(body) {
       messages: body.messages || (body.input && body.input.messages) || [],
       max_tokens: body.max_tokens || (body.parameters && body.parameters.max_tokens) || 100,
       temperature: body.temperature || (body.parameters && body.parameters.temperature) || 0.7
-    })
+    }),
+    signal: c2 ? c2.signal : undefined
   });
+  if (t2) clearTimeout(t2);
   if (!directResp.ok) throw new Error('DashScope API error: ' + directResp.status);
   return await directResp.json();
 }
@@ -4980,7 +4986,9 @@ function endChatSession(reason) {
   window.__oyChatStart = null;
   var minMsgs = (reason === 'manual') ? 1 : 2;
   if (newUserMsgs >= minMsgs) {
-    showToast('正在分析您的聊天内容...');
+        if (chatSession.analyzing) { showToast('正在分析中，请稍候...'); return; }
+    chatSession.analyzing = true;
+    showToast('正在分析您的聊天内容，请稍候...');
     analyzeChatSession();
   } else if (wasActive) {
     showToast('聊天已结束');
@@ -5031,15 +5039,25 @@ async function analyzeChatSession() {
   });
 
   try {
-    var data = await callChatAPI({
-      model: 'qwen3.7-plus',
-      messages: [
-        { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
-        { role: 'user', content: analysisPrompt }
-      ],
-      max_tokens: 300,
-      temperature: 0.3
-    });
+    // 分析任务：用 qwen-plus（比 qwen3.7-plus 快），超时 90s，最多重试 1 次
+    var data = null;
+    for (var __ai = 0; __ai < 2 && !data; __ai++) {
+      try {
+        data = await callChatAPI({
+          model: 'qwen-plus',
+          messages: [
+            { role: 'system', content: '你是情绪分析助手，只负责理解用户情绪并输出标准化情绪表达。不做任何诊断。' },
+            { role: 'user', content: analysisPrompt }
+          ],
+          max_tokens: 300,
+          temperature: 0.3
+        }, 90000);
+      } catch (__e) {
+        console.warn('[Session] analysis attempt ' + (__ai+1) + ' failed:', __e.message);
+        if (__ai === 0) { await new Promise(function(r){ setTimeout(r, 1500); }); }
+      }
+    }
+    if (!data) throw new Error('分析超时或失败，请检查网络后重试');
     var text = parseAIResponse(data) || '';
       var result = parseAnalysisResult(text);
       if (result && result.primaryEmotion) {
@@ -5070,6 +5088,8 @@ async function analyzeChatSession() {
     } else {
       showToast('分析失败，请稍后重试');
     }
+  } finally {
+    chatSession.analyzing = false;
   }
 }
 
@@ -5165,6 +5185,7 @@ function showSessionRecommendation(rec) {
   showToast('已为您生成今日疗愈建议');
   // ✅ 刷新主页和疗愈页推荐卡片
   try { updateHomeV10(); } catch(e) {}
+  try { updateHomeRecommendation(); } catch(e) {}
   try { renderRecSourceBadges(); } catch(e) {}
   try { renderHealingRecCards(); } catch(e) {}
 }
@@ -5343,6 +5364,7 @@ WuyinAudioEngine.prototype.stop = function() {
 
 // ========== TAB SWITCHING ==========
 function switchTab(idx) {
+  if (idx !== 1 && window.chatSession && window.chatSession.active) { window.chatSession.active = false; if (window.OY) window.OY.noteInactive('chat'); }
   // 如果离开播放器页面且正在播放，自动暂停
   if (isPlaying && document.getElementById('subpage-player').classList.contains('active') && idx !== 2) {
     // 不调用togglePlay，直接暂停UI和音频
@@ -5363,6 +5385,7 @@ function switchTab(idx) {
   // 切换到主页时刷新招呼语、时令、情志档案
   if (idx === 0) {
     try { updateHomeV10(); } catch(e) {}
+    try { updateHomeRecommendation(); } catch(e) {}
   }
   // 切换到我的 tab 时检查 me-row 文字是否溢出，溢出则隐藏右侧 val/arrow
     // V3.0: 切换到聊天页面时启动 Session
@@ -5395,8 +5418,9 @@ function switchTab(idx) {
     // ✅ 刷新"我的"页面统计卡片：聆听 / 日记 / 连续
     try {
       var history = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]');
-      var diarys = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
-      var autoStreak = (typeof getConsecutiveUsageDays === 'function') ? getConsecutiveUsageDays() : 0;
+    if (history.length === 0 && typeof __listenCount === 'function') history.length = __listenCount();
+    var diarys = []; diarys.length = (typeof __diaryCount === 'function') ? __diaryCount() : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+    var autoStreak = (typeof getConsecutiveUsageDays === 'function') ? getConsecutiveUsageDays() : 0;
       var elListen = document.getElementById('meStatListen');
       var elDiary = document.getElementById('meStatDiary');
       var elStreak = document.getElementById('meStatStreak');
@@ -6296,7 +6320,7 @@ async function callQwenAPI(userText) {
         if (!hasApiKey()) {
           removeTypingIndicator();
           addBotMsg('请先在"我的"页面设置您的 API 密钥后再开始聊天哦~', 'system');
-        } else { sendChatMessage(); }
+        } else { callQwenAPI(userText); }
       }, 1500);
       return;
     }
@@ -6872,7 +6896,8 @@ function updateRecordsStats() {
   // 2. 统计三宫格 —— 聆听次数 / 日记条数 / 连续天数（全部 localStorage 真实数据）
   try {
     var history = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]');
-    var diarys = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+    if (history.length === 0 && typeof __listenCount === 'function') history.length = __listenCount();
+    var diarys = []; diarys.length = (typeof __diaryCount === 'function') ? __diaryCount() : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
     var autoStreak2 = (typeof getConsecutiveUsageDays === 'function') ? getConsecutiveUsageDays() : 0;
     var listenEl = document.getElementById('statListen');
     var diaryEl = document.getElementById('statDiary');
@@ -9409,7 +9434,7 @@ function closeEditNameModal() {
 function saveEditName() {
   var name = document.getElementById('editNameInput').value.trim();
   if (name) {
-    avatarName = name;
+
     document.getElementById('profileUserName').textContent = name;
     // Update chat topbar
     document.querySelector('.chat-topbar-title').textContent = '与' + name + '聊天';
@@ -9570,6 +9595,33 @@ var questionnaireState = {
   answers: [],
   feeling: 0
 };
+
+// ===== 问卷分轮填写计时（研究数据）=====
+// 规则：由显示问卷题目开始计时；一轮完整后的弹窗/试听/中途退出不计时；每填完一轮计入该轮秒数。
+// 未完成（未满5轮）也持续累计已填轮次，供后台导出合计（含各因子分数与合计填写时长）。
+var __quizTimerTick = null;
+function __quizStart(){ if (__quizTimerTick == null) __quizTimerTick = Date.now(); }
+function __quizStop(){ __quizTimerTick = null; }
+function __quizRead(){
+  try { return JSON.parse(localStorage.getItem('wuyin_quiz_fill') || 'null') || { rounds: [], updatedAt: 0 }; }
+  catch(e){ return { rounds: [], updatedAt: 0 }; }
+}
+function __quizReset(){ try { localStorage.setItem('wuyin_quiz_fill', JSON.stringify({ rounds: [], updatedAt: Date.now() })); } catch(e){} }
+function __maybeNewAttempt(){
+  var a = [];
+  try { a = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]'); } catch(e){ a = []; }
+  if (!a.length && !(questionnaireState.answers && questionnaireState.answers.length)) __quizReset();
+}
+function __quizRoundDone(){
+  if (__quizTimerTick == null) return;
+  var sec = Math.round((Date.now() - __quizTimerTick) / 1000);
+  __quizTimerTick = null;
+  if (sec <= 0) return;
+  var f = __quizRead();
+  if (f.rounds.length >= 5) f.rounds = [];
+  f.rounds.push(sec); f.updatedAt = Date.now();
+  try { localStorage.setItem('wuyin_quiz_fill', JSON.stringify(f)); } catch(e){}
+}
 
 function getQuestionnaireProgress() {
   var completed = parseInt(localStorage.getItem('wuyin_questionnaire_round') || '0');
@@ -9811,6 +9863,7 @@ function openQuestionnaire() {
 
 function closeQuestionnaire() {
   if (window.OY) window.OY.noteInactive('quiz');
+  __quizStop();
   try {
     // ✅ 1) 移除 active class + 强制设 display:none + style 恢复
     var overlay = document.getElementById('questionnaireOverlay');
@@ -9865,6 +9918,8 @@ function getRoundQuestions(round) {
 }
 
 function renderQuestion() {
+  __maybeNewAttempt();
+  __quizStart();
   var roundQs = getRoundQuestions(questionnaireState.currentRound);
   var q = roundQs[questionnaireState.currentQuestion];
   if (!q) return;
@@ -9926,6 +9981,7 @@ function nextQuestion() {
   if (questionnaireState.currentQuestion >= roundQs.length - 1) {
     questionnaireState.currentRound++;
     saveQuestionnaireProgress();
+    __quizRoundDone();
     // 每轮结束弹出解锁奖赏对话框，而非直接跳试听
     showRoundComplete();
   } else {
@@ -10046,6 +10102,7 @@ function continueNextRound() {
 
 // 休息一下按钮回调
 function restFromUnlock() {
+  __quizStop();
   closeRoundComplete();
   document.getElementById('questionnaireOverlay').classList.remove('active');
   switchTab('home');
@@ -10059,6 +10116,7 @@ function restFromUnlock() {
 
 // 问卷完成后"返回首页"按钮回调（最后一轮专用）
 function backToHomeFromUnlock() {
+  __quizStop();
   closeRoundComplete();
   document.getElementById('questionnaireOverlay').classList.remove('active');
   switchTab('home');
@@ -10092,6 +10150,7 @@ function selectFeeling(idx) {
 
 function showQuestionnaireResults() {
   if (window.OY) window.OY.noteInactive('quiz');
+  __quizStop();
   document.getElementById('questionnaireBody').style.display = 'none';
   document.getElementById('questionnaireNav').style.display = 'none';
   // ✅ 彻底移除结果页的 q-top（右上角"第 1 题/共 17 题 已完成 6%"）以及进度条/导航
@@ -11454,7 +11513,7 @@ function saveEditName(){
   var legacyName = document.getElementById('userNameLegacy');
   if (legacyName) legacyName.textContent = v;
   // 同步旧 profile 兼容层
-  if (typeof avatarName !== 'undefined') avatarName = v;
+
   var profileName = document.getElementById('profileUserName');
   if (profileName) profileName.textContent = v;
   var chatTitle = document.querySelector('.chat-topbar-title');
@@ -11521,6 +11580,7 @@ var _qzMode = 'first'; // 'first' 首次 / 'monthly' 每月
 function openQzModal(mode){
   _qzMode = mode || 'first';
   if (window.OY) window.OY.noteActive('quiz');
+  if (window.OY) window.OY.noteInactive('chat');
   var titleEl = document.getElementById('qzTitle');
   var briefEl = document.getElementById('qzBrief');
   var btnEl = document.getElementById('qzStartBtn');
@@ -11684,6 +11744,7 @@ function showQuestionnaireFromProfile() {
     renderQuestion();
   }
   if (window.OY) window.OY.noteActive('quiz');
+  if (window.OY) window.OY.noteInactive('chat');
   document.getElementById('questionnaireOverlay').classList.add('active');
 }
 
@@ -11789,12 +11850,456 @@ function updateQuestionnaireStatus() {
 }
 
 
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
+// ========== 界面==导出 统一的日记/统计来源（voice_diary + healing_records 并集口径） ==========
+// 后台导出读 wuyin_healing_records，界面旧读 wuyin_voice_diary。为保证两者一致：
+// 统计/tools 均以 healing_records 为主、voice_diary 为补充；并集计数。
+function __unionHealingDiary(){
+  var vd = [];
+  var hr = [];
+  try { vd = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]'); } catch(e){}
+  try { hr = JSON.parse(localStorage.getItem('wuyin_healing_records') || '[]'); } catch(e){}
+  if (!Array.isArray(vd)) vd = [];
+  if (!Array.isArray(hr)) hr = [];
+  return { vd: vd, hr: hr };
+}
+function __diaryCount(){
+  var u = __unionHealingDiary();
+  // voice_diary 条数 + healing_records 中"真正疗愈"记录条数（去 action 记录），
+  // 但避免重复：voice_diary 已覆盖的日期+调式不再重复计入
+  var keys = {};
+  (u.vd).forEach(function(d){ if (d && d.date) keys['v' + d.date + '|' + (d.wuyinId||'')] = 1; });
+  var hrN = 0;
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = 'h' + (r.date||'') + '|' + (r.toneId||'');
+    if (keys[k]) { keys[k] = 1; return; }  // 已有 voice_diary 覆盖
+    if (!keys[k]) { keys[k] = 1; hrN++; }
+  });
+  return (typeof __diaryRecords === 'function') ? __diaryRecords().length : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]').length;
+}
+function __listenCount(){
+  var n = 0;
+  try { var h = JSON.parse(localStorage.getItem('wuyin_listening_history') || '[]'); if (Array.isArray(h)) n = h.length; } catch(e){}
+  // 若 listening_history 为空，则用 healing_records 中"非试听、非 action"的真疗愈条数兜底
+  if (n === 0) {
+    var u = __unionHealingDiary();
+    (u.hr).forEach(function(r){ if (r && !r.action && !r.isTrial) n++; });
+  }
+  return n;
+}
+function __diaryRecords(){
+  var u = __unionHealingDiary();
+  var out = u.vd.slice();
+  // 补全 voice_diary 里缺失、但 healing_records 里存在的真疗愈记录（转成 diary 形）
+  var seen = {};
+  out.forEach(function(d){ if (d && d.date) seen[(d.wuyinId||'') + '|' + (d.date || '') + '|' + (d.isDual?1:0)] = 1; });
+  (u.hr).forEach(function(r){
+    if (!r || r.action === 'reblock' || r.action === 'unblock') return;
+    var k = (r.toneId||'') + '|' + (r.date || '') + '|' + (r.isDual?1:0);
+    if (seen[k]) return;
+    seen[k] = 1;
+    var rec = {
+      date: r.date || (r.timestamp ? new Date(r.timestamp).toISOString().slice(0,10) : ''),
+      time: r.time || (r.timestamp ? (function(){var d=new Date(r.timestamp);var m=d.getHours()<10?'0':'',mm=(d.getMinutes()<10?'0':'');return m+d.getHours()+':'+mm+d.getMinutes();})() : ''),
+      wuyinId: r.toneId || '',
+      wuyinName: r.tone || '',
+      rating: r.rating || 0,
+      text: r.comment || '',
+      duration: r.durationMin || 20,
+      musicId: r.musicId || null,
+      sceneId: r.sceneId || null,
+      sceneName: r.sceneName || null,
+      isDual: !!r.isDual,
+      _syncedFromHealing: true,
+      timestamp: r.timestamp || 0
+    };
+    // 情境中文名
+    if (!rec.sceneName && rec.wuyinId) {
+      try {
+        var w = WUYIN_DATA.find(function(x){ return x.id === rec.wuyinId; });
+        if (w && w.sceneList) { var sc = w.sceneList.find(function(x){ return x.sceneId === r.sceneId; }); rec.sceneName = sc ? sc.name : null; }
+      } catch(e){}
+    }
+    out.push(rec);
+  });
+  return out;
+}
 // ========== FEATURE 9: VOICE DIARY ==========
 function loadVoiceDiary() {
   // 兼容两种容器 ID：healingRecordsContainer（档案页近期日记）和 voiceDiaryContainer
   var container = document.getElementById('healingRecordsContainer') || document.getElementById('voiceDiaryContainer');
   if (!container) return;
-  var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
+  var diaries = (typeof __diaryRecords === 'function') ? __diaryRecords() : JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
   var viewAllBtn = document.getElementById('diaryViewAllBtn');
   if (diaries.length === 0) {
     container.innerHTML = '<div class="diary-empty">完成疗愈评价后，语音感受将记录在这里</div>';
@@ -12343,7 +12848,9 @@ function retakeQuestionnaire() {
       positive_emotion: JSON.parse(localStorage.getItem('wuyin_positive_emotion') || '[]'),
       scores: (function(){
         try { return getQuestionnaireResult().scores; } catch(e) { return null; }
-      })()
+      })(),
+      quizFillSec: (function(){ try { var qz = JSON.parse(localStorage.getItem('wuyin_quiz_fill')||'null'); return (qz && Array.isArray(qz.rounds)) ? qz.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0; } catch(e){ return 0; } })(),
+      quizRounds: (function(){ try { var qz2 = JSON.parse(localStorage.getItem('wuyin_quiz_fill')||'null'); return (qz2 && Array.isArray(qz2.rounds)) ? qz2.rounds.slice() : []; } catch(e){ return []; }; })()
     };
     if (currentResult.answers && currentResult.answers.length >= 50) {
       history.unshift(currentResult);
@@ -13546,6 +14053,47 @@ setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
   };
 
   // 全局函数：手动结束 onboard 进入主页
+  // ===== 每次进入先选用户（用户选择界面）=====
+  function __upkEnsure(){
+    var ov = document.getElementById('userPickOverlay');
+    if (ov) return ov;
+    ov = document.createElement('div');
+    ov.id = 'userPickOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(20,32,24,.55);';
+    ov.innerHTML = '<div style="width:86%;max-width:400px;background:#fff;border-radius:22px;padding:24px 20px;box-shadow:0 12px 40px rgba(0,0,0,.25);">'+
+      '<div style="text-align:center;font-size:21px;font-weight:700;color:#2f4b37;">选择使用者</div>'+
+      '<div style="text-align:center;font-size:14px;color:#8a8a8a;margin:4px 0 16px;">这位使用者是谁？</div>'+
+      '<div id="userPickList" style="display:flex;flex-direction:column;gap:12px;"></div>'+
+      '<button id="userPickNew" style="margin-top:18px;width:100%;padding:13px 0;font-size:17px;border:none;border-radius:14px;background:#3a6b4a;color:#fff;">新建用户</button></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('#userPickNew').addEventListener('click', function(){
+      var OY = window.OY, u = (OY && OY.createUser) ? OY.createUser('') : null;
+      if (u && OY && OY.activateUser) OY.activateUser(u.id);
+      window.finishOnboardNow();
+    });
+    return ov;
+  }
+  function __upkRender(){
+    var list = document.getElementById('userPickList'); if (!list) return;
+    var OY = window.OY, users = (OY && OY.users) ? OY.users() : [];
+    list.innerHTML = users.map(function(u){
+      var code = '编号' + (u.id < 10 ? '0' : '') + u.id;
+      return '<div data-id="' + u.id + '" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:#f3f6f1;cursor:pointer;font-size:18px;color:#2f4b37;border:1px solid #e3ece4;">'+
+        '<div style="width:40px;height:40px;border-radius:50%;background:#3a6b4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex:0 0 40px;">' + (u.id < 10 ? '0' : '') + u.id + '</div>'+
+        '<div style="flex:1;">' + code + '</div><div style="color:#b0b0b0;font-size:20px;">›</div></div>';
+    }).join('') || '<div style="text-align:center;color:#999;padding:18px;">还没有用户</div>';
+    list.querySelectorAll('[data-id]').forEach(function(r){
+      r.addEventListener('click', function(){
+        var OY = window.OY, id = r.getAttribute('data-id');
+        if (OY && OY.activateUser) OY.activateUser(id);
+        window.finishOnboardNow();
+      });
+    });
+  }
+  function __upkHide(){ var ov = document.getElementById('userPickOverlay'); if (ov) ov.style.display = 'none'; }
+  window.showUserPicker = function(){ var ov = __upkEnsure(); __upkRender(); ov.style.display = 'flex'; };
+  window.openUserSwitcher = function(){ var ov = __upkEnsure(); __upkRender(); ov.style.display = 'flex'; };
+
   window.finishOnboardNow = function() {
     if (!onboard) return;
     onboard.classList.remove('active');
@@ -13571,6 +14119,23 @@ setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
       try { renderRecSourceBadges(); } catch(e) {}
       try { renderHealingRecCards(); } catch(e) {}
     }, 1500);
+  };
+  // ==== 门控：每次进入先选用户 ====
+  var __upkOrigFinish = window.finishOnboardNow;
+  window.finishOnboardNow = function() {
+    if (!window.__upkOnce) { window.__upkOnce = true; showUserPicker(); return; }
+    __upkHide();
+    if (__upkOrigFinish) __upkOrigFinish();
+    // 用户选定后，刷新当前用户首页内容，保证界面与导出一致
+    setTimeout(function() {
+      try { if (typeof updateHomeV10 === 'function') updateHomeV10(); } catch(e) {}
+      try { renderHealingRecCards(); } catch(e) {}
+      try { renderRecSourceBadges(); } catch(e) {}
+      // 切换用户后重渲聊天视图，避免残留上一账号的消息
+      try { var cm = document.getElementById('chatMessages'); if (cm && typeof renderChatHistory === 'function'){ cm.innerHTML = ''; if(renderChatHistory()){ var sc=document.querySelector('.chat-scroll'); if(sc) setTimeout(function(){ sc.scrollTop=sc.scrollHeight; }, 200); } else if(typeof addBotMsg==='function'){ addBotMsg('您好呀！我是'+ (window.avatarName||'小五') +'，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome'); } } } catch(e) {}
+      try { if (typeof updateRecordsStats === 'function') updateRecordsStats(); } catch(e) {}
+      try { loadVoiceDiary(); } catch(e) {}
+    }, 400);
   };
 
   // Splash 自动 2.5 秒后跳到 onboarding

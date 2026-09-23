@@ -239,14 +239,20 @@ async function handleChat(req, res) {
       temperature: temperature
     });
 
-    const dashResp = await fetch(DASHSCOPE_CHAT_URL, {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 90000);
+    let dashResp;
+    try {
+      dashResp = await fetch(DASHSCOPE_CHAT_URL, {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json'
       },
-      body: body
+      body: body,
+      signal: controller.signal
     });
+    } finally { clearTimeout(timer); }
 
     if (!dashResp.ok) {
       const errText = await dashResp.text();
@@ -379,7 +385,7 @@ const server = http.createServer(async (req, res) => {
     return handleChat(req, res);
   }
   if (urlPath === '/chat') {
-    return sendJSON(res, 200, { ok: true, hint: 'POST {messages, model?, max_tokens?, temperature?, apiKey?}' });
+    return sendJSON(res, 200, { ok: true, serverKeyConfigured: !!(process.env.DASHSCOPE_API_KEY), hint: 'POST {messages, model?, max_tokens?, temperature?, apiKey?}' });
   }
 
   // 静态文件
