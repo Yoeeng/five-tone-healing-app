@@ -480,7 +480,8 @@
     if (hour >= 7 && hour < 11) return 'gong';
     if (hour >= 11 && hour < 15) return 'zhi';
     if (hour >= 15 && hour < 19) return 'shang';
-    return 'gong';
+    if (hour >= 19 && hour < 21) return 'gong';
+    return 'yu';
   }
 
   function buildReport(uid, opts){
