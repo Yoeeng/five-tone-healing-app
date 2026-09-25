@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924b"></script>
-<script src="oy_admin.js?v=20260924b"></script>
+<script src="oy_account.js?v=20260924e"></script>
+<script src="oy_admin.js?v=20260924e"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -6196,45 +6196,8 @@ function sendChatMessage(text) {
   updateAvatarState();
   switchHomeBackgroundByEmotion();
 
-  var t = text.toLowerCase();
-  var termNames = '小寒|大寒|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至';
-  // ✅ V3.0 修复：仅在用户明确询问日期/时间时才走本地日期回复，避免"我今天心情不好"等误触发
-  // 判断条件：句子较短（<=12字）且包含日期疑问词，或明确询问节气
-  var isAskingDate = false;
-  // 短句 + 日期疑问词
-  if (t.length <= 12 && t.match(/几号|几月几日|几月几号|星期几|周几|礼拜几|礼拜天|礼拜日|哪天|什么时候/)) {
-    isAskingDate = true;
-  }
-  // 明确询问"今天/今日" + 日期/星期 关键词
-  if (t.match(/今天(是|几|日期|星期|周几|礼拜)|今日(是|几|日期|星期|周几|礼拜)/)) {
-    isAskingDate = true;
-  }
-  // 明确询问"时间"
-  if (t.match(/现在(几点|什么时间)|几点了|什么时间|当前时间/)) {
-    isAskingDate = true;
-  }
-  // 询问节气（需同时包含"节气"和疑问/询问语境）
-  if (t.match(/什么节气|当前节气|今天.*节气|今日.*节气|节气.*什么|节气.*几号|节气.*哪天/)) {
-    isAskingDate = true;
-  }
-  // 询问具体节气日期
-  if (t.match(new RegExp('(' + termNames + ').*(几号|哪天|什么时候|时间)')) || t.match(new RegExp('(几号|哪天|什么时候|时间).*(' + termNames + ')'))) {
-    isAskingDate = true;
-  }
-  // 纯英文 date/time 关键词
-  if (t.match(/^(what|whats|today|date|time|day) /) || t === 'date' || t === 'time' || t === 'today') {
-    isAskingDate = true;
-  }
-  if (isAskingDate) {
-    addTypingIndicator();
-    setTimeout(function() {
-      removeTypingIndicator();
-      var fallback = getFallbackResponseWithRec(text);
-      addBotMsg(fallback.text, 'chat');
-    }, 800);
-    return;
-  }
-
+  // ✅ 日期/时间/节气/节日类问题一律交给 AI 实事求是回答（系统提示词已注入"今天是{日期}"与节气，
+  //    Qwen-Plus 据此能正确回答日期/星期/中秋等，不再本地硬编码拦截，避免"今天是中秋节"被误判为"问日期"）
   addTypingIndicator();
   callQwenAPI(text);
 }
@@ -6266,18 +6229,83 @@ function filterWuyinNames(text) {
   return result;
 }
 
+var LUNAR_INFO=[
+0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,
+0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,
+0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+0x092e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252
+];
+function __lLeapMonth(y){return LUNAR_INFO[y-1900]&0xf;}
+function __lLeapDays(y){return __lLeapMonth(y)?((LUNAR_INFO[y-1900]&0x10000)?30:29):0;}
+function __lMonthDays(y,m){return (LUNAR_INFO[y-1900]&(0x10000>>m))?30:29;}
+function __lYearDays(y){var s=348;for(var i=0x8000;i>0x8;i>>=1)s+=(LUNAR_INFO[y-1900]&i)?1:0;return s+__lLeapDays(y);}
+function __solar2lunar(y,m,d){
+  var span=(Date.UTC(y,m-1,d)-Date.UTC(1900,0,31))/86400000;
+  var i,temp=0;
+  for(i=1900;i<2101&&temp+__lYearDays(i)<=span;i++) temp+=__lYearDays(i);
+  var lYear=i; var isLeap=false;
+  span-=temp;
+  var lDay=span+1; var lMonth=1;
+  leapM=__lLeapMonth(lYear);
+  for(i=1;i<13&&lDay>1;i++){
+    var md;
+    if(leapM>0&&i===(leapM+1)&&isLeap===false){--i;isLeap=true;md=__lLeapDays(lYear);}
+    else md=__lMonthDays(lYear,i);
+    if(lDay-md<=0)break;
+    lDay-=md;
+  }
+  lMonth=i;
+  return {lYear:lYear,lMonth:lMonth,lDay:lDay,isLeap:isLeap};
+}
+var __LUNAR_MC=['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+var __LUNAR_DC=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+function getTodayLunar(){
+  var now=new Date();
+  var x=__solar2lunar(now.getFullYear(),now.getMonth()+1,now.getDate());
+  var mc=(x.isLeap?'闰':'')+(__LUNAR_MC[x.lMonth-1]||'')+'月';
+  var dc=__LUNAR_DC[x.lDay-1]||'';
+  var fest='';
+  if(x.lMonth===1&&x.lDay===1)fest='春节';
+  else if(x.lMonth===1&&x.lDay===15)fest='元宵节';
+  else if(x.lMonth===5&&x.lDay===5)fest='端午节';
+  else if(x.lMonth===7&&x.lDay===7)fest='七夕';
+  else if(x.lMonth===8&&x.lDay===15)fest='中秋节';
+  else if(x.lMonth===9&&x.lDay===9)fest='重阳节';
+  else if(x.lMonth===12&&x.lDay===30)fest='除夕';
+  return {monthCn:mc,dayCn:dc,festival:fest};
+}
 async function callQwenAPI(userText) {
   var termInfo = getCurrentSolarTerm();
   var today = new Date();
   var todayStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
+  var __lun = getTodayLunar();
+  var __wk = '日一二三四五六'.charAt(today.getDay());
+  var todayFull = todayStr + '（农历' + __lun.monthCn + __lun.dayCn + '，星期' + __wk + (__lun.festival ? '，今天是' + __lun.festival : '') + '）';
   var isCantonese = (ttsConfig.language === 'cantonese');
   var systemPrompt = '你是"' + avatarName + '"，一位温暖亲切的AI陪伴伙伴。你的服务对象主要是中老年人。\n\n'
     + '【用户称呼——必须遵守】\n'
     + '你正在陪伴的用户叫"' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '"，请用这个称呼来称呼她。不要使用"阿伯""阿嬸""阿姨""叔叔""您"等泛称，必须用用户的名字来称呼。\n\n'
     + '【绝对真实信息，严禁编造】\n'
-    + '今天是' + todayStr + '。\n'
+    + '今天是' + todayFull + '。\n'
     + '当前节气：' + termInfo.current.name + '已过，' + termInfo.next.name + '将至。' + getSolarTermDetailAdvice(termInfo.current.name) + '\n'
-    + '以上日期和节气信息是系统提供的真实数据，你必须严格依据这些信息回答，绝对不可以编造或猜测今天的日期。\n\n'
+    + '以上日期和节气信息是系统提供的真实数据，你必须严格依据这些信息回答，绝对不可以编造或猜测今天的日期，也不得自行换算农历；公历、星期、农历与节日一律以系统提供为准。\n'
+    + '若用户询问今天日期、星期几或节假日，请直接依据上述"今天"日期如实、简洁、温暖地回答。\n\n'
     + '【你的职责——陪伴与倾听】\n'
     + '你只负责陪伴用户聊天，倾听他们的心声：\n'
     + '1. 倾听：认真听用户说的每一句话，让用户感受到被关注\n'
@@ -6328,7 +6356,7 @@ async function callQwenAPI(userText) {
 
   try {
     var data = await callChatAPI({
-      model: 'qwen3.7-plus',
+      model: 'qwen-plus',
       messages: messages,
       max_tokens: 100,
       temperature: 0.7
@@ -6349,7 +6377,7 @@ async function callQwenAPI(userText) {
 
   try {
     var data2 = await callChatAPI({
-      model: 'qwen3.7-plus',
+      model: 'qwen-plus',
       messages: messages,
       max_tokens: 100,
       temperature: 0.7
@@ -6959,7 +6987,7 @@ function getFallbackResponseWithRec(userText) {
       } else {
         response = '老朋友，我查一下' + foundTerm + '的日期哦~';
       }
-    } else if (t.match(/今天|今日|几号|日期|时间|星期|礼拜|周几|几月几日|几月几号/)) {
+    } else if (t.match(/几号|几月几日|几月几号|星期几|周几|礼拜几|礼拜天|礼拜日|现在几点|几点了|什么时间|当前时间/)) {
       var weekDays = ['日','一','二','三','四','五','六'];
       var now2 = new Date();
       response = '今天是' + now2.getFullYear() + '年' + (now2.getMonth()+1) + '月' + now2.getDate() + '日，星期' + weekDays[now2.getDay()] + '。';

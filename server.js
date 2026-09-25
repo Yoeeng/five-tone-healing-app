@@ -219,7 +219,7 @@ async function handleChat(req, res) {
     const messages = (payload.messages && payload.messages.length > 0)
       ? payload.messages
       : (payload.input && payload.input.messages ? payload.input.messages : []);
-    const model = payload.model || 'qwen3.7-plus';
+    const model = payload.model || 'qwen-plus';
     const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
     const temperature = (typeof payload.temperature === 'number') ? payload.temperature : (payload.parameters && payload.parameters.temperature) || 0.7;
 
