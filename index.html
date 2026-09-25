@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924e"></script>
-<script src="oy_admin.js?v=20260924e"></script>
+<script src="oy_account.js?v=20260924ag"></script>
+<script src="oy_admin.js?v=20260924ag"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -367,6 +367,8 @@
   .bubble .b{background:var(--paper-pure);padding:14px 16px;border-radius:18px 18px 18px 4px;font-family:var(--font-kai);font-size:20px;line-height:1.7;color:var(--ink);box-shadow:var(--shadow-1);border:1px solid var(--paper-edge)}
   .bubble.user .b{border-radius:18px 18px 4px 18px;background:var(--cinnabar-s);border-color:transparent;color:var(--ink)}
   .bubble .t{font-family:var(--font-en);font-size:16px;color:var(--ink-faint);margin-top:4px}
+  .bubble .replay-btn{margin-left:12px;padding:6px 16px;border:none;border-radius:18px;background:#3e8e5a;color:#fff;font-size:19px;font-family:var(--font-kai);line-height:1.3;vertical-align:middle;cursor:pointer;box-shadow:0 2px 8px rgba(62,142,90,.28);transition:opacity .2s}
+  .bubble .replay-btn:active{opacity:.75}
 
   .chat-voice{display:flex;align-items:center;gap:8px;background:var(--paper-pure);padding:12px 14px;border-radius:16px 16px 16px 4px;box-shadow:var(--shadow-1);border:1px solid var(--paper-edge)}
   .chat-voice .wave{display:flex;align-items:center;height:22px}
@@ -3602,7 +3604,7 @@
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <input class="chat-text-input" id="chatInput" type="text" placeholder="说点什么…" onkeypress="if(event.key==='Enter')sendChatMessage()"/>
+        <textarea class="chat-text-input" id="chatInput" rows="1" placeholder="说点什么…" oninput="autoResizeChatInput(this)" style="resize:none;line-height:1.4;overflow-y:auto;max-height:110px;min-height:44px;padding-top:10px;padding-bottom:10px;"></textarea>
         <button class="chat-send-btn" onclick="sendChatMessage()" aria-label="发送">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
@@ -4234,7 +4236,7 @@
   </div>
 
   <!-- ==================== V10 16 · 声音选择 Sheet ==================== -->
-  <div class="v10-modal-overlay" id="voiceChoiceOverlay" onclick="if(event.target===this)closeVoiceChoice()">
+  <div class="v10-modal-overlay" id="voiceChoiceOverlay" style="z-index:99999;" onclick="if(event.target===this)closeVoiceChoice()">
     <div class="v10-modal-card">
       <div class="v10-modal-handle"></div>
       <h3>选择小五的声音</h3>
@@ -4247,18 +4249,11 @@
             <div class="desc">柔声细语 · 适合夜间陪伴</div>
           </div>
         </div>
-        <div class="v10-voice-opt" data-voice="female-mandarin" onclick="selectVoiceChoice(this,'female-mandarin','普通话','女声')">
+        <div class="v10-voice-opt" data-voice="male-cantonese" onclick="selectVoiceChoice(this,'male-cantonese','粤语','男声')">
           <div class="radio"></div>
           <div class="vt">
-            <div class="label">普通话女声</div>
-            <div class="desc">字正腔圆 · 适合白天聆听</div>
-          </div>
-        </div>
-        <div class="v10-voice-opt" data-voice="male-mandarin" onclick="selectVoiceChoice(this,'male-mandarin','普通话','男声')">
-          <div class="radio"></div>
-          <div class="vt">
-            <div class="label">普通话男声</div>
-            <div class="desc">温暖深沉 · 适合午后</div>
+            <div class="label">粤语男声</div>
+            <div class="desc">沉稳温暖 · 适合白天聆听</div>
           </div>
         </div>
       </div>
@@ -4281,7 +4276,7 @@
   </div>
 
   <!-- ==================== V10 26/27 · 五态情志测评弹窗 ==================== -->
-  <div class="qz-modal-mask" id="qzModal" onclick="if(event.target===this)closeQzModal()">
+  <div class="qz-modal-mask" id="qzModal" style="z-index:99998;" onclick="if(event.target===this)closeQzModal()">
     <div class="qz-modal-sheet">
       <div class="qz-modal-handle"></div>
       <button class="qz-close" onclick="closeQzModal()" aria-label="关闭">
@@ -4545,7 +4540,7 @@
   </div>
 
   <!-- ==================== QUESTIONNAIRE OVERLAY ==================== -->
-    <div class="questionnaire-overlay" id="questionnaireOverlay">
+    <div class="questionnaire-overlay" id="questionnaireOverlay" style="z-index:99998;">
     <!-- 顶部进度信息（11 号屏 q-top） -->
     <div class="q-top">
       <button class="close" onclick="closeQuestionnaire()" aria-label="关闭">
@@ -4978,8 +4973,11 @@ function endChatSession(reason) {
     }
   } catch(e) { console.warn('[Session] saveChatSession failed:', e); }
   window.__oyChatStart = null;
-  var minMsgs = (reason === 'manual') ? 1 : 2;
-  if (newUserMsgs >= minMsgs) {
+  // ✅ 10分钟自动结束防漏：用户聊过(>=1条新消息)且最后一条用户消息之后没有分析卡片 → 补生成；已有卡片则不重复
+  var __hasCardAfterLast = __analysisCardAfterLastUserMsg();
+  var needAnalyze = false;
+  if (newUserMsgs >= 1) needAnalyze = (reason === 'manual') ? true : !__hasCardAfterLast;
+  if (needAnalyze) {
         if (chatSession.analyzing) { showToast('正在分析中，请稍候...'); return; }
     chatSession.analyzing = true;
     showToast('正在分析您的聊天内容，请稍候...');
@@ -4987,7 +4985,7 @@ function endChatSession(reason) {
   } else if (wasActive) {
     showToast('聊天已结束');
   } else {
-    // 非激活且无足够消息：静默结束
+    // 非激活、无足够消息或已有分析卡片：静默结束
     console.log('[Session] No enough messages to analyze');
   }
 }
@@ -5000,6 +4998,26 @@ function resetIdleTimer() {
 }
 
 // ===== LLM 情绪分析（Session结束后调用）=====
+// 若 AI 返回的情绪词不在标准词典，做包含匹配兜底（如“有点生气”→“生气”→怒）
+function __fuzzyWutai(label) {
+  if (!label) return null;
+  var best = null, bestLen = 0;
+  for (var k in EMOTION_STANDARD_DICT) {
+    if (label.indexOf(k) >= 0 && k.length > bestLen) { best = EMOTION_STANDARD_DICT[k]; bestLen = k.length; }
+  }
+  return best;
+}
+// 判断最后一条用户消息之后是否已生成 AI 分析卡片（用于自动结束不遗漏/不重复）
+function __analysisCardAfterLastUserMsg() {
+  try {
+    var msgs = loadChatMessages();
+    var lastUser = -1;
+    for (var i = msgs.length - 1; i >= 0; i--) { if (msgs[i].role === 'user') { lastUser = i; break; } }
+    if (lastUser < 0) return true;
+    for (var j = lastUser + 1; j < msgs.length; j++) { if (msgs[j].role === 'recommendation') return true; }
+    return false;
+  } catch(e) { return true; }
+}
 async function analyzeChatSession() {
   var analysisPrompt = '请分析以下用户聊天记录，输出标准化情绪表达。\n\n'
     + '【任务】\n'
@@ -5045,7 +5063,7 @@ async function analyzeChatSession() {
           ],
           max_tokens: 300,
           temperature: 0.3
-        }, 90000);
+        }, 45000);
       } catch (__e) {
         console.warn('[Session] analysis attempt ' + (__ai+1) + ' failed:', __e.message);
         if (__ai === 0) { await new Promise(function(r){ setTimeout(r, 1500); }); }
@@ -5055,8 +5073,8 @@ async function analyzeChatSession() {
     var text = parseAIResponse(data) || '';
       var result = parseAnalysisResult(text);
       if (result && result.primaryEmotion) {
-        var primaryWutai = EMOTION_STANDARD_DICT[result.primaryEmotion] || null;
-        var secondaryWutai = result.secondaryEmotion ? (EMOTION_STANDARD_DICT[result.secondaryEmotion] || null) : null;
+        var primaryWutai = EMOTION_STANDARD_DICT[result.primaryEmotion.trim()] || __fuzzyWutai(result.primaryEmotion.trim());
+        var secondaryWutai = result.secondaryEmotion ? (EMOTION_STANDARD_DICT[result.secondaryEmotion.trim()] || __fuzzyWutai(result.secondaryEmotion.trim())) : null;
         // ✅ V3.0: 将 AI 分析提取的情绪词汇同步到档案页情绪关键词库
         try {
           if (typeof logChatEmotion === 'function') {
@@ -5067,12 +5085,12 @@ async function analyzeChatSession() {
             }
           }
         } catch(e) { console.warn('[Session] logChatEmotion sync failed:', e); }
-        if (primaryWutai) {
-          var rec = generateTodayRecommendation(primaryWutai, secondaryWutai, result);
-          saveTodayRecommendation(rec);
-          // 研究数据：分析据以 ai_chat_history 为唯一存储，不再叠加回填，避免同一会话分析重复
-          showSessionRecommendation(rec);
-        }
+        // ✅ 无论能否映射到五态都生成并展示卡片，保证档案词云与聊天卡片一致、不遗漏
+        var rec = generateTodayRecommendation(primaryWutai, secondaryWutai, result);
+        saveTodayRecommendation(rec);
+        // 研究数据：分析据以 ai_chat_history 为唯一存储，不再叠加回填，避免同一会话分析重复
+        showSessionRecommendation(rec);
+        if (!primaryWutai) console.warn('[Session] 情绪不在标准词典，卡片已生成但暂无调式:', result.primaryEmotion);
       }
   } catch (e) {
     console.error('[Session] Analysis failed:', e);
@@ -5384,6 +5402,8 @@ function switchTab(idx) {
   // 切换到我的 tab 时检查 me-row 文字是否溢出，溢出则隐藏右侧 val/arrow
     // V3.0: 切换到聊天页面时启动 Session
   if (idx === 1) {
+    // 进聊天页即预热语音模型，避免首次回复吃冷启动(约20s)
+    if (typeof __warmTTS === 'function') { try { __warmTTS(); } catch(e){} }
     if (typeof startChatSession === 'function') startChatSession();
     // ✅ V3.0 修复：如果聊天容器为空（initChat 未成功渲染历史），重新渲染
     var chatContainer = document.getElementById('chatMessages');
@@ -5395,9 +5415,9 @@ function switchTab(idx) {
         sepRow.style.cssText = 'text-align:center;padding:8px 0;color:var(--ink-faint);font-size:15px;opacity:0.6;';
         sepRow.textContent = '—— 以上为历史记录 ——';
         chatContainer.appendChild(sepRow);
-        addBotMsg('欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
+        addBotMsg((typeof ttsConfig!=='undefined' && ttsConfig.language==='cantonese') ? '欢迎返嚟，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有冇啲嘢想同我倾吓呀？' : '欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
       } else {
-        addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
+        addBotMsg((typeof ttsConfig!=='undefined' && ttsConfig.language==='cantonese') ? '您好呀！我係' + avatarName + '，您嘅五音疗愈伙伴。今日心情点呀？可以同我讲吓。' : '您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
       }
     }
     // 延迟滚动到底部（确保页面 visible 且 layout 完成后再滚）
@@ -6027,7 +6047,7 @@ function initChat() {
     sepRow.textContent = '—— 以上为历史记录 ——';
     container.appendChild(sepRow);
     // 仅显示一条简短问候
-    addBotMsg('欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
+    addBotMsg((typeof ttsConfig!=='undefined' && ttsConfig.language==='cantonese') ? '欢迎返嚟，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有冇啲嘢想同我倾吓呀？' : '欢迎回来，' + (localStorage.getItem('wuyin_user_name') || '奶奶') + '~ 有什么想跟我聊聊的吗？', 'welcome');
     // 滚动到底部（显示最新消息）
     requestAnimationFrame(function() {
       var sc = document.querySelector('.chat-scroll');
@@ -6035,7 +6055,7 @@ function initChat() {
     });
   } else {
     // 无历史记录：显示完整欢迎语
-    addBotMsg('您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
+    addBotMsg((typeof ttsConfig!=='undefined' && ttsConfig.language==='cantonese') ? '您好呀！我係' + avatarName + '，您嘅五音疗愈伙伴。今日心情点呀？可以同我讲吓。' : '您好呀！我是' + avatarName + '，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome');
     // 3 seconds later, second message
     setTimeout(function() {
       var msg = CARE_MESSAGES[Math.floor(Math.random() * CARE_MESSAGES.length)];
@@ -6044,13 +6064,41 @@ function initChat() {
   }
 }
 
+function autoResizeChatInput(el){
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight + 2, 110) + 'px';
+}
+function __replayMsg(btn){
+  try { if (typeof __warmTTS === 'function') __warmTTS(true); } catch(e){}
+  try { __stopAllSpeech(); } catch(e){}
+  var t = btn ? btn.getAttribute('data-t') : '';
+  if (!t) return;
+  var txt;
+  try { txt = decodeURIComponent(t); } catch(e){ txt = t; }
+  if (typeof filterWuyinNames === 'function') txt = filterWuyinNames(txt);
+  try { if (typeof speakStreamed === 'function') speakStreamed(txt, 1); } catch(e){}
+}
+function __attachReplay(row, text){
+  if (!row) return;
+  try { row.setAttribute('data-t', encodeURIComponent(text||'')); } catch(e){}
+  var tEl = row.querySelector('.t');
+  if (!tEl || tEl.querySelector('.replay-btn')) return;
+  var b = document.createElement('button');
+  b.className = 'replay-btn';
+  try { b.setAttribute('data-t', encodeURIComponent(text||'')); } catch(e){}
+  b.innerHTML = '🔊 重听';
+  b.onclick = function(){ __replayMsg(b); };
+  tEl.appendChild(b);
+}
 function addBotMsg(text, emotion) {
   var container = document.getElementById('chatMessages');
   var row = document.createElement('div');
   row.className = 'bubble';
   var timeStr = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
   row.innerHTML = '<div class="av-sm"></div>'
-    + '<div><div class="b">' + text + '</div><div class="t">小五 · ' + timeStr + '</div></div>';
+    + '<div><div class="b">' + text + '</div><div class="t">小五 · ' + timeStr
+    + ' <button class="replay-btn" onclick="__replayMsg(this)" data-t="' + encodeURIComponent(text) + '">🔊 重听</button></div></div>';
   container.appendChild(row);
   // 滚动到 .chat-scroll 容器底部（延迟确保 DOM 完成布局）
   setTimeout(function() {
@@ -6063,8 +6111,9 @@ function addBotMsg(text, emotion) {
     clearTimeout(window._speakTimer);
     window._speakTimer = setTimeout(function() {
       var cleanText = filterWuyinNames(text);
-      speak(cleanText, emotion || 'chat');
-    }, 200);
+      // ✅ 低延迟实时播报：逐句合成并连续播放（自动播放已解锁），语音回复更快开播
+      speakStreamed(cleanText, 1);
+    }, 120);
   }
   updateAvatarState();
 }
@@ -6117,7 +6166,7 @@ function renderChatHistory() {
       row.innerHTML = '<div class="av-sm"></div><div><div class="b">' + m.text + '</div><div class="t">' + timeStr + '</div></div>';
     } else {
       row.className = 'bubble';
-      row.innerHTML = '<div class="av-sm"></div><div><div class="b">' + m.text + '</div><div class="t">小五 · ' + timeStr + '</div></div>';
+      row.innerHTML = '<div class="av-sm"></div><div><div class="b">' + m.text + '</div><div class="t">小五 · ' + timeStr + ' <button class="replay-btn" onclick="__replayMsg(this)" data-t="' + encodeURIComponent(m.text) + '">🔊 重听</button></div></div>';
     }
     container.appendChild(row);
   });
@@ -6187,6 +6236,7 @@ function sendChatMessage(text) {
     text = input.value.trim();
     if (!text) return;
     input.value = '';
+    try { autoResizeChatInput(input); } catch(e){}
   }
   addUserMsg(text);
   // ✅ 仅当用户真正发送首条消息后才开始对话计时（进入聊天界面未发消息不计时）
@@ -6203,6 +6253,60 @@ function sendChatMessage(text) {
 }
 
 // 过滤AI回复文本中的五音名称，替换为通用表述
+var __SIMPLIFY_YUE = {
+  '傾':'倾','齊':'齐','說':'说','還':'还','邊':'边','學':'学','覺':'觉','時':'时','聽':'听','見':'见','會':'会','來':'来',
+  '對':'对','過':'过','車':'车','東':'东','風':'风','點':'点','開':'开','關':'关','門':'门','問':'问','驚':'惊','幫':'帮','飯':'饭',
+  '飲':'饮','記':'记','講':'讲','話':'话','該':'该','單':'单','難':'难','歷':'历','幾':'几','幹':'干','種':'种','樣':'样','頭':'头',
+  '讀':'读','寫':'写','買':'买','賣':'卖','蘭':'兰','愛':'爱','銀':'银','錢':'钱','聲':'声','號':'号','隻':'只','須':'须','雙':'双',
+  '陽':'阳','陰':'阴','雲':'云','電':'电','燈':'灯','機':'机','鄉':'乡','醫':'医','處':'处','請':'请','謝':'谢','話':'话','靜':'静','繫':'系','嚟':'来','睇':'体','累':'泪','係':'系','計':'计','歇':'透','攰':'巨','嘢':'野','喺':'系','咁':'甘','㗎':'嫁','呼':'敷','瞓':'训','舒':'书','看':'睇','榴':'留','𠮶':'果'
+};
+// 统一繁→简：覆盖常见繁体字，仅用于合成文本(不发到显示)，减少粤语TTS对繁体/生僻字读错
+var __YUE_T2S_EXTRA = {
+  '這':'这','裏':'里','裡':'里','後':'后','兩':'两','還':'还','邊':'边','過':'过','時':'时','夠':'够',
+  '對':'对','錯':'错','話':'话','書':'书','覺':'觉','親':'亲','愛':'爱','頭':'头','沒':'没','錢':'钱',
+  '銀':'银','體':'体','見':'见','認':'认','識':'识','記':'记','寫':'写','講':'讲','聽':'听','說':'说',
+  '讀':'读','問':'问','應':'应','該':'该','幫':'帮','謝':'谢','請':'请','學':'学','醫':'医','藥':'药',
+  '東':'东','風':'风','雲':'云','電':'电','燈':'灯','門':'门','窗':'窗','樓':'楼','開':'开','關':'关',
+  '閉':'闭','熱':'热','溫':'温','飯':'饭','麵':'面','湯':'汤','飲':'饮','豬':'猪','雞':'鸡','魚':'鱼',
+  '蝦':'虾','車':'车','遠':'远','幾':'几','點':'点','鐘':'钟','個':'个','條':'条','張':'张','複':'复',
+  '雜':'杂','難':'难','簡':'简','單':'单','歲':'岁','週':'周','禮':'礼','號':'号','會':'会','員':'员',
+  '聯':'联','絡':'络','訊':'讯','結':'结','構':'构','論':'论','選':'选','擇':'择','較':'较','誠':'诚',
+  '實':'实','負':'负','責':'责','擔':'担','師':'师','長':'长','間':'间','題':'题','議':'议','經':'经',
+  '驗':'验','錄':'录','屬':'属','於':'于','別':'别','區':'区','國':'国','際':'际','網':'网','達':'达',
+  '與':'与','眾':'众','語':'语','統':'统','聲':'声','樂':'乐','觀':'观','讓':'让','舊':'旧','鋪':'铺',
+  '歡':'欢','數':'数','運':'运','動':'动','興':'兴','慮':'虑','藝':'艺','術':'术','視':'视','願':'愿',
+  '權':'权','勢':'势','歷':'历','載':'载','裝':'装','軟':'软','許':'许','設':'设','計':'计','試':'试',
+  '證':'证','評':'评','訓':'训','隨':'随','雖':'虽','遞':'递','違':'违','邏':'逻','灣':'湾','飛':'飞',
+  '氣':'气','無':'无','為':'为','來':'来','當':'当','兒':'儿','為':'为','價':'价','值':'值','廠':'厂',
+  '陽':'阳','陰':'阴','種':'种','樣':'样','葉':'叶','縣':'县','鄉':'乡','裡':'里','雜':'杂','蘭':'兰',
+  '華':'华','絕':'绝','網':'网','習':'习','練':'练','總':'总','髮':'发','變':'变','億':'亿','檔':'档',
+  '順':'顺','稱':'称','幹':'干','廣':'广','術':'术','觀':'观','憂':'忧','腦':'脑','該':'该','質':'质',
+  '務':'务','條':'条','學':'学','均':'均','困':'困','兔':'免','導':'导','壞':'坏','應':'应','遼':'辽','腳':'脚'
+};
+function __simplifyYue(text){
+  if (!text) return text;
+  // 多字短语修正（"唔使"在粤语应读"唔晒/sai"）
+  var out = text.split('唔使').join('唔晒');
+  // 1) 统一繁→简
+  var k2 = Object.keys(__YUE_T2S_EXTRA);
+  for (var j = 0; j < k2.length; j++) { if (out.indexOf(k2[j]) >= 0) out = out.split(k2[j]).join(__YUE_T2S_EXTRA[k2[j]]); }
+  // 2) 粤语字表(含部分简→读不标) + 多字短语
+  var keys = Object.keys(__SIMPLIFY_YUE);
+  for (var i = 0; i < keys.length; i++) {
+    if (out.indexOf(keys[i]) >= 0) out = out.split(keys[i]).join(__SIMPLIFY_YUE[keys[i]]);
+  }
+  // 按性别补齐男/女声各自读不准的字（同音替换，避免影响另一性别原本读对的字）
+  var g = (typeof ttsConfig !== 'undefined' && ttsConfig.voiceGender === 'male') ? 'male' : 'female';
+  if (g === 'male') {
+    // 男声：嘅→嗝、唔→五（读如"5"）
+    var mk = ['嘅','唔'], mv = ['嗝','五'];
+    for (var mi = 0; mi < mk.length; mi++) { if (out.indexOf(mk[mi]) >= 0) out = out.split(mk[mi]).join(mv[mi]); }
+  } else {
+    // 女声：「在」被误读为普通话 zai4 → 强制读 zoi（再）
+    if (out.indexOf('在') >= 0) out = out.split('在').join('再');
+  }
+  return out;
+}
 function filterWuyinNames(text) {
   var result = text;
   // 1. 过滤五音名称
@@ -6327,7 +6431,7 @@ async function callQwenAPI(userText) {
     + '- 适当使用语气词（呀、呢、哦、~）\n'
     + '- 经常关心用户的身体和情绪状态\n'
     + '- 不在回复中提及任何音调名称（角音、徵音、宫音、商音、羽音），不主动推荐疗愈\n'
-    + (isCantonese ? '- 【重要】当前使用粤语语音，你的文字回复必须使用粤语书面语（如用"係"代替"是"，用"嘅"代替"的"，用"咁"代替"这么"，用"唔"代替"不"，用"仲"代替"还"，用"得闲"代替"有空"，用"饮茶"代替"喝茶"等）\n' : '')
+    + (isCantonese ? '- 【重要·粤语用户】该用户日常习惯用粤语（广东话）交谈，请认定用户主要说粤语，并以粤语理解和回应。文字回复必须使用地道的粤语书面语（如用"係"代替"是"，用"嘅"代替"的"，用"咁"代替"这么"，用"唔"代替"不"，用"仲"代替"还"，用"得闲"代替"有空"，用"饮茶"代替"喝茶"，用"好唔好"代替"好不好"等），语气符合香港粤语习惯。另，语音合成对个别粤语字发音不稳，请尽量避开「諗」「腳」「核」——可用「想／觉得」代「諗」、用「确认」代「核实」、用「腿／行」改写「腳」相关表达、必要时用简体「脚」。\n' : '')
     + '\n'
     + '你的回复必须简洁，每次回复不超过50个中文字，方便老年人阅读。\n\n'
     + '重要：你绝对不可以在回复中提及任何五音名称。系统会在聊天结束后自动分析并推荐疗愈方案。';
@@ -6353,27 +6457,17 @@ async function callQwenAPI(userText) {
     return;
   }
   var apiKey = getApiKey();
-
   try {
-    var data = await callChatAPI({
-      model: 'qwen-plus',
-      messages: messages,
-      max_tokens: 100,
-      temperature: 0.7
-    });
-    var aiText = parseAIResponse(data);
-      removeTypingIndicator();
-      if (aiText) {
-        // 过滤AI回复中的五音名称（由系统推荐卡片负责展示）
-        aiText = filterWuyinNames(aiText);
-        chatHistory.push({ role: 'assistant', content: aiText });
-        addBotMsg(aiText, 'chat');
-        // 检测是否需要推荐疗愈（前3轮对话不推荐，先建立信任）
-        var userMsgCount = chatHistory.filter(function(m) { return m.role === 'user'; }).length;
-        // [V3.0] keyword detection removed
-        return;
-      }
-  } catch(err) { console.warn('DashScope API failed:', err.message); try { showToast('AI 1: ' + err.message); } catch(_){} }
+    var streamed = await callQwenStream(messages);
+    removeTypingIndicator();
+    if (streamed && streamed.trim()) {
+      var aiText = filterWuyinNames(streamed);
+      chatHistory.push({ role: 'assistant', content: aiText });
+      try { saveChatMessage('bot', aiText); } catch(e){}
+      __streamBubbleFinal(aiText);
+      return;
+    }
+  } catch(err) { console.warn('AI stream failed:', err.message); try { showToast('AI: ' + err.message); } catch(_){} }
 
   try {
     var data2 = await callChatAPI({
@@ -6400,6 +6494,128 @@ async function callQwenAPI(userText) {
   addBotMsg(fallback.text, 'chat');
   // 每轮APP会话仅推荐一次（通过推荐卡片），不通过文字提及音调
     // [V3.0] fallback recommend trigger removed
+}
+
+// ========== 流式聊天（SSE）：边收边显示 + 分句即时播报 ==========
+var __stt = { buf:'', items:[], playing:false };
+function __cutStreamSentences(sstr){
+  var out=[], last=0, m, re=/[。！？!?；;]/g;
+  while((m=re.exec(sstr))){ out.push(sstr.slice(last, re.lastIndex)); last=re.lastIndex; }
+  return { done: out, leftover: sstr.slice(last) };
+}
+// 预取：每句文本一到就立刻请求音频，不等上一句播完 → 消除句间断顿
+function __sttFetchItem(it){
+  if (it.done) return; it.done = true;
+  if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) { it.buf = -1; __sttPlayNext(); return; }
+  var key = (typeof getApiKey === 'function') ? getApiKey() : '';
+  fetch(ttsConfig.wsUrl, { method:'POST', headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ apiKey: key, text: __simplifyYue(it.t), voice: getVoiceId(), language: ttsConfig.language, gender: ttsConfig.voiceGender, rate: getTTSRate(), model: ttsConfig.model, instruction: getTTSInstruction() })
+  }).then(function(resp){ if (!resp.ok) throw 0; return resp.arrayBuffer(); })
+    .then(function(b){ it.buf = b; __sttPlayNext(); })
+    .catch(function(){ it.buf = -1; __sttPlayNext(); });
+}
+// 顺序播放：只播队首；队首未就绪则等，其余句已预取在手，队首播完即无缝接续
+function __sttPlayNext(){
+  if (__stt.playing) return;
+  while (__stt.items.length && __stt.items[0].buf === -1) __stt.items.shift();
+  if (!__stt.items.length) { _ttsSpeaking = false; return; }
+  var head = __stt.items[0];
+  if (head.buf == null) return; // 队首正在拉取，保持顺序
+  __stt.playing = true;
+  _ttsSpeaking = true;
+  window.__lastTts = '云TTS已取到音频，尝试播放';
+  __playTTSBuffer(head.buf, 1, function(){ __stt.playing = false; __stt.items.shift(); __sttPlayNext(); });
+}
+function __sttPush(s){
+  var it = { t: s, buf: null, done: false };
+  __stt.items.push(it);
+  __sttFetchItem(it);
+  __sttPlayNext();
+}
+function __streamTTSPush(delta){
+  if (!voiceEnabled) return;
+  if (!delta) return;
+  __stt.buf += delta;
+  var r = __cutStreamSentences(__stt.buf);
+  __stt.buf = r.leftover;
+  for (var i = 0; i < r.done.length; i++) { var st = r.done[i].trim(); if (st) __sttPush(st); }
+  __sttPlayNext();
+}
+function __streamTTSFlush(){
+  if (!voiceEnabled) return;
+  var tail = __stt.buf.trim(); __stt.buf = '';
+  if (tail) __sttPush(tail);
+  __sttPlayNext();
+}
+function __streamTTSReset(){ __stt = { buf:'', items:[], playing:false }; }
+function __scrollChat(){
+  var sc = document.querySelector('.chat-scroll');
+  if (sc) sc.scrollTop = sc.scrollHeight;
+}
+function addStreamBotBubble(){
+  var container = document.getElementById('chatMessages');
+  var row = document.createElement('div');
+  row.className = 'bubble';
+  row.id = 'streamBotRow';
+  var timeStr = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+  row.innerHTML = '<div class="av-sm"></div><div><div class="b"></div><div class="t">小五 · ' + timeStr + '</div></div>';
+  container.appendChild(row);
+  __scrollChat();
+  return row;
+}
+function updateStreamBubble(row, text){
+  if (!row) return;
+  var b = row.querySelector('.b');
+  if (b) b.textContent = text;
+  __scrollChat();
+}
+function __streamBubbleFinal(text){
+  var row = document.getElementById('streamBotRow');
+  updateStreamBubble(row, text);
+  __scrollChat();
+}
+function callQwenStream(messages){
+  return new Promise(function(resolve, reject){
+    var apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+    removeTypingIndicator();
+    __streamTTSReset();
+    // 临近预热：AI 思考期间并行把语音模型拉热，令首句开声更快
+    if (typeof __warmTTS === 'function') { try { __warmTTS(true); } catch(e){} }
+    var row = addStreamBotBubble();
+    var full = '';
+    var endpoint = (typeof ttsConfig !== 'undefined' && ttsConfig.chatUrl) ? ttsConfig.chatUrl : '/chat';
+    fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey:apiKey, messages:messages, model:'qwen-plus', max_tokens:100, temperature:0.7, stream:true }) })
+      .then(function(resp){
+        if (!resp.ok) { return resp.text().then(function(t){ throw new Error('Chat '+resp.status+': '+t.slice(0,120)); }); }
+        var reader = resp.body.getReader();
+        var dec = new TextDecoder('utf-8');
+        var buf = '';
+        function pump(){
+          reader.read().then(function(res){
+            if (res.done) { try { __attachReplay(row, full); } catch(e){} __streamTTSFlush(); resolve(full); return; }
+            buf += dec.decode(res.value || new Uint8Array(), {stream:true});
+            var idx;
+            while ((idx = buf.indexOf('\n\n')) >= 0) {
+              var ev = buf.slice(0, idx); buf = buf.slice(idx + 2);
+              var lines = ev.split('\n');
+              for (var li = 0; li < lines.length; li++) {
+                if (lines[li].indexOf('data:') !== 0) continue;
+                var d = lines[li].slice(5).trim();
+                if (!d || d === '[DONE]') continue;
+                try {
+                  var j = JSON.parse(d);
+                  var delta = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+                  if (delta) { full += delta; updateStreamBubble(row, full); __streamTTSPush(delta); }
+                } catch(e){}
+              }
+            }
+            pump();
+          }).catch(reject);
+        }
+        pump();
+      })
+      .catch(reject);
+  });
 }
 
 // ========== EMOTION CAPTURE & RECOMMENDATION SYSTEM ==========
@@ -7154,11 +7370,61 @@ function stopChatRecording(autoSend) {
     showToast('语音录制已结束');
   }
 }
+// 语音输入：一键云端 ASR ——点一下开始说话、再点停止自动填入
+window.toggleChatRecording = function() {
+  var input = document.getElementById('chatInput');
+  var voiceBtn = document.getElementById('chatMicBtn');
+  toggleCloudASR(input, function(text){ if (text && text.trim()) showVoiceConfirmBubble(text.trim()); }, function(recOn){
+    isChatRecording = recOn;
+    removeTypingIndicator();
+    if (voiceBtn) { if (recOn) voiceBtn.classList.add('recording'); else voiceBtn.classList.remove('recording'); }
+  });
+};
+window.stopChatRecording = function() {
+  if (__asrState.active) {
+    try { __asrStopCollect(); } catch(e){}
+    __asrState.active = false; isChatRecording = false;
+    var v2 = document.getElementById('chatMicBtn'); if (v2) v2.classList.remove('recording');
+    return;
+  }
+  isChatRecording = false;
+  var vb = document.getElementById('chatMicBtn'); if (vb) vb.classList.remove('recording');
+  removeTypingIndicator();
+};
+
+// ========== 语音识别结果：待确认气泡 ==========
+function showVoiceConfirmBubble(text){
+  var container = document.getElementById('chatMessages');
+  if (!container) return;
+  var el = document.getElementById('voiceConfirmRow');
+  if (!el) { el = document.createElement('div'); el.id = 'voiceConfirmRow'; el.className = 'bubble user'; container.appendChild(el); }
+  var timeStr = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+  var enc = encodeURIComponent(text);
+  el.innerHTML = '<div class="av-sm"></div>'
+    + '<div><div class="b">' + text + '</div>'
+    + '<div style="margin-top:8px;display:flex;gap:10px;">'
+    + '<button data-txt="' + enc + '" onclick="__voiceConfirmSend(this)" style="flex:1;padding:9px 0;border:none;border-radius:22px;background:#3a6b4a;color:#fff;font-size:16px;">发送</button>'
+    + '<button onclick="__voiceConfirmCancel()" style="flex:1;padding:9px 0;border:none;border-radius:22px;background:rgba(0,0,0,.08);color:#333;font-size:16px;">取消</button>'
+    + '</div><div class="t">' + timeStr + '</div></div>';
+  var sc = document.querySelector('.chat-scroll');
+  if (sc) sc.scrollTop = sc.scrollHeight;
+}
+function __voiceConfirmCancel(){
+  var el = document.getElementById('voiceConfirmRow');
+  if (el) el.remove();
+}
+function __voiceConfirmSend(btn){
+  __voiceConfirmCancel();
+  var t = btn ? btn.getAttribute('data-txt') : '';
+  if (!t) return;
+  try { t = decodeURIComponent(t); } catch(e){}
+  if (t && typeof sendChatMessage === 'function') sendChatMessage(t);
+}
 
 // Enter key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') {
-    sendChatMessage();
+    if (!e.shiftKey) { e.preventDefault(); sendChatMessage(); }
   }
 });
 
@@ -8872,50 +9138,19 @@ function toggleRatingVoice(btn) {
   var spanEl = btn.querySelector('span');
   var textArea = document.getElementById('ratingVoiceText');
   if (!isRatingRecording) {
-    isRatingRecording = true;
+    // 一键云端 ASR：点一下开始说话、再点停止自动填入
     window._ratingVoiceUsed = true;
-    spanEl.textContent = '正在记录，点击结束';
-    btn.style.background = 'rgba(255,100,100,.3)';
-    btn.style.borderColor = 'rgba(255,100,100,.5)';
-    showToast('语音感受录制中...');
-    if (textArea) textArea.value = '正在聆听...';
-    // Web Speech API 自动转文字
-    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        var recognition = new SpeechRecognition();
-        recognition.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.onresult = function(event) {
-          var t = '';
-          for (var i = 0; i < event.results.length; i++) t += event.results[i][0].transcript;
-          if (textArea) textArea.value = t;
-        };
-        recognition.onerror = function() { if (textArea && textArea.value === '正在聆听...') textArea.value = ''; };
-        recognition.onend = function() { if (isRatingRecording) { try { recognition.start(); } catch(e) {} } };
-        window._ratingRecognition = recognition;
-        recognition.start();
-      } catch(e) {
-        console.warn('SpeechRecognition error:', e);
-        if (textArea) { textArea.value = ''; textArea.placeholder = '语音识别不可用，请手动输入您的感受'; }
-        showToast('语音识别不可用，请手动输入');
-        isRatingRecording = false;
-        spanEl.textContent = '点击语音说出感受';
-        btn.style.background = 'rgba(255,255,255,.15)';
-      }
-    } else {
-      if (textArea) textArea.value = '';
-      showToast('浏览器不支持语音转文字，请手动输入');
-    }
+    toggleCloudASR(textArea, function(t){
+      if (textArea) { textArea.value = t || ''; textArea.placeholder = ''; }
+    }, function(recOn){
+      isRatingRecording = recOn;
+      if (spanEl) spanEl.textContent = recOn ? '正在记录，点击结束' : '点击语音说出感受';
+      btn.style.background = recOn ? 'rgba(255,100,100,.3)' : 'rgba(255,255,255,.15)';
+      btn.style.borderColor = recOn ? 'rgba(255,100,100,.5)' : 'rgba(255,255,255,.25)';
+    });
   } else {
-    isRatingRecording = false;
-    spanEl.textContent = '点击语音说出感受';
-    btn.style.background = 'rgba(255,255,255,.15)';
-    btn.style.borderColor = 'rgba(255,255,255,.25)';
-    showToast('录制已结束，可修改文字后提交');
-    if (window._ratingRecognition) { try { window._ratingRecognition.stop(); } catch(e) {} window._ratingRecognition = null; }
-    if (textArea) { textArea.readOnly = false; textArea.focus(); }
+    if (__asrState.active) { __asrState.active = false; try { __asrStopCollect(); } catch(e){} __asrReady(textArea, function(t){ if (textArea) textArea.value = t || ''; }); }
+    else { isRatingRecording = false; if (spanEl) spanEl.textContent = '点击语音说出感受'; btn.style.background = 'rgba(255,255,255,.15)'; showToast('可修改输入框文字后提交'); }
   }
 }
 
@@ -9264,40 +9499,15 @@ function toggleFreeFeedbackVoice(btn) {
   var spanEl = btn.querySelector('span');
   var textArea = document.getElementById('freeFeedbackText');
   if (!isFreeFeedbackRecording) {
-    isFreeFeedbackRecording = true;
-    spanEl.textContent = '正在记录，点击结束';
-    btn.style.background = 'rgba(255,100,100,.3)';
-    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        var recognition = new SpeechRecognition();
-        recognition.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.onresult = function(event) {
-          var t = '';
-          for (var i = 0; i < event.results.length; i++) t += event.results[i][0].transcript;
-          if (textArea) textArea.value = t;
-        };
-        recognition.onerror = function() { if (textArea && textArea.value === '正在聆听...') textArea.value = ''; };
-        recognition.onend = function() { if (isFreeFeedbackRecording) { try { recognition.start(); } catch(e) {} } };
-        window._freeFeedbackRecognition = recognition;
-        recognition.start();
-      } catch(e) {
-        isFreeFeedbackRecording = false;
-        spanEl.textContent = '点击语音说出想法';
-        showToast('语音识别不可用，请手动输入');
-      }
-    } else {
-      isFreeFeedbackRecording = false;
-      spanEl.textContent = '点击语音说出想法';
-      showToast('浏览器不支持语音转文字，请手动输入');
-    }
+    // 一键云端 ASR：点一下开始说话、再点停止自动填入
+    toggleCloudASR(textArea, function(t){ if (textArea) textArea.value = t || ''; }, function(recOn){
+      isFreeFeedbackRecording = recOn;
+      if (spanEl) spanEl.textContent = recOn ? '正在记录，点击结束' : '点击语音说出想法';
+      btn.style.background = recOn ? 'rgba(255,100,100,.3)' : 'rgba(255,255,255,.15)';
+    });
   } else {
-    isFreeFeedbackRecording = false;
-    spanEl.textContent = '点击语音说出想法';
-    btn.style.background = 'rgba(255,255,255,.15)';
-    if (window._freeFeedbackRecognition) { try { window._freeFeedbackRecognition.stop(); } catch(e) {} window._freeFeedbackRecognition = null; }
+    if (__asrState.active) { __asrState.active = false; try { __asrStopCollect(); } catch(e){} __asrReady(textArea, function(t){ if (textArea) textArea.value = t || ''; }); }
+    else { isFreeFeedbackRecording = false; if (spanEl) spanEl.textContent = '点击语音说出想法'; btn.style.background = 'rgba(255,255,255,.15)'; showToast('可修改输入框文字后提交'); }
   }
 }
 
@@ -9402,13 +9612,19 @@ function adjustSpeed(delta) {
 
 // 初始化时从localStorage恢复设置
 function initTTSSettings() {
-  var lang = localStorage.getItem('wuyin_tts_language');
-  if (lang && (lang === 'cantonese' || lang === 'mandarin')) {
-    ttsConfig.language = lang; selectLanguage(lang);
-  }
-  var gender = localStorage.getItem('wuyin_tts_gender');
-  if (gender && (gender === 'female' || gender === 'male')) {
-    ttsConfig.voiceGender = gender; selectVoiceGender(gender);
+  // 语音固定使用粤语音色（longwan_v2），不读历史设置，避免被恢复成普通话
+  ttsConfig.language = 'cantonese';
+  try { if (typeof selectLanguage === 'function') selectLanguage('cantonese'); } catch(e){}
+  try { localStorage.setItem('wuyin_tts_language', 'cantonese'); } catch(e){}
+  // 默认粤语女声；用户可在"我的>声音设置"切换男/女声并持久化
+  var gd = localStorage.getItem('wuyin_tts_gender');
+  if (gd === 'male') {
+    ttsConfig.voiceGender = 'male';
+    try { if (typeof selectVoiceGender === 'function') selectVoiceGender('male'); } catch(e){}
+  } else {
+    ttsConfig.voiceGender = 'female';
+    try { if (typeof selectVoiceGender === 'function') selectVoiceGender('female'); } catch(e){}
+    try { localStorage.setItem('wuyin_tts_gender', 'female'); } catch(e){}
   }
   var engine = localStorage.getItem('wuyin_tts_engine');
   if (engine) { 
@@ -10970,18 +11186,23 @@ var ttsConfig = {
   voiceGender: 'female', // 'female' 或 'male'
   // apiKey 不再硬编码，运行时通过 getApiKey() 从 localStorage 读取
   wsUrl: '/tts', // 同源相对路径，桌面端和手机端（通过 cloudflared）都能访问
-  model: 'cosyvoice-v2'
+  model: 'cosyvoice-v3-flash'
 };
 
 // 音色映射（DashScope CosyVoice 音色 ID；对应"语言+性别"）
 // 备选音色：longxiaochun(温柔女), longxiaoxia(活泼女), longwan(粤语女), longcheng(沉稳男), longfei(粤语男)
 var VOICE_MAP = {
-  'cantonese_female': 'longwan_v2',       // 粤语女声
-  'cantonese_male':   'longfei_v2',       // 粤语男声
-  'mandarin_female':  'longxiaochun_v2',  // 普通话女声（温柔亲切，最适合小五）
-  'mandarin_male':    'longcheng_v2'      // 普通话男声（沉稳专业）
+  'cantonese_female': 'longanhuan_v3',   // 粤语女声（需配粤语方言指令）
+  'cantonese_male':   'longanyue_v3',     // 粤语男声（内置粤语）
+  'mandarin_female':  'longxiaochun_v3',  // 普通话女声
+  'mandarin_male':    'longanyang'        // 普通话男声（阳光大男孩）
 };
 
+function getTTSInstruction(){
+  // 粤语女声 longanhuan_v3 需用方言指令说粤语；男声 longanyue_v3 内置粤语则不需要
+  var v = (typeof getVoiceId === 'function') ? getVoiceId() : '';
+  return (v === 'longanhuan_v3') ? '请用广东话表达。' : undefined;
+}
 function getVoiceId() {
   return VOICE_MAP[ttsConfig.language + '_' + ttsConfig.voiceGender] || 'longxiaochun';
 }
@@ -11190,7 +11411,327 @@ function testCloudTTS() {
   });
 }
 
+// ===== 一键语音转文字（云端 ASR）：点一下开始录音，再点一下停止并自动填入 =====
+var __asrState = { active:false, pcm:[], ctx:null, src:null, sp:null, stream:null };
+function __asrStopCollect(){
+  try{ if(__asrState.sp) __asrState.sp.onaudioprocess=null; }catch(e){}
+  try{ if(__asrState.src && __asrState.src.disconnect) __asrState.src.disconnect(); }catch(e){}
+  try{ if(__asrState.sp && __asrState.sp.disconnect) __asrState.sp.disconnect(); }catch(e){}
+  try{ if(__asrState.ctx && __asrState.ctx.close) __asrState.ctx.close(); }catch(e){}
+  // 关键：释放麦克风流，避免长期占用导致手机自带输入法语音"音频抢占"
+  try{ if(__asrState.stream && __asrState.stream.getTracks){ __asrState.stream.getTracks().forEach(function(t2){ try{ t2.stop(); }catch(e){} }); } }catch(e){}
+  __asrState.ctx = null; __asrState.src = null; __asrState.sp = null; __asrState.stream = null;
+}
+function toggleCloudASR(inputEl, onResult, onToggle) {
+  if (!__asrState.active) {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { showToast('浏览器不支持录音'); return; }
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { showToast('浏览器不支持音频处理'); return; }
+    if (onToggle) onToggle(true);
+    showToast('开始录音，说完再点一下同位置停止');
+    function begin(stream) {
+      __asrState.pcm = [];
+      __asrState.active = true;
+      __asrState.stream = stream;
+      var ctx; try { ctx = new AC({ sampleRate: 16000 }); } catch(e1){ try { ctx = new AC(); } catch(e2){ ctx = null; } }
+      if (!ctx) { try{stream.getTracks().forEach(function(t){ t.stop(); });}catch(e){} if(onToggle) onToggle(false); showToast('音频初始化失败'); return; }
+      if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch(e){} }
+      var src, sp;
+      try { src = ctx.createMediaStreamSource(stream); } catch(e){ try{ctx.close()}catch(e2){} if(onToggle)onToggle(false); showToast('音频采集失败'); return; }
+      try { sp = ctx.createScriptProcessor(4096, 1, 1); } catch(e){ try{ctx.close()}catch(e2){} if(onToggle)onToggle(false); showToast('音频采集失败'); return; }
+      __asrState.ctx = ctx; __asrState.src = src; __asrState.sp = sp;
+      sp.onaudioprocess = function(e){
+        try {
+          var d = e.inputBuffer.getChannelData(0);
+          var out = new Int16Array(d.length);
+          for (var i = 0; i < d.length; i++) { var v = d[i]; out[i] = v < -1 ? -32768 : (v > 1 ? 32767 : ((v * 32767) | 0)); }
+          __asrState.pcm.push(out);
+        } catch(err){}
+      };
+      var mute = ctx.createGain(); mute.gain.value = 0;
+      src.connect(sp); sp.connect(mute); mute.connect(ctx.destination);
+    }
+    // 每次 getUserMedia（系统已记住授权一般不再弹权限）；停止时释放，避免占麦
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream){
+      __asrState.stream = stream; begin(stream);
+    }).catch(function(){ if(onToggle) onToggle(false); showToast('麦克风权限被拒绝'); });
+  } else {
+    __asrState.active = false;
+    __asrStopCollect();
+    if (onToggle) onToggle(false);
+    __asrReady(inputEl, onResult);
+  }
+}
+function __asrReady(inputEl, onResult) {
+  if (!__asrState.pcm.length) { showToast('没有录到声音'); return; }
+  var total = 0; for (var i = 0; i < __asrState.pcm.length; i++) total += __asrState.pcm[i].length;
+  var merged = new Int16Array(total); var off = 0;
+  for (var i = 0; i < __asrState.pcm.length; i++) { merged.set(__asrState.pcm[i], off); off += __asrState.pcm[i].length; }
+  var rate = (__asrState.ctx && __asrState.ctx.sampleRate) || 16000;
+  var bytes = new Uint8Array(merged.buffer);
+  var bc = [];
+  for (var i = 0; i < bytes.length; i += 32768) bc.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 32768)));
+  var b64 = btoa(bc.join(''));
+  __asrState.pcm = [];
+  if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) { showToast('请先在"我的"页设置 API 密钥'); if (onResult) onResult(''); return; }
+  showToast('识别中...');
+  fetch('/asr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    apiKey: (typeof getApiKey==='function'?getApiKey():''), audio: b64, format: 'pcm', sampleRate: rate
+  })}).then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d && typeof d.text === 'string' && d.text) { window.__lastAsr='成功:「' + d.text + '」'; if (onResult) onResult(d.text); }
+      else if (d && typeof d.text === 'string') { window.__lastAsr='成功(空):「」'; showToast('没听清，请再说一遍'); }
+      else { window.__lastAsr='失败: ' + (d && d.error || '未知错误'); showToast('识别失败：' + (d && d.error || '未知错误')); }
+    })
+    .catch(function(){ window.__lastAsr='失败: 网络错误'; showToast('识别失败：网络错误'); });
+}
+
+// ===== 诊断面板：一键复制手机音频/识别状态给开发者 =====
+window.__lastAsr = window.__lastAsr || '尚未识别';
+window.__lastTts = window.__lastTts || '尚未播报';
+function __diagCollect() {
+  var ua = navigator.userAgent || '';
+  var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
+  var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
+  var lines = [];
+  lines.push('版本: 20260924ag');
+  lines.push('UA: ' + ua);
+  lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
+  lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
+  lines.push('MediaRecorder: ' + (typeof MediaRecorder!=='undefined'?'支持':'不支持'));
+  lines.push('speechSynthesis: ' + (!!window.speechSynthesis));
+  lines.push('API Key已设: ' + ((typeof hasApiKey==='function')?!!hasApiKey():'?'));
+  lines.push('TTS provider: ' + prov);
+  lines.push('TTS代理在线: ' + !!ttsProxyOnline);
+  lines.push('AudioContext状态: ' + ctxState);
+  lines.push('最近TTS: ' + (window.__lastTts||''));
+  lines.push('最近ASR: ' + (window.__lastAsr||''));
+  try { if (window.speechSynthesis) lines.push('语音数量: ' + window.speechSynthesis.getVoices().length); } catch(e){}
+  return lines.join('\n');
+}
+function __openDiagPanel() {
+  var p = document.getElementById('diagPanel');
+  if (!p) {
+    p = document.createElement('div');
+    p.id = 'diagPanel';
+    p.style.cssText = 'position:fixed;left:12px;right:12px;bottom:100px;z-index:99999;background:#fff;border:1px solid #ccc;border-radius:12px;padding:12px;font-size:12px;color:#222;box-shadow:0 4px 16px rgba(0,0,0,.25);max-height:60vh;overflow:auto;display:none;';
+    p.innerHTML = '<div style="font-weight:700;margin-bottom:6px">五音诊断</div>' +
+      '<pre id="diagText" style="white-space:pre-wrap;word-break:break-all;margin:6px 0;line-height:1.4"></pre>' +
+      '<div style="display:flex;gap:8px"><button id="diagCopy" style="flex:1;padding:8px;border:none;border-radius:8px;background:#3a6b4a;color:#fff;font-size:14px">复制报告</button>' +
+      '<button id="diagClose" style="flex:1;padding:8px;border:none;border-radius:8px;background:#eee;color:#333;font-size:14px">关闭</button></div>';
+    document.body.appendChild(p);
+    document.getElementById('diagCopy').onclick = function(){
+      var t = document.getElementById('diagText').textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t)['catch'](function(){ window.prompt('请复制以下内容发给开发者：', t); });
+      else window.prompt('请复制以下内容发给开发者：', t);
+    };
+    document.getElementById('diagClose').onclick = function(){ p.style.display='none'; };
+  }
+  document.getElementById('diagText').textContent = __diagCollect();
+  p.style.display = 'block';
+}
+function __showDiagButton() {
+  try {
+    var d = document.getElementById('diagFab');
+    if (d) return;
+    d = document.createElement('div');
+    d.id = 'diagFab';
+    d.textContent = '🔍';
+    d.setAttribute('aria-label','诊断');
+    d.style.cssText = 'position:fixed;right:14px;bottom:110px;z-index:99998;width:44px;height:44px;border-radius:50%;background:rgba(58,107,74,.85);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.3);cursor:pointer;';
+    d.onclick = __openDiagPanel;
+    document.body.appendChild(d);
+  } catch(e){}
+}
+if (document.body) __showDiagButton();
+else document.addEventListener('DOMContentLoaded', __showDiagButton);
+
 var _ttsSpeaking = false;
+
+// ===== 移动端自动播放解锁 + 低延迟实时播报 =====
+var __TTSActx = null;
+// 预热云 TTS：首个手势即合成一小段，令 DashScope 模型就绪并预热解码器，避免首句吃冷启动(~9s)
+var __warmTTS_fired = false;
+function __warmTTS(force) {
+  try {
+    if (!force && __warmTTS_fired) return;
+    if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) return;
+    if (typeof ttsConfig === 'undefined' || !ttsConfig || ttsConfig.provider === 'browser') return;
+    __warmTTS_fired = true;
+    var key = (typeof getApiKey === 'function') ? getApiKey() : '';
+    fetch(ttsConfig.wsUrl, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey: key, text: __simplifyYue('喂，你好。'), voice: getVoiceId(), language: ttsConfig.language, gender: ttsConfig.voiceGender, rate: getTTSRate(), model: ttsConfig.model, instruction: getTTSInstruction() })
+    }).then(function(r){ return r.arrayBuffer(); }).then(function(ab){
+      try {
+        var AC2 = window.AudioContext || window.webkitAudioContext;
+        var ctx = __TTSActx || (AC2 ? new AC2() : null);
+        if (ctx) ctx.decodeAudioData(ab, function(){}, function(){});
+      } catch(e){}
+    }).catch(function(){ __warmTTS_fired = false; });
+  } catch(e) {}
+}
+function __unlockAudio() {
+  try {
+    __warmTTS();
+    if (!__TTSActx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) __TTSActx = new AC();
+    }
+    if (__TTSActx && __TTSActx.state !== 'running' && __TTSActx.resume) { __TTSActx.resume(); }
+  } catch(e) {}
+}
+// iOS/安卓自动播放策略：必须在用户手势后 AudioContext 才能出声
+document.addEventListener('pointerdown', function(){ __unlockAudio(); }, { passive: true });
+document.addEventListener('touchend', function(){ __unlockAudio(); }, { passive: true });
+document.addEventListener('click', function(){ __unlockAudio(); }, { passive: true });
+document.addEventListener('keydown', function(){ __unlockAudio(); }, { passive: true });
+
+// 通过已解锁的 AudioContext 即时播放一段 TTS 音频（异步回调也能出声）
+function __playTTSBuffer(buf, vol, cb) {
+  try {
+    if (!__TTSActx) { var AC = window.AudioContext || window.webkitAudioContext; if (AC) __TTSActx = new AC(); }
+    if (!__TTSActx) { if (cb) cb(false); return false; }
+    var ctx = __TTSActx;
+    if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch(e){} }
+    ctx.decodeAudioData(buf, function(decoded) {
+      var src = ctx.createBufferSource();
+      src.buffer = decoded;
+      var g = ctx.createGain();
+      g.gain.value = (typeof vol === 'number' ? vol : 0.9);
+      src.connect(g); g.connect(ctx.destination);
+      currentSpeech = { pause: function(){ try{ src.stop(); }catch(e){} }, stop: function(){ try{ src.stop(); }catch(e){} } };
+      _ttsSpeaking = true;
+      src.onended = function() { _ttsSpeaking = false; if (cb) cb(true); };
+      try { src.start(); } catch(e) { _ttsSpeaking = false; if (cb) cb(true); }
+    }, function() { if (cb) cb(false); });
+    return true;
+  } catch(e) { console.warn('[tts] webAudio play error', e); if (cb) cb(false); return false; }
+}
+
+function __stopAllSpeech() {
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
+  if (currentSpeech) {
+    try { if (typeof currentSpeech.stop === 'function') currentSpeech.stop(); } catch(e){}
+    currentSpeech = null;
+  }
+}
+
+// 把长文本切成适合逐句播报的句子（避免 lookbehind，兼容旧版 Safari）
+function splitSentences(text) {
+  text = String(text || '');
+  var parts = text.match(/[^。！？!?；;\n]+[。！？!?；;]?/g);
+  if (!parts || !parts.length) parts = [text];
+  return parts;
+}
+
+// 单句云 TTS 并播放（失败回退浏览器 TTS）
+function __ttsSentence(sentence, vol, cb) {
+  var done = false;
+  function finish(ok) { if (!done) { done = true; cb(ok); } }
+  var hasKey = (typeof hasApiKey === 'function') ? hasApiKey() : false;
+  if (!hasKey) {
+    try {
+      if (window.speechSynthesis) {
+        var ut = new SpeechSynthesisUtterance(sentence);
+        ut.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
+        ut.onend = function(){ finish(true); };
+        window.speechSynthesis.speak(ut);
+        return;
+      }
+    } catch(e){}
+    finish(false); return;
+  }
+  var key = (typeof getApiKey === 'function') ? getApiKey() : '';
+  fetch(ttsConfig.wsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      apiKey: key, text: __simplifyYue(sentence), voice: getVoiceId(),
+      language: ttsConfig.language, gender: ttsConfig.voiceGender,
+      rate: getTTSRate(), model: ttsConfig.model, instruction: getTTSInstruction()
+    })
+  }).then(function(resp) {
+    if (!resp.ok) throw new Error('TTS ' + resp.status);
+    return resp.arrayBuffer();
+  }).then(function(buf) {
+    window.__lastTts='云TTS已取到音频，尝试播放';
+    __playTTSBuffer(buf, vol, function(ok){ finish(ok); });
+  }).catch(function() {
+    window.__lastTts='云TTS失败，已降级浏览器TTS(可能无声)';
+    try {
+      if (window.speechSynthesis) {
+        var ut2 = new SpeechSynthesisUtterance(sentence);
+        ut2.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
+        ut2.onend = function(){ finish(true); };
+        window.speechSynthesis.speak(ut2);
+        return;
+      }
+    } catch(e){}
+    finish(false);
+  });
+}
+
+// 逐句流式播报：第一句尽快开播，之后一句接一句，接近实时
+function speakStreamed(text, volume) {
+  if (!voiceEnabled) return;
+  __stopAllSpeech();
+  var vol = (typeof volume === 'number') ? volume : 1;
+  var sentences = splitSentences(text);
+  for (var _k = 0; _k < sentences.length; _k++) { if (sentences[_k] && !sentences[_k].trim()) sentences.splice(_k, 1), _k--; }
+  var len = sentences.length;
+  if (!len) { _ttsSpeaking = false; return; }
+  var i = 0;
+  var playing = false;
+  var bufCache = {};   // 已取到的句子索引 -> ArrayBuffer
+  var fetching = {};   // 正在请求的句子索引 -> true
+  function isOnline() { return (typeof hasApiKey === 'function') ? hasApiKey() : false; }
+  function browserFallback(idx) {
+    try {
+      if (window.speechSynthesis) {
+        var ut = new SpeechSynthesisUtterance(sentences[idx]);
+        ut.lang = ttsConfig.language === 'cantonese' ? 'zh-HK' : 'zh-CN';
+        ut.onend = function(){ playing = false; advance(); };
+        window.speechSynthesis.speak(ut);
+        return;
+      }
+    } catch(e){}
+    playing = false; advance();
+  }
+  function fetchBuf(idx) {
+    if (fetching[idx] || bufCache[idx] != null) return;
+    if (!isOnline()) { bufCache[idx] = null; fetching[idx] = false; if (!playing && idx === i) startPlay(idx); return; }
+    fetching[idx] = true;
+    var key = (typeof getApiKey === 'function') ? getApiKey() : '';
+    fetch(ttsConfig.wsUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, text: __simplifyYue(sentences[idx]), voice: getVoiceId(), language: ttsConfig.language, gender: ttsConfig.voiceGender, rate: getTTSRate(), model: ttsConfig.model, instruction: getTTSInstruction() })
+    }).then(function(resp){ if (!resp.ok) throw 0; return resp.arrayBuffer(); })
+      .then(function(b){ bufCache[idx] = b; fetching[idx] = false; if (!playing && idx === i) startPlay(idx); })
+      .catch(function(){ bufCache[idx] = null; fetching[idx] = false; if (!playing && idx === i) startPlay(idx); });
+  }
+  function advance() {
+    i++;
+    if (i >= len) { playing = false; _ttsSpeaking = false; return; }
+    fetchBuf(i);
+    if (bufCache[i] != null) startPlay(i);
+  }
+  function startPlay(idx) {
+    if (!voiceEnabled) { playing = false; _ttsSpeaking = false; return; }
+    playing = true;
+    _ttsSpeaking = true;
+    fetchBuf(idx + 1); // 预取下一句，消除句间断顿
+    var b = bufCache[idx];
+    if (b) {
+      window.__lastTts = '云TTS已取到音频，尝试播放';
+      __playTTSBuffer(b, vol, function(){ playing = false; advance(); });
+    } else if (b === null) {
+      browserFallback(idx);
+    } else {
+      playing = false;
+    }
+  }
+  _ttsSpeaking = true;
+  fetchBuf(0); // 首句 fetch 完成后自动开播
+}
 
 function speakCosyVoice(text, emotion, volume) {
   // 如果 provider 已经被解析为 browser（如移动端），直接走浏览器 TTS
@@ -11250,19 +11791,20 @@ function speakCosyVoice(text, emotion, volume) {
       }
     }).then(function(blob) {
       if (!blob) { throw new Error('音频数据为空'); }
-      var url = URL.createObjectURL(blob);
-      var audio = new Audio(url);
-      audio.volume = targetVol;
-      currentSpeech = audio;
+      return blob.arrayBuffer();
+    }).then(function(buf) {
       ttsProxyOnline = true;
       updateTTSStatusUI();
-      audio.onended = function() { URL.revokeObjectURL(url); _ttsSpeaking = false; };
-      audio.onerror = function() { URL.revokeObjectURL(url); _ttsSpeaking = false; };
-      audio.play().catch(function(err) {
-        console.warn('音频播放被阻止:', err);
+      // ✅ 走已解锁的 AudioContext 即时播放，绕开移动端自动播放拦截
+      var ok = __playTTSBuffer(buf, targetVol);
+      if (!ok) {
         _ttsSpeaking = false;
-        showToast('请点击页面任意位置激活音频播放');
-      });
+        var urlA = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+        var audioA = new Audio(urlA);
+        audioA.volume = targetVol; currentSpeech = audioA; _ttsSpeaking = true;
+        audioA.onended = function(){ URL.revokeObjectURL(urlA); _ttsSpeaking = false; };
+        audioA.play().catch(function(){ _ttsSpeaking = false; showToast('请点击页面任意位置激活音频播放'); });
+      }
     }).catch(function(e) {
       console.warn('云语音失败，降级到本地浏览器 TTS:', e);
       ttsProxyOnline = false;
@@ -11615,6 +12157,9 @@ function openQzModal(mode){
   _qzMode = mode || 'first';
   // ✅ 只展示测评引导弹窗，不开始问卷计时（问卷计时仅在实际进入答题时才生效，见 showQuestionnaireFromProfile）
   if (window.OY) window.OY.noteInactive('chat');
+  // ✅ 隐藏底部导航栏，避免遮挡弹窗底部按钮（与问卷 overlay 一致）
+  var tb1 = document.getElementById('tabbar');
+  if (tb1) tb1.style.display = 'none';
   var titleEl = document.getElementById('qzTitle');
   var briefEl = document.getElementById('qzBrief');
   var btnEl = document.getElementById('qzStartBtn');
@@ -11634,6 +12179,9 @@ function closeQzModal(){
   if (window.OY) window.OY.noteInactive('quiz');
   var el = document.getElementById('qzModal');
   if (el) el.classList.remove('active');
+  // ✅ 恢复底部导航栏
+  var tb2 = document.getElementById('tabbar');
+  if (tb2) tb2.style.display = 'flex';
 }
 function startQzFromModal(){
   closeQzModal();
@@ -11648,7 +12196,7 @@ function openVoiceChoice(){
   var el = document.getElementById('voiceChoiceOverlay');
   if (el) el.classList.add('active');
   // 同步当前选择
-  var cur = (ttsConfig.language || 'cantonese') + '-' + (ttsConfig.voiceGender || 'female');
+  var cur = ((ttsConfig.voiceGender || 'female') === 'male' ? 'male' : 'female') + '-cantonese';
   document.querySelectorAll('#voiceChoiceOverlay .v10-voice-opt').forEach(function(o){
     o.classList.toggle('selected', o.getAttribute('data-voice') === cur);
   });
@@ -11673,6 +12221,8 @@ function saveVoiceChoice(){
   ttsConfig.language = voice.indexOf('cantonese')>-1 ? 'cantonese' : 'mandarin';
   ttsConfig.voiceGender = voice.indexOf('female')>-1 ? 'female' : 'male';
   try{ localStorage.setItem('wuyin_tts_config', JSON.stringify(ttsConfig)); }catch(e){}
+  try{ localStorage.setItem('wuyin_tts_language', ttsConfig.language); }catch(e){}
+  try{ localStorage.setItem('wuyin_tts_gender', ttsConfig.voiceGender); }catch(e){}
   // 同步"我的"页面副标题
   var sub = document.getElementById('voiceSettingsSubtitle');
   if (sub) sub.textContent = lang + gender;
@@ -14217,7 +14767,7 @@ setTimeout(function(){ try { trimMeRowOverflow(); } catch(e) {} }, 200);
       try { renderHealingRecCards(); } catch(e) {}
       try { renderRecSourceBadges(); } catch(e) {}
       // 切换用户后重渲聊天视图，避免残留上一账号的消息
-      try { var cm = document.getElementById('chatMessages'); if (cm && typeof renderChatHistory === 'function'){ cm.innerHTML = ''; if(renderChatHistory()){ var sc=document.querySelector('.chat-scroll'); if(sc) setTimeout(function(){ sc.scrollTop=sc.scrollHeight; }, 200); } else if(typeof addBotMsg==='function'){ addBotMsg('您好呀！我是'+ (window.avatarName||'小五') +'，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome'); } } } catch(e) {}
+      try { var cm = document.getElementById('chatMessages'); if (cm && typeof renderChatHistory === 'function'){ cm.innerHTML = ''; if(renderChatHistory()){ var sc=document.querySelector('.chat-scroll'); if(sc) setTimeout(function(){ sc.scrollTop=sc.scrollHeight; }, 200); } else if(typeof addBotMsg==='function'){ addBotMsg((typeof ttsConfig!=='undefined' && ttsConfig.language==='cantonese') ? '您好呀！我係'+ (window.avatarName||'小五') +'，您嘅五音疗愈伙伴。今日心情点呀？可以同我讲吓。' : '您好呀！我是'+ (window.avatarName||'小五') +'，您的五音疗愈伙伴。今天心情怎么样？可以跟我说说。', 'welcome'); } } } catch(e) {}
       try { if (typeof updateRecordsStats === 'function') updateRecordsStats(); } catch(e) {}
       try { loadVoiceDiary(); } catch(e) {}
     }, 400);

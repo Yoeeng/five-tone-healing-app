@@ -14,16 +14,16 @@ const ROOT = __dirname;
 const PORT = process.env.PORT || 8080;
 
 // 阿里云 DashScope CosyVoice 端点
-const DASHSCOPE_TTS_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2audio/audio-generation';
+const DASHSCOPE_TTS_URL = 'https://dashscope.aliyuncs.com/api/v1/services/audio/tts/SpeechSynthesizer';
 
 const DASHSCOPE_CHAT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 // 支持的 CosyVoice 音色（按"语言+性别"映射）
 const COSY_VOICE_MAP = {
-  'mandarin_female': 'longxiaochun',   // 温柔女声
-  'mandarin_male':   'longcheng',      // 沉稳男声
-  'cantonese_female':'longwan',        // 粤语女声
-  'cantonese_male':  'longfei'         // 粤语男声
+  'mandarin_female': 'longxiaochun_v3',   // 普通话女声 (cosyvoice-v3-flash)
+  'mandarin_male':   'longanyang',        // 普通话男声 (阳光大男孩)
+  'cantonese_female':'longanhuan_v3',     // 粤语女声 (需方言指令)
+  'cantonese_male':  'longanyue_v3'       // 粤语男声 (内置粤语)
 };
 
 const MIME = {
@@ -72,17 +72,19 @@ function fetchAudioFromUrl(audioUrl, maxRedirects) {
   return new Promise((resolve, reject) => {
     if (maxRedirects <= 0) return reject(new Error('Too many redirects'));
     const u = new URL(audioUrl);
+    const isHttps = u.protocol === 'https:';
+    const mod = isHttps ? https : http;
     const opts = {
       method: 'GET',
       hostname: u.hostname,
       path: u.pathname + u.search,
-      port: u.port || 443,
+      port: u.port || (isHttps ? 443 : 80),
       headers: {
         'User-Agent': 'wuyin-healing-tts-proxy/1.0',
         'Accept': 'audio/mpeg, audio/*;q=0.9, */*;q=0.5'
       }
     };
-    const req2 = https.request(opts, res => {
+    const req2 = mod.request(opts, res => {
       // 跟随 3xx
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         const next = new URL(res.headers.location, audioUrl).toString();
@@ -104,14 +106,22 @@ function fetchAudioFromUrl(audioUrl, maxRedirects) {
 }
 
 // 调用 DashScope CosyVoice 同步 TTS 接口 → 返回 MP3 Buffer
-function callDashScopeTTS(apiKey, text, voice, rate) {
+function callDashScopeTTS(apiKey, text, voice, model, instruction) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      model: 'cosyvoice-v2',
-      voice: voice,
+    model = (model && model.trim()) || 'cosyvoice-v3-flash';
+    const inp = {
       text: text,
-      audio_parameter: { format: 'mp3', sample_rate: 24000, volume: 50, rate: 1.0, pitch: 1.0 },
-      // 注：cosyvoice-v2 使用 _v2 后缀音色（如 longxiaochun_v2），兼容 v1 的 API 格式
+      voice: voice,
+      format: 'wav',
+      sample_rate: 16000,
+      volume: 50,
+      rate: 1.0,
+      pitch: 1.0
+    };
+    if (instruction && instruction.trim()) inp.instruction = instruction.trim();
+    const body = JSON.stringify({
+      model: model,
+      input: inp
     });
     const u = new URL(DASHSCOPE_TTS_URL);
     const req = https.request({
@@ -136,7 +146,7 @@ function callDashScopeTTS(apiKey, text, voice, rate) {
         let data;
         try { data = JSON.parse(raw); }
         catch (e) { return reject(new Error('DashScope 非 JSON 响应: ' + raw.slice(0, 200))); }
-        const audioUrl = data && data.output && data.output.audio_url;
+        const audioUrl = data && data.output && data.output.audio && data.output.audio.url;
         if (!audioUrl) {
           return reject(new Error('DashScope 响应缺少 audio_url: ' + raw.slice(0, 200)));
         }
@@ -175,6 +185,7 @@ function sendBuffer(res, code, buf, contentType) {
 }
 
 async function handleTTS(req, res) {
+  const __t0 = process.hrtime();
   try {
     const raw = await readBody(req);
     let payload = {};
@@ -186,6 +197,8 @@ async function handleTTS(req, res) {
     const voice = (payload.voice || '').trim();
     const language = (payload.language || 'mandarin').toLowerCase();
     const gender = (payload.gender || 'female').toLowerCase();
+    const model = (payload.model || '').trim();
+    const instruction = (payload.instruction || '').trim();
 
     if (!apiKey) return sendJSON(res, 400, { error: '缺少 apiKey（请先在"我的"页设置 DashScope API Key）' });
     if (!text)  return sendJSON(res, 400, { error: '缺少 text' });
@@ -199,8 +212,9 @@ async function handleTTS(req, res) {
 
     console.log('[tts] lang=' + language + ' gender=' + gender + ' voice=' + resolvedVoice + ' text=' + text.slice(0, 30) + '...');
 
-    const mp3 = await callDashScopeTTS(apiKey, text, resolvedVoice);
-    sendBuffer(res, 200, mp3, 'audio/mpeg');
+    const mp3 = await callDashScopeTTS(apiKey, text, resolvedVoice, model, instruction);
+    const __d = process.hrtime(__t0); console.log('[tts-time]', (__d[0]*1000+__d[1]/1e6).toFixed(0) + 'ms', text.slice(0,16));
+    sendBuffer(res, 200, mp3, 'audio/wav');
   } catch (e) {
     console.error('[tts] error:', e.message);
     sendJSON(res, 500, { error: e.message || 'TTS failed' });
@@ -232,11 +246,13 @@ async function handleChat(req, res) {
       return sendJSON(res, 400, { error: '缺少 messages' });
     }
 
+    const wantStream = !!(payload.stream);
     const body = JSON.stringify({
       model: model,
       messages: messages,
       max_tokens: maxTokens,
-      temperature: temperature
+      temperature: temperature,
+      stream: wantStream ? true : undefined
     });
 
     const controller = new AbortController();
@@ -258,6 +274,30 @@ async function handleChat(req, res) {
       const errText = await dashResp.text();
       console.error('[chat] DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 300));
       return sendJSON(res, 500, { error: 'DashScope HTTP ' + dashResp.status + ': ' + errText.slice(0, 200) });
+    }
+
+    if (wantStream) {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+      });
+      const reader = dashResp.body && dashResp.body.getReader ? dashResp.body.getReader() : null;
+      if (reader) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (value && value.byteLength) res.write(Buffer.from(value));
+          }
+        } catch (err) {
+          console.error('[chat stream]', err.message);
+        }
+      }
+      try { res.end(); } catch(e){}
+      return;
     }
 
     const data = await dashResp.json();
@@ -352,6 +392,91 @@ function sendStaticFile(req, res, filePath, stat) {
   stream.pipe(res);
 }
 
+
+async function handleASR(req, res) {
+  const __t0 = process.hrtime();
+  try {
+    const raw = await readBody(req);
+    let payload = {};
+    try { payload = JSON.parse(raw); }
+    catch (e) { return sendJSON(res, 400, { error: 'Invalid JSON body' }); }
+    const apiKey = (payload.apiKey || '').trim();
+    const audioB64 = (payload.audio || '').trim();
+    const format = (payload.format || 'wav');
+    const sampleRate = Number(payload.sampleRate) || 16000;
+    if (!apiKey || !apiKey.startsWith('sk-')) return sendJSON(res, 400, { error: '缺失/错误的 apiKey' });
+    if (!audioB64) return sendJSON(res, 400, { error: '缺少 audio' });
+    const audioBuf = Buffer.from(audioB64, 'base64');
+
+    const text = await new Promise((resolve, reject) => {
+      const crypto = require('crypto');
+      const taskId = crypto.randomUUID();
+      let ws;
+      try {
+        ws = new WebSocket('wss://dashscope.aliyuncs.com/api-ws/v1/inference', {
+          headers: { Authorization: 'Bearer ' + apiKey }
+        });
+      } catch (e) { return reject(e); }
+      let transcript = '';
+      let sentAudio = false;
+      const timer = setTimeout(function () {
+        try { ws.close(); } catch (e) {}
+        reject(new Error('ASR 超时'));
+      }, 120000);
+      ws.onopen = function () {
+        // 正确协议：参数放 payload，必须带 function 和 payload.input:{}，头部带 task_id/streaming
+        ws.send(JSON.stringify({
+          header: { action: 'run-task', task_id: taskId, streaming: 'duplex' },
+          payload: {
+            task_group: 'audio',
+            task: 'asr',
+            function: 'recognition',
+            model: 'paraformer-realtime-v2',
+            input: {},
+            parameters: { format: format, sample_rate: sampleRate, language_hints: ['zh', 'yue'] }
+          }
+        }));
+      };
+      ws.onmessage = function (ev) {
+        const data = ev.data;
+        if (typeof data !== 'string') return;
+        let j;
+        try { j = JSON.parse(data); } catch (e) { return; }
+        const h = j.header || {};
+        const evt = h.event; // 服务端事件字段是 event，不是 action
+        if (evt === 'task-started' && !sentAudio) {
+          sentAudio = true;
+          ws.send(audioBuf);
+          // finish-task 必须带 payload.input:{}
+          ws.send(JSON.stringify({ header: { action: 'finish-task', task_id: taskId, streaming: 'duplex' }, payload: { input: {} } }));
+        }
+        if (evt === 'task-finished') {
+          clearTimeout(timer);
+          try { ws.close(); } catch (e) {}
+          resolve(transcript);
+        }
+        if (evt === 'error' || evt === 'task-failed') {
+          clearTimeout(timer);
+          try { ws.close(); } catch (e) {}
+          reject(new Error('ASR ' + evt + ': ' + ((h.error_message) || '协议错误')));
+        }
+        const out = j.payload && j.payload.output;
+        const s = out && out.sentence;
+        if (s && typeof s.text === 'string' && s.text && s.sentence_end === true) {
+          // 只累加"句子已结束"的最终结果，跳过中间结果碎片，避免重复/碎片化
+          transcript += s.text;
+        }
+      };
+      ws.onerror = function () { clearTimeout(timer); reject(new Error('ASR 连接失败（检查 API Key/是否开通语音识别）')); };
+    });
+
+    const __d = process.hrtime(__t0); console.log('[asr-time]', (__d[0]*1000+__d[1]/1e6).toFixed(0) + 'ms', 'text=', text);
+    return sendJSON(res, 200, { text: text });
+  } catch (e) {
+    return sendJSON(res, 500, { error: String((e && e.message) || e) });
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   // CORS 预检
   if (req.method === 'OPTIONS') {
@@ -378,6 +503,14 @@ const server = http.createServer(async (req, res) => {
   }
   if (urlPath === '/tts') {
     return sendJSON(res, 200, { ok: true, hint: 'POST {apiKey, text, voice?, language?, gender?}' });
+  }
+
+  // ASR 代理（DashScope Paraformer 实时语音识别）
+  if (urlPath === '/asr' && req.method === 'POST') {
+    return handleASR(req, res);
+  }
+  if (urlPath === '/asr') {
+    return sendJSON(res, 200, { ok: true, hint: 'POST {apiKey, audio(base64), format, sampleRate}' });
   }
 
   // Chat 代理（DashScope qwen-plus）
