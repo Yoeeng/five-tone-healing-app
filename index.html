@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924ao"></script>
-<script src="oy_admin.js?v=20260924ao"></script>
+<script src="oy_account.js?v=20260924av"></script>
+<script src="oy_admin.js?v=20260924av"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -295,7 +295,7 @@
   }
   .home-btn:active { transform:scale(.96); box-shadow:0 1px 0 rgba(192,57,43,.06), 0 3px 8px rgba(31,26,20,.10); }
   .home-btn ion-icon { font-size:34px; color:var(--v10-cinnabar); }
-  .home-btn span { font-size:17px; color:var(--v10-ink); font-weight:600; letter-spacing:1px; font-family:var(--v10-font-kai); }
+  .home-btn span { font-size:18px; color:var(--v10-ink); font-weight:600; letter-spacing:1px; font-family:var(--v10-font-kai); }
 
   /* V10：进入五音疗愈按钮 · 5 音 5 色横向渐变（角绿/徵红/宫黄/商蓝/羽玄） */
   .home-btn-green {
@@ -366,7 +366,7 @@
   /* 气泡文字：17→20px */
   .bubble .b{background:var(--paper-pure);padding:14px 16px;border-radius:18px 18px 18px 4px;font-family:var(--font-kai);font-size:20px;line-height:1.7;color:var(--ink);box-shadow:var(--shadow-1);border:1px solid var(--paper-edge)}
   .bubble.user .b{border-radius:18px 18px 4px 18px;background:var(--cinnabar-s);border-color:transparent;color:var(--ink)}
-  .bubble .t{font-family:var(--font-en);font-size:16px;color:var(--ink-faint);margin-top:4px}
+  .bubble .t{font-family:var(--font-en);font-size:18px;color:var(--ink-faint);margin-top:4px}
   .bubble .replay-btn{margin-left:12px;padding:6px 16px;border:none;border-radius:18px;background:#3e8e5a;color:#fff;font-size:19px;font-family:var(--font-kai);line-height:1.3;vertical-align:middle;cursor:pointer;box-shadow:0 2px 8px rgba(62,142,90,.28);transition:opacity .2s}
   .bubble .replay-btn:active{opacity:.75}
 
@@ -380,7 +380,7 @@
   .chat-voice .wave-bar:nth-child(5){height:18px;animation-delay:0.15s}
   .chat-voice .wave-bar:nth-child(6){height:12px;animation-delay:0.25s}
   .chat-voice .wave-bar:nth-child(7){height:20px;animation-delay:0.05s}
-  .chat-voice .dur{margin-left:8px;font-family:var(--font-en);font-size:16px;color:var(--ink-faint)}
+  .chat-voice .dur{margin-left:8px;font-family:var(--font-en);font-size:17px;color:var(--ink-faint)}
   @keyframes waveAnim{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1)}}
 
   /* 建议标签：字号 +3px（17→20） */
@@ -641,7 +641,7 @@
   .healing-content .greet{margin-bottom:18px}
   .healing-content .greet .hi{font-family:var(--font-kai);font-size:18px;color:var(--ink-soft);letter-spacing:.05em}
   .healing-content .greet .name{font-family:var(--font-serif);font-size:34px;font-weight:600;color:var(--ink);line-height:1.3;margin-top:4px;letter-spacing:.05em}
-  .healing-content .greet .date{font-family:var(--font-kai);font-size:17px;letter-spacing:.1em;color:var(--ink-soft);margin-top:6px}
+  .healing-content .greet .date{font-family:var(--font-kai);font-size:18px;letter-spacing:.1em;color:var(--ink-soft);margin-top:6px}
 
   /* 今日推荐大卡 · 配色由 JS 注入 --accent-color / --accent-deep / --accent-organ */
   .healing-today{
@@ -795,7 +795,7 @@
   .tone-row.yu   .ico{--ico-tint:#3B6E8F}
   .tone-row .info{flex:1;min-width:0}
   .tone-row .info .cn{font-family:var(--font-serif);font-size:21px;font-weight:600;color:var(--ink);line-height:1.3}
-  .tone-row .info .sub{font-family:var(--font-kai);font-size:15px;color:var(--ink-faint);margin-top:4px;letter-spacing:.05em;line-height:1.4}
+  .tone-row .info .sub{font-family:var(--font-kai);font-size:18px;color:var(--ink-faint);margin-top:4px;letter-spacing:.05em;line-height:1.4}
   .tone-row .play-ic{
     width:40px;height:40px;border-radius:50%;
     background:var(--cinnabar-s);color:var(--cinnabar);
@@ -858,14 +858,14 @@
     margin-bottom:20px; border-left:3px solid #C9A94E;
   }
   .intro-album-title { font-size:17px; font-weight:700; color:var(--ink); margin-bottom:8px; }
-  .intro-album-desc { font-size:15px; color:#7A7A7A; line-height:1.7; margin-bottom:10px; }
+  .intro-album-desc { font-size:18px; color:#7A7A7A; line-height:1.7; margin-bottom:10px; }
   .intro-album-tracks { display:flex; flex-direction:column; gap:6px; }
-  .intro-album-track { font-size:15px; color:#5A5A5A; line-height:1.5; }
+  .intro-album-track { font-size:18px; color:#5A5A5A; line-height:1.5; }
   .intro-album-tone { font-weight:700; margin-right:4px; }
 
   /* other modes section · 文字 +2 字号 */
   .intro-other-title { font-size:21px; font-weight:600; color:var(--ink); margin-bottom:6px; }
-  .intro-other-sub { font-size:16px; color:#8A8A8A; margin-bottom:16px; }
+  .intro-other-sub { font-size:18px; color:#8A8A8A; margin-bottom:16px; }
   .intro-mode-item {
     display:flex; align-items:center; gap:12px; padding:16px 18px;
     background:var(--card-solid); border-radius:12px; margin-bottom:10px;
@@ -922,7 +922,7 @@
     box-shadow:0 2px 6px rgba(0,0,0,.04);
   }
   .duration-circle .num{ font-size:24px; font-weight:700; line-height:1; }
-  .duration-circle .unit{ font-size:15px; margin-top:2px; letter-spacing:.05em; }
+  .duration-circle .unit{ font-size:18px; margin-top:2px; letter-spacing:.05em; }
   .duration-circle:hover{ border-color:var(--gold); color:var(--ink); }
   .duration-circle.active{
     background:var(--cinnabar); color:#fff; border-color:var(--cinnabar);
@@ -1005,7 +1005,7 @@
   }
   .player-top-btn ion-icon { font-size:22px; color:#fff; }
   .player-top-center { text-align:center; flex:1; }
-  .player-top-center h3 { font-size:18px; font-weight:700; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.3); }
+  .player-top-center h3 { font-size:30px; font-weight:700; color:#fff; text-align:center; text-shadow:0 2px 6px rgba(0,0,0,.4); }
   .player-top-center p { font-size:16px; color:rgba(255,255,255,.75); margin-top:2px; }
 
   /* player visual area */
@@ -1054,13 +1054,13 @@
     width:16px; height:16px; border-radius:50%; background:#fff;
     box-shadow:0 2px 6px rgba(0,0,0,.2);
   }
-  .player-time { display:flex; justify-content:space-between; font-size:16px; color:rgba(255,255,255,.6); margin-top:8px; }
+  .player-time { display:flex; justify-content:space-between; font-size:18px; color:rgba(255,255,255,.6); margin-top:8px; }
 
   /* immersive button */
   .player-immersive-btn {
     margin-top:24px; padding:12px 32px; border-radius:20px;
     background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-    color:#fff; font-size:15px; cursor:pointer; font-family:inherit;
+    color:#fff; font-size:22px; cursor:pointer; font-family:inherit; padding:14px 36px;
     backdrop-filter:blur(4px);
   }
   .player-immersive-btn:active { background:rgba(255,255,255,.25); }
@@ -1133,18 +1133,18 @@
   }
   .rating-sparkles { margin-bottom:12px; }
   .rating-sparkles ion-icon { font-size:36px; color:var(--gold); }
-  .rating-card h3 { font-size:22px; color:#fff; font-weight:700; margin-bottom:6px; }
-  .rating-card p { font-size:15px; color:rgba(255,255,255,.7); margin-bottom:24px; }
+  .rating-card h3 { font-size:30px; color:#fff; font-weight:700; margin-bottom:6px; }
+  .rating-card p { font-size:25px; color:rgba(255,255,255,.7); margin-bottom:24px; }
   .rating-stars { display:flex; gap:8px; justify-content:center; margin-bottom:12px; }
   .rating-star {
     font-size:42px; cursor:pointer; color:rgba(255,255,255,.25); transition:all .2s;
   }
   .rating-star.active { color:#F39C12; }
-  .rating-label-text { font-size:16px; color:rgba(255,255,255,.5); margin-bottom:24px; min-height:20px; }
+  .rating-label-text { font-size:18px; color:rgba(255,255,255,.5); margin-bottom:24px; min-height:20px; }
   .rating-voice-btn {
     padding:12px 24px; border-radius:20px; background:rgba(255,255,255,.15);
     border:1px solid rgba(255,255,255,.25); color:#fff;
-    font-size:17px; cursor:pointer; font-family:inherit;
+    font-size:19px; cursor:pointer; font-family:inherit;
     display:inline-flex; align-items:center; gap:8px;
     backdrop-filter:blur(4px);
   }
@@ -1152,7 +1152,7 @@
   .rating-submit-btn {
     margin-top:16px; padding:14px 48px; border-radius:16px;
     background:var(--green); border:none; color:#fff;
-    font-size:16px; font-weight:600; cursor:pointer; font-family:inherit;
+    font-size:21px; font-weight:600; cursor:pointer; font-family:inherit;
   }
   .rating-submit-btn:active { transform:scale(.96); }
 
@@ -1204,7 +1204,7 @@
     background:var(--card); border-radius:16px; padding:10px 6px 8px;
     box-shadow:0 2px 8px rgba(100,100,80,.06);
   }
-  .data-legend-hint { padding:0 10px 8px; text-align:center; font-size:15px; color:#9A9A9A; }
+  .data-legend-hint { padding:0 10px 8px; text-align:center; font-size:18px; color:#9A9A9A; }
 
   .data-usage-three {
     display:flex; padding:14px 0;
@@ -1217,7 +1217,7 @@
   }
   .data-usage-icon-bg ion-icon { font-size:22px; }
   .data-usage-value { font-size:22px; font-weight:700; color:#2C2C2C; }
-  .data-usage-label { font-size:15px; color:#9A9A9A; margin-top:2px; }
+  .data-usage-label { font-size:18px; color:#9A9A9A; margin-top:2px; }
   .data-usage-divider { width:1px; background:var(--border); }
 
   .data-records-card {
@@ -1232,12 +1232,12 @@
   }
   .data-record-icon-bg ion-icon { font-size:20px; }
   .data-record-info { flex:1; }
-  .data-record-name { font-size:15px; font-weight:600; color:#2C2C2C; }
-  .data-record-date { font-size:15px; color:#9A9A9A; margin-top:2px; }
+  .data-record-name { font-size:18px; font-weight:600; color:#2C2C2C; }
+  .data-record-date { font-size:18px; color:#9A9A9A; margin-top:2px; }
   .data-record-right { text-align:right; }
   .data-record-duration { display:flex; align-items:center; gap:3px; justify-content:flex-end; }
   .data-record-duration ion-icon { font-size:16px; color:#9A9A9A; }
-  .data-record-duration-text { font-size:15px; color:#9A9A9A; }
+  .data-record-duration-text { font-size:18px; color:#9A9A9A; }
   .data-record-rating { display:flex; gap:2px; justify-content:flex-end; margin-top:3px; }
   .data-record-rating ion-icon { font-size:17px; }
   .data-record-rating .star-filled { color:var(--gold); }
@@ -1298,7 +1298,7 @@
   .profile-user-info { flex:1; }
   .profile-user-name { font-size:20px; font-weight:700; color:#fff; }
   .profile-user-sub { font-size:17px; color:rgba(255,255,255,.85); margin-top:4px; }
-  .profile-user-edit-hint { font-size:15px; color:rgba(255,255,255,.6); font-style:italic; margin-top:4px; }
+  .profile-user-edit-hint { font-size:18px; color:rgba(255,255,255,.6); font-style:italic; margin-top:4px; }
   .profile-user-chevron { flex-shrink:0; }
   .profile-user-chevron ion-icon { font-size:22px; color:rgba(255,255,255,.6); }
 
@@ -1320,7 +1320,7 @@
   .profile-menu-icon-bg ion-icon { font-size:20px; }
   .profile-menu-info { flex:1; }
   .profile-menu-title { font-size:17px; font-weight:600; color:#2C2C2C; }
-  .profile-menu-subtitle { font-size:16px; color:#9A9A9A; margin-top:2px; }
+  .profile-menu-subtitle { font-size:18px; color:#9A9A9A; margin-top:2px; }
   .profile-menu-chevron ion-icon { font-size:20px; color:#D0CCC4; }
 
   /* voice settings card */
@@ -1349,7 +1349,7 @@
   }
   .profile-speed-btn:active { background:rgba(107,142,107,.25); }
   .profile-speed-btn ion-icon { font-size:16px; color:var(--green); }
-  .profile-speed-value { font-size:15px; color:#2C2C2C; font-weight:600; min-width:80px; text-align:center; }
+  .profile-speed-value { font-size:18px; color:#2C2C2C; font-weight:600; min-width:80px; text-align:center; }
 
   /* voice setting rows & test btn */
   .voice-setting-row {
@@ -1483,9 +1483,9 @@
   }
   .healing-rec-msg-play ion-icon { font-size:17px; color:#fff; }
   .healing-rec-msg-info { padding:12px; display:flex; flex-direction:column; }
-  .healing-rec-msg-name { font-size:16px; font-weight:700; color:#2C2C2C; margin-bottom:4px; }
-  .healing-rec-msg-desc { font-size:16px; color:#7A7A7A; line-height:1.5; margin-bottom:8px; }
-  .healing-rec-msg-action { font-size:17px; color:#6B8E6B; font-weight:600; }
+  .healing-rec-msg-name { font-size:20px; font-weight:700; color:#2C2C2C; margin-bottom:4px; }
+  .healing-rec-msg-desc { font-size:20px; color:#7A7A7A; line-height:1.5; margin-bottom:8px; }
+  .healing-rec-msg-action { font-size:20px; color:#6B8E6B; font-weight:600; }
 
   /* ========== PLAYER GUIDE BUBBLE ========== */
   .player-guide-bubble {
@@ -1559,7 +1559,7 @@
     background: var(--green); border-color: var(--green);
   }
   .journey-label {
-    font-size: 15px; color: rgba(255,255,255,0.6); transition: all 0.4s;
+    font-size: 19px; color: rgba(255,255,255,0.6); transition: all 0.4s;
   }
   .journey-label.active { color: var(--gold); font-weight: 600; }
   .journey-label.completed { color: var(--green); }
@@ -1665,8 +1665,8 @@
     border: 2px solid var(--border);
   }
   .family-member-info { flex: 1; }
-  .family-member-name { font-size: 16px; font-weight: 600; color: #2C2C2C; }
-  .family-member-time { font-size: 15px; color: #9A9A9A; margin-top: 2px; }
+  .family-member-name { font-size: 18px; font-weight: 600; color: #2C2C2C; }
+  .family-member-time { font-size: 18px; color: #9A9A9A; margin-top: 2px; }
 
   /* ========== FEATURE 8: ACHIEVEMENTS ========== */
   .achievement-section { margin: 0 16px 20px; }
@@ -1704,10 +1704,10 @@
   }
   .diary-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .diary-card-mic { color: var(--green); font-size: 16px; }
-  .diary-card-date { font-size: 16px; color: #9A9A9A; }
-  .diary-card-wuyin { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .diary-card-date { font-size: 18px; color: #9A9A9A; }
+  .diary-card-wuyin { font-size: 18px; font-weight: 600; color: var(--ink); }
   .diary-card-stars { color: var(--gold); font-size: 16px; margin-left: auto; }
-  .diary-card-text { font-size: 17px; color: #5A5A5A; line-height: 1.6; }
+  .diary-card-text { font-size: 18px; color: #5A5A5A; line-height: 1.6; }
   .diary-empty { text-align: center; padding: 20px; font-size: 17px; color: #9A9A9A; }
 
   /* =============================================================
@@ -1723,10 +1723,10 @@
   .diary-content{padding:24px 20px 100px}
   .diary-meta{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed var(--paper-edge)}
   .diary-meta .av{width:36px;height:36px;border-radius:50%;background:url('assets/images/user_avatar.jpg') center/cover;flex-shrink:0}
-  .diary-meta .info .name{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:600;color:var(--ink)}
-  .diary-meta .info .dt{font-family:'Noto Serif SC',serif;font-size:16px;color:var(--ink-faint);margin-top:2px;letter-spacing:.05em}
-  .diary-meta .tag{margin-left:auto;padding:4px 12px;border-radius:100px;background:var(--yue-jue-bg);color:var(--yue-jue);font-family:'Noto Serif SC',serif;font-size:17px;font-weight:500}
-  .diary-text{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--ink-soft);line-height:1.85;margin-bottom:18px;letter-spacing:.02em}
+  .diary-meta .info .name{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;color:var(--ink)}
+  .diary-meta .info .dt{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--ink-faint);margin-top:2px;letter-spacing:.05em}
+  .diary-meta .tag{margin-left:auto;padding:4px 12px;border-radius:100px;background:var(--yue-jue-bg);color:var(--yue-jue);font-family:'Noto Serif SC',serif;font-size:19px;font-weight:500}
+  .diary-text{font-family:'Noto Serif SC',serif;font-size:20px;color:var(--ink-soft);line-height:1.85;margin-bottom:18px;letter-spacing:.02em}
   .diary-quote{background:var(--paper-warm);border-left:3px solid var(--cinnabar);padding:12px 16px;border-radius:0 10px 10px 0;margin-bottom:18px;font-family:'Noto Serif SC',serif;font-size:18px;color:var(--ink);line-height:1.7;position:relative}
   .diary-quote::before{content:'「';position:absolute;top:6px;left:6px;font-size:26px;color:var(--cinnabar);opacity:.25}
   .diary-wave{background:var(--paper-pure);border:1px solid var(--paper-edge);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:18px}
@@ -1977,7 +1977,7 @@
     background: linear-gradient(90deg, var(--v10-cinnabar) 0%, var(--v10-zhi) 100%);
     border-radius: 3px; transition: width .3s var(--v10-ease);
   }
-  .questionnaire-home-sub { font-size: 15px; color: var(--v10-ink-faint); }
+  .questionnaire-home-sub { font-size: 18px; color: var(--v10-ink-faint); }
   .questionnaire-home-chevron { color: var(--v10-ink-faint); font-size: 20px; flex-shrink: 0; }
 
   /* ========== FEATURE 9: QUESTIONNAIRE ========== */
@@ -2008,7 +2008,7 @@
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(0,0,0,0.08); flex-shrink: 0;
   }
-  .questionnaire-round-info { font-size: 15px; color: #4A4A4A; margin-bottom: 8px; text-align: center; text-shadow: 0 0 6px rgba(255,255,255,0.8); }
+  .questionnaire-round-info { font-size: 18px; color: #4A4A4A; margin-bottom: 8px; text-align: center; text-shadow: 0 0 6px rgba(255,255,255,0.8); }
   .questionnaire-progress-track {
     width: 100%; height: 10px; border-radius: 5px; background: var(--border); overflow: hidden;
   }
@@ -2016,7 +2016,7 @@
     height: 100%; background: var(--gold); border-radius: 5px; transition: width 0.3s ease;
   }
   .questionnaire-body { flex: 1; padding: 24px 20px; overflow-y: auto; min-height: 0; }
-  .questionnaire-question-num { font-size: 15px; color: #9A9A9A; margin-bottom: 10px; }
+  .questionnaire-question-num { font-size: 18px; color: #9A9A9A; margin-bottom: 10px; }
   .questionnaire-question-text { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.6; margin-bottom: 24px; }
   .questionnaire-options { display: flex; flex-direction: column; gap: 12px; }
   .questionnaire-option {
@@ -2345,7 +2345,7 @@
     color:var(--ink);line-height:1.35;letter-spacing:2px;
   }
   .home-greet .date{
-    text-align:right;font-family:var(--font-kai);font-size:17px;
+    text-align:right;font-family:var(--font-kai);font-size:18px;
     color:var(--ink-soft);letter-spacing:0;line-height:1.5;font-weight:500;
   }
   .home-greet .date .small{font-size:17px;color:var(--ink-faint);display:none}
@@ -2453,10 +2453,10 @@
     width:10px;height:10px;background:#4AB85B;border-radius:50%;
     border:2px solid var(--paper);
   }
-  .xiaowu-bubble .info{flex:1;min-width:0}
+  .xiaowu-bubble .info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
   .xiaowu-bubble .name{
     font-family:var(--font-serif);
-    font-size:19px;font-weight:600;color:var(--ink);
+    font-size:21px;font-weight:600;color:var(--ink);
     margin-bottom:2px;
     display:flex;align-items:center;gap:8px;
     line-height:1.3;letter-spacing:1px;
@@ -2466,9 +2466,11 @@
     width:7px;height:7px;border-radius:50%;background:#4AB85B;flex-shrink:0;
   }
   .xiaowu-bubble .name .mode{
-    font-family:var(--font-kai);font-size:17px;color:var(--yue-jue);
+    font-family:var(--font-kai);font-size:21px;color:var(--yue-jue);
     font-weight:500;white-space:nowrap;
   }
+  .xiaowu-bubble .name .nm{font-size:23px;font-weight:700;color:var(--ink)}
+  .xiaowu-bubble .name .dotsep{color:var(--yue-jue);font-size:21px;line-height:1}
   .xiaowu-bubble .msg{
     font-family:var(--font-kai);font-size:18px;color:var(--ink-soft);
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -2546,7 +2548,7 @@
     color:var(--ink);margin-bottom:4px;line-height:1.3;letter-spacing:1px;
   }
   .survey-text p{
-    font-family:var(--font-kai);font-size:16px;color:var(--ink-soft);line-height:1.5;
+    font-family:var(--font-kai);font-size:18px;color:var(--ink-soft);line-height:1.5;white-space:nowrap;
   }
   .survey-row .arrow{color:var(--ink-faint);font-size:18px;flex-shrink:0}
 
@@ -2791,7 +2793,7 @@
     box-shadow:var(--v10-shadow-1);
   }
   .records-hero::before{content:'志';position:absolute;top:-10px;right:20px;font-family:var(--v10-font-serif);font-size:160px;font-weight:700;color:rgba(110,147,86,.10);line-height:1}
-  .records-hero .eyebrow{font-family:var(--v10-font-serif);font-size:17px;letter-spacing:.35em;color:var(--v10-jue);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+  .records-hero .eyebrow{font-family:var(--v10-font-serif);font-size:24px;letter-spacing:.35em;color:var(--v10-jue);text-transform:uppercase;margin-bottom:8px;font-weight:600}
   .records-hero h2{font-family:var(--v10-font-serif);font-size:26px;font-weight:600;color:var(--v10-ink);margin-bottom:6px;letter-spacing:.05em}
   .records-hero p{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-soft);line-height:1.7}
   /* ✅ 推荐调式行（替代健康分） */
@@ -2821,10 +2823,10 @@
   .emo-bar{background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);border-radius:16px;padding:16px 18px;box-shadow:var(--v10-shadow-1);margin-bottom:14px}
   .emo-bar h4{font-family:var(--v10-font-serif);font-size:19px;font-weight:600;color:var(--v10-ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .emo-bar h4::before{content:'';width:3px;height:14px;background:var(--v10-cinnabar);border-radius:2px}
-  .emo-bar .emo-sub{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);margin-bottom:14px}
+  .emo-bar .emo-sub{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);margin-bottom:14px}
   .emo-row{display:grid;grid-template-columns:64px 1fr 50px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--v10-paper-edge)}
   .emo-row:last-child{border-bottom:none}
-  .emo-row .lbl{font-family:var(--v10-font-serif);font-size:17px;font-weight:600}
+  .emo-row .lbl{font-family:var(--v10-font-serif);font-size:19px;font-weight:600}
   .emo-row .bar{height:14px;background:var(--v10-paper-warm);border-radius:7px;overflow:hidden;position:relative}
   .emo-row .bar .fill{height:100%;border-radius:7px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
   .emo-row .bar .fill::after{content:'';position:absolute;right:6px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.7)}
@@ -2834,7 +2836,7 @@
   .word-cloud{background:var(--v10-paper-pure);border:1px solid var(--v10-paper-edge);border-radius:16px;padding:18px;box-shadow:var(--v10-shadow-1);margin-bottom:14px}
   .word-cloud h4{font-family:var(--v10-font-serif);font-size:19px;font-weight:600;color:var(--v10-ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .word-cloud h4::before{content:'';width:3px;height:14px;background:var(--v10-cinnabar);border-radius:2px}
-  .word-cloud .wc-sub{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);margin-bottom:14px}
+  .word-cloud .wc-sub{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);margin-bottom:14px}
   .wc-body{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:center;padding:6px 0;line-height:1.6}
   .wc-tag{font-family:var(--v10-font-kai);font-weight:500;border-radius:18px;padding:5px 12px;display:inline-block;transition:transform .25s;cursor:default}
   .wc-tag:hover{transform:scale(1.06)}
@@ -2842,10 +2844,10 @@
   .wc-tag.s2{font-size:24px;color:var(--v10-jue);background:var(--v10-jue-bg)}
   .wc-tag.s3{font-size:30px;color:var(--v10-zhi);background:var(--v10-zhi-bg);font-weight:600}
   .wc-tag.s4{font-size:20px;color:var(--v10-gong);background:var(--v10-gong-bg)}
-  .wc-tag.s5{font-size:16px;color:var(--v10-shang);background:var(--v10-shang-bg)}
+  .wc-tag.s5{font-size:19px;color:var(--v10-shang);background:var(--v10-shang-bg)}
   .wc-tag.s6{font-size:22px;color:var(--v10-yu);background:var(--v10-yu-bg)}
   .wc-tag.s7{font-size:26px;color:var(--v10-cinnabar);background:rgba(192,57,43,.08);font-weight:600}
-  .wc-tag.s8{font-size:15px;color:var(--v10-ink-soft);background:var(--v10-paper)}
+  .wc-tag.s8{font-size:19px;color:var(--v10-ink-soft);background:var(--v10-paper)}
 
   /* 统计三宫格 */
   .stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
@@ -2864,7 +2866,7 @@
   .diary-row .ico svg{width:20px;height:20px;stroke-width:1.5}
   .diary-row .info{flex:1;min-width:0}
   .diary-row .info .t{font-family:var(--v10-font-serif);font-size:19px;font-weight:600;color:var(--v10-ink)}
-  .diary-row .info .d{font-family:var(--v10-font-kai);font-size:16px;color:var(--v10-ink-faint);margin-top:4px}
+  .diary-row .info .d{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);margin-top:4px}
   .diary-row .arrow{color:var(--v10-ink-faint)}
   .diary-row .arrow svg{width:16px;height:16px;stroke-width:1.5}
 
@@ -2874,8 +2876,8 @@
   .tool-cell:active{transform:scale(.97)}
   .tool-cell .ic{width:36px;height:36px;border-radius:10px;background:var(--v10-jue-bg);color:var(--v10-jue);display:flex;align-items:center;justify-content:center}
   .tool-cell .ic ion-icon{font-size:20px}
-  .tool-cell .t{font-family:var(--v10-font-serif);font-size:17px;font-weight:600;color:var(--v10-ink);line-height:1.2}
-  .tool-cell .s{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.2}
+  .tool-cell .t{font-family:var(--v10-font-serif);font-size:18px;font-weight:600;color:var(--v10-ink);line-height:1.2}
+  .tool-cell .s{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.2}
   .tool-cell .checkin-dots{display:flex;gap:3px;justify-content:center;margin-top:2px}
   .tool-cell .checkin-dots .d{width:6px;height:6px;border-radius:50%;background:var(--v10-paper-edge)}
   .tool-cell .checkin-dots .d.on{background:var(--v10-gold)}
@@ -2892,8 +2894,8 @@
     box-shadow:var(--v10-shadow-1);
   }
   .qh-empty .ic{font-size:36px;color:var(--v10-paper-edge);margin-bottom:8px}
-  .qh-empty .t{font-family:var(--v10-font-serif);font-size:17px;font-weight:600;color:var(--v10-ink);margin-bottom:4px}
-  .qh-empty .d{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.6}
+  .qh-empty .t{font-family:var(--v10-font-serif);font-size:18px;font-weight:600;color:var(--v10-ink);margin-bottom:4px}
+  .qh-empty .d{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.6}
   .qh-list{display:flex;flex-direction:column;gap:10px}
   .qh-item{
     background:var(--v10-paper-pure);
@@ -2916,17 +2918,17 @@
     color:var(--v10-cinnabar);
   }
   .qh-item .qh-date .day{font-family:var(--v10-font-serif);font-size:20px;font-weight:700;line-height:1.1}
-  .qh-item .qh-date .mon{font-family:var(--v10-font-kai);font-size:15px;color:var(--v10-ink-faint);line-height:1.2;margin-top:2px}
+  .qh-item .qh-date .mon{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.2;margin-top:2px}
   .qh-item .qh-body{flex:1;min-width:0}
   .qh-item .qh-title{font-family:var(--v10-font-serif);font-size:18px;font-weight:700;color:var(--v10-ink);margin-bottom:2px;line-height:1.3}
-  .qh-item .qh-desc{font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-faint);line-height:1.55;margin-bottom:6px;
+  .qh-item .qh-desc{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.55;margin-bottom:6px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
   }
   .qh-item .qh-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
   .qh-item .qh-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--v10-font-serif);font-size:15px;font-weight:700;color:#fff;letter-spacing:0}
   .qh-item .qh-arrow{flex-shrink:0;color:var(--v10-ink-faint);align-self:center}
   .qh-item .qh-arrow ion-icon{font-size:18px}
-  .qh-item .qh-time{font-family:var(--v10-font-kai);font-size:15px;color:var(--v10-ink-faint);margin-top:2px}
+  .qh-item .qh-time{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);margin-top:2px}
 
   /* 隐藏档案页里没用的旧 section，避免视觉杂乱 */
   #page-data .data-overlay{display:none}
@@ -3083,6 +3085,7 @@
   .btn-ghost{width:100%;background:transparent;color:var(--v10-ink-soft);border:1px solid var(--v10-paper-edge);border-radius:100px;padding:14px;font-family:var(--v10-font-kai);font-size:17px;min-height:48px;cursor:pointer}
 
   /* 问卷介绍子页（subpage-overlay 共用结构） */
+  #subpage-qi-intro{background:var(--bg);bottom:0 !important;}
   #subpage-qi-intro .qi-intro-content{
     position:absolute;inset:0;z-index:2;
     padding:60px 24px 100px;overflow-y:auto;scrollbar-width:none;
@@ -3144,7 +3147,7 @@
   .q-section h4::before{content:'';width:3px;height:16px;background:var(--v10-cinnabar);border-radius:2px}
   .q-section ul{list-style:none}
   .q-section li{
-    font-family:var(--v10-font-kai);font-size:17px;color:var(--v10-ink-soft);
+    font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-soft);
     line-height:1.7;padding-left:22px;position:relative;margin-bottom:4px;
   }
   .q-section li::before{
@@ -3510,8 +3513,7 @@
       <div class="xiaowu-bubble" id="xiaowuBubble" onclick="switchTab(1)">
         <div class="av"></div>
         <div class="info">
-          <div class="name">小五<span class="dot"></span><span class="mode" id="xiaowuMode">在线 · 早晨模式</span></div>
-          <div class="msg" id="xiaowuMsg">昨夜睡眠不太稳定，听羽音能帮您哦…</div>
+          <div class="name" style="display:flex;align-items:center;gap:6px;"><span class="nm">小五</span><span class="dotsep">·</span><span class="mode" id="xiaowuMode">在线</span></div>
         </div>
         <div class="chat-btn" aria-label="开始聊天">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -3542,7 +3544,7 @@
         <div class="survey-ring"><span id="surveyPct">42%</span></div>
         <div class="survey-text">
           <h5>中医五态情志问卷</h5>
-          <p id="surveySub">已完成 35 / 84 题 · 每月更新一次</p>
+          <p id="surveySub">已完成 35 / 84 题</p>
         </div>
         <span class="arrow">›</span>
       </div>
@@ -4317,7 +4319,7 @@
       <div id="introModesToggle" onclick="toggleIntroModes()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:8px;cursor:pointer;">
         <div>
           <div class="intro-other-title">您也可以尝试其他调式</div>
-          <div class="intro-other-sub">每种调式对应不同脏腑与情志，可多选组合</div>
+          <div class="intro-other-sub">每种调式对应不同情志，可多选组合</div>
         </div>
         <ion-icon name="chevron-down" id="introModesToggleIcon" style="font-size:20px;color:#9A9A9A;transition:transform .3s;"></ion-icon>
       </div>
@@ -4403,7 +4405,6 @@
       </button>
       <div class="player-top-center">
         <h3 id="playerTitle"></h3>
-        <p id="playerSubtitle"></p>
         <p id="playerAlbumInfo" style="display:none;font-size:17px;color:rgba(255,255,255,0.7);margin-top:2px;"></p>
       </div>
       <button class="voice-toggle-btn" id="voiceToggleBtn" onclick="toggleVoiceSpeak()" title="语音朗读开关">
@@ -4489,7 +4490,7 @@
           <ion-icon name="mic-outline"></ion-icon>
           <span>点击语音说出感受</span>
         </button>
-        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:var(--ink);font-size:16px;resize:none;display:none;margin:6px 0;"></textarea>
+        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:var(--ink);font-size:18px;resize:none;display:none;margin:6px 0;"></textarea>
         <button class="rating-submit-btn" id="ratingSubmitBtn" onclick="submitRating()">提交评价</button>
       </div>
     </div>
@@ -5209,7 +5210,7 @@ function renderRecommendationCard(rec, container) {
   html += '<div class="healing-rec-msg">';
   html += '<div class="healing-rec-msg-info">';
   html += '<div class="healing-rec-msg-name">今日建议</div>';
-  if (rec.summary) html += '<div style="font-size:17px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
+  if (rec.summary) html += '<div style="font-size:20px;color:#888;margin:4px 0;">' + rec.summary + '</div>';
   html += '<div class="healing-rec-msg-desc">';
   if (rec.primaryEmotion) html += '情志关键词：' + rec.primaryEmotion + '　';
   html += '主要情志：' + rec.primaryWutai;
@@ -5995,7 +5996,7 @@ function updateHomeV10() {
     var pctEl = document.getElementById('surveyPct');
     if (pctEl) pctEl.textContent = pct + '%';
     var subEl = document.getElementById('surveySub');
-    if (subEl) subEl.textContent = '已完成 ' + ans + ' / ' + total + ' 题 · 每月更新一次';
+    if (subEl) subEl.textContent = '已完成 ' + ans + ' / ' + total + ' 题';
     var ring = document.querySelector('.survey-ring');
     if (ring) ring.style.background = 'conic-gradient(var(--cinnabar) 0deg ' + (pct * 3.6) + 'deg, var(--paper-warm) ' + (pct * 3.6) + 'deg 360deg)';
   } catch(e) {}
@@ -6003,15 +6004,7 @@ function updateHomeV10() {
   // 6) 小五气泡模式 + 提示（按时段）
   try {
     var modeEl = document.getElementById('xiaowuMode');
-    var msgEl = document.getElementById('xiaowuMsg');
-    var modeText = (hour < 11) ? '在线 · 早晨模式' : (hour < 14) ? '在线 · 午休模式' : (hour < 18) ? '在线 · 下午模式' : (hour < 22) ? '在线 · 晚安模式' : '在线 · 深夜模式';
-    var msgText = (hour < 11) ? '昨夜睡眠不太稳定，听羽音能帮您哦…' :
-                  (hour < 14) ? '午间小憩，听一曲徵音养心…' :
-                  (hour < 18) ? '下午有些困倦？试试角音提神…' :
-                  (hour < 22) ? '睡前听宫音，能安神助眠…' :
-                  '夜深了，听羽音能帮您入眠…';
-    if (modeEl) modeEl.textContent = modeText;
-    if (msgEl) msgEl.textContent = msgText;
+    if (modeEl) modeEl.textContent = '在线';
   } catch(e) {}
 }
 // 在 DOM 就绪时执行一次
@@ -6743,7 +6736,7 @@ function showEmotionDetail(emotionName) {
   records.sort(function(a, b) { return b.time - a.time; });
   var srcMap = { 'ai_chat': 'AI对话分析', 'chat_fallback': '对话识别' };
   var lines = '<div style="max-height:60vh;overflow-y:auto;">';
-  lines += '<div style="margin-bottom:12px;color:var(--ink-faint);font-size:17px;">共 ' + records.length + ' 条记录</div>';
+  lines += '<div style="margin-bottom:12px;color:var(--ink-faint);font-size:19px;">共 ' + records.length + ' 条记录</div>';
   records.forEach(function(r) {
     var d = new Date(r.time);
     var ts = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
@@ -6752,20 +6745,20 @@ function showEmotionDetail(emotionName) {
     if (r.wuyinId) { var wi = WUYIN_DATA.find(function(w){return w.id===r.wuyinId;}); if (wi) wn = wi.name; }
     lines += '<div style="padding:10px 12px;margin-bottom:8px;background:rgba(0,0,0,0.03);border-radius:8px;border-left:3px solid var(--gold);">';
     lines += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
-    lines += '<span style="font-size:16px;color:var(--ink);font-weight:600;">' + ts + '</span>';
-    lines += '<span style="font-size:15px;color:var(--gold);background:rgba(200,170,100,0.15);padding:2px 8px;border-radius:4px;">' + sl + '</span>';
+    lines += '<span style="font-size:18px;color:var(--ink);font-weight:600;">' + ts + '</span>';
+    lines += '<span style="font-size:17px;color:var(--gold);background:rgba(200,170,100,0.15);padding:2px 8px;border-radius:4px;">' + sl + '</span>';
     lines += '</div>';
-    if (wn) lines += '<div style="font-size:16px;color:var(--ink-faint);margin-bottom:4px;">推荐调式：' + wn + '</div>';
+    if (wn) lines += '<div style="font-size:18px;color:var(--ink-faint);margin-bottom:4px;">推荐调式：' + wn + '</div>';
     // ✅ V3.0: 显示一句话情境概括（保护隐私，不显示原话）
     if (r.summary) {
-      lines += '<div style="font-size:16px;color:var(--ink);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;line-height:1.5;">' + r.summary + '</div>';
+      lines += '<div style="font-size:18px;color:var(--ink);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;line-height:1.5;">' + r.summary + '</div>';
     } else if (r.evidence && r.evidence.length > 0) {
       // 兼容旧数据：无 summary 时回退到 evidence，但做脱敏处理（只显示首条，并加省略号）
       var ev = r.evidence[0];
       if (ev.length > 30) ev = ev.substring(0, 30) + '...';
-      lines += '<div style="font-size:16px;color:var(--ink-faint);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;font-style:italic;">' + ev + '</div>';
+      lines += '<div style="font-size:18px;color:var(--ink-faint);margin-top:6px;padding:6px 10px;background:rgba(200,170,100,0.08);border-radius:6px;font-style:italic;">' + ev + '</div>';
     } else {
-      lines += '<div style="font-size:16px;color:var(--ink-faint);margin-top:6px;font-style:italic;">暂无情境描述</div>';
+      lines += '<div style="font-size:18px;color:var(--ink-faint);margin-top:6px;font-style:italic;">暂无情境描述</div>';
     }
     lines += '</div>';
   });
@@ -7134,7 +7127,7 @@ function updateRecordsStats() {
   if (emoSub) {
     if (!hasData) {
       emoSub.innerHTML = '暂无问卷数据，请先完成<a href="#" onclick="startQuestionnaire();return false;" style="color:var(--v10-cinnabar);font-weight:600;">情志问卷评估</a>';
-      emoSub.style.fontSize = '15px';
+      emoSub.style.fontSize = '18px';
     } else {
       emoSub.innerHTML = '分值越高，该情志表现越突出（最高 40 分）';
       emoSub.style.fontSize = '';
@@ -7766,7 +7759,6 @@ function openPlayer(idx) {
   if (bg) { bg.classList.remove('exiting'); bg.classList.add('entering'); }
   document.getElementById('playerBg').src = 'assets/images/' + item.img;
   document.getElementById('playerTitle').textContent = item.name + ' · ' + item.scene;
-  document.getElementById('playerSubtitle').textContent = item.musicDesc;
   document.getElementById('playerIcon').style.color = item.accent;
   document.getElementById('playerIcon').setAttribute('name', 'musical-note');
   document.getElementById('playerCircleName').textContent = item.name;
@@ -8587,7 +8579,6 @@ function updatePlayerContent(wuyinId) {
   document.getElementById('playerBg').src = 'assets/images/' + item.img;
   // 更新播放器标题和副标题
   document.getElementById('playerTitle').textContent = item.name + ' · ' + item.scene;
-  document.getElementById('playerSubtitle').textContent = item.musicDesc;
   // 更新圆形控件
   document.getElementById('playerCircleName').textContent = item.name;
   document.getElementById('playerCircleDesc').textContent = item.emotionLabel;
@@ -9303,8 +9294,8 @@ function showOptimizationSuggestion() {
     overlay.innerHTML =
       '<div class="rating-overlay-bg"></div>' +
       '<div class="rating-card" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-height:82vh;overflow-y:auto;padding:16px 12px;z-index:2001;box-sizing:border-box;">' +
-        '<h3 style="font-size:18px;color:#fff;font-weight:700;margin-bottom:6px;line-height:1.4;text-align:center;">为了让下次疗愈更适合您</h3>' +
-        '<p style="font-size:17px;color:rgba(255,255,255,.7);margin-bottom:12px;text-align:center;">您希望调整哪一项？</p>' +
+        '<h3 style="font-size:30px;color:#fff;font-weight:700;margin-bottom:6px;line-height:1.4;text-align:center;">为了让下次疗愈更适合您</h3>' +
+        '<p style="font-size:25px;color:rgba(255,255,255,.7);margin-bottom:12px;text-align:center;">您希望调整哪一项？</p>' +
         '<div id="optToneSelector" style="display:none;margin-bottom:12px;"></div>' +
         '<div id="optButtons" style="display:flex;flex-direction:column;gap:8px;"></div>' +
       '</div>';
@@ -9317,11 +9308,11 @@ function showOptimizationSuggestion() {
     var item2 = WUYIN_DATA.find(function(w) { return w.id === fb.dualIds[1]; });
     toneSelector.style.display = 'block';
     toneSelector.innerHTML =
-      '<div style="font-size:15px;color:rgba(255,255,255,.85);margin-bottom:12px;font-weight:600;text-align:center;">请先选择要调整的调式</div>' +
+      '<div style="font-size:17px;color:rgba(255,255,255,.85);margin-bottom:12px;font-weight:600;text-align:center;">请先选择要调整的调式</div>' +
       '<div style="display:flex;gap:8px;">' +
-        '<button class="opt-tone-btn" data-tone-idx="0" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item1 ? item1.name : '') + '（前半段）</button>' +
-        '<button class="opt-tone-btn" data-tone-idx="1" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item2 ? item2.name : '') + '（后半段）</button>' +
-        '<button class="opt-tone-btn" data-tone-idx="2" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;">两个都调</button>' +
+        '<button class="opt-tone-btn" data-tone-idx="0" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:18px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item1 ? item1.name : '') + '（前半段）</button>' +
+        '<button class="opt-tone-btn" data-tone-idx="1" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:18px;font-weight:600;cursor:pointer;transition:all .2s;">' + (item2 ? item2.name : '') + '（后半段）</button>' +
+        '<button class="opt-tone-btn" data-tone-idx="2" data-selected="false" style="flex:1;padding:14px 10px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:18px;font-weight:600;cursor:pointer;transition:all .2s;">两个都调</button>' +
       '</div>';
     var toneSelected = false;
     var selectedToneIdx = -1;
@@ -9371,23 +9362,23 @@ function showOptimizationSuggestion() {
     window._optToneSelected = function() { return true; };
   }
   // 按钮基础样式（显眼国风设计：半透明渐变背景 + 边框 + 阴影）
-  var btnBaseStyle = 'padding:13px 14px;border-radius:12px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s;width:100%;box-sizing:border-box;text-align:left;';
+  var btnBaseStyle = 'padding:13px 14px;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s;width:100%;box-sizing:border-box;text-align:left;';
   buttonsContainer.innerHTML =
     '<button class="opt-btn" data-action="music" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(90,142,90,.35),rgba(90,142,90,.15));border:1.5px solid rgba(150,200,150,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🎵</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一首音乐</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这首音乐不太适合我</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:19px;">换一首音乐</div><div style="font-size:18px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这首音乐不太适合我</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="scene" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(74,127,165,.35),rgba(74,127,165,.15));border:1.5px solid rgba(120,180,220,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🌿</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">换一个自然情境</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这个自然场景不太适合我</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:19px;">换一个自然情境</div><div style="font-size:18px;color:rgba(255,255,255,.7);margin-top:3px;">我觉得这个自然场景不太适合我</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="keep" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,170,100,.3),rgba(200,170,100,.12));border:1.5px solid rgba(220,190,130,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🙂</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">保持现在就好</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">今天只是状态不好，不需要调整</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:19px;">保持现在就好</div><div style="font-size:18px;color:rgba(255,255,255,.7);margin-top:3px;">今天只是状态不好，不需要调整</div></div>' +
     '</button>' +
     '<button class="opt-btn" data-action="feedback" style="' + btnBaseStyle + 'background:linear-gradient(135deg,rgba(200,90,61,.3),rgba(200,90,61,.12));border:1.5px solid rgba(230,130,100,.5);box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
       '<span style="font-size:26px;min-width:32px;text-align:center;">🎤</span>' +
-      '<div style="flex:1;"><div style="font-weight:700;font-size:17px;">告诉我们您的想法</div><div style="font-size:16px;color:rgba(255,255,255,.7);margin-top:3px;">您觉得哪里还可以改进？</div></div>' +
+      '<div style="flex:1;"><div style="font-weight:700;font-size:19px;">告诉我们您的想法</div><div style="font-size:18px;color:rgba(255,255,255,.7);margin-top:3px;">您觉得哪里还可以改进？</div></div>' +
     '</button>';
   overlay.classList.add('active');
   buttonsContainer.querySelectorAll('.opt-btn').forEach(function(btn) {
@@ -10151,7 +10142,7 @@ function saveQuestionnaireProgress() {
     var pctEl = document.getElementById('surveyPct');
     if (pctEl) pctEl.textContent = pct + '%';
     var subEl = document.getElementById('surveySub');
-    if (subEl) subEl.textContent = '已完成 ' + ans + ' / ' + total + ' 题 · 每月更新一次';
+    if (subEl) subEl.textContent = '已完成 ' + ans + ' / ' + total + ' 题';
     var ring = document.querySelector('.survey-ring');
     if (ring) ring.style.background = 'conic-gradient(var(--cinnabar) 0deg ' + (pct * 3.6) + 'deg, var(--paper-warm) ' + (pct * 3.6) + 'deg 360deg)';
   } catch(e) {}
@@ -11508,7 +11499,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20260924ao');
+  lines.push('版本: 20260924av');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
@@ -11545,6 +11536,7 @@ function __openDiagPanel() {
   p.style.display = 'block';
 }
 function __showDiagButton() {
+  return; // 🔍 诊断面板已按需移除
   try {
     var d = document.getElementById('diagFab');
     if (d) return;
@@ -13137,10 +13129,10 @@ function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w
     html += '<div style="margin-top:12px;margin-bottom:14px;padding:14px 16px;background:rgba(' + wuyinColor.r + ',' + wuyinColor.g + ',' + wuyinColor.b + ',.04);border-radius:10px;border:1px solid rgba(' + wuyinColor.r + ',' + wuyinColor.g + ',' + wuyinColor.b + ',.12);">';
     // 星级评分（字号与正文一致）
     html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
-    html += '<span style="font-size:16px;color:var(--ink-faint);font-weight:600;">评分</span>';
+    html += '<span style="font-size:19px;color:var(--ink-faint);font-weight:600;">评分</span>';
     var displayRating = lrRated ? lrRated.rating : 0;
     for (var s = 1; s <= 5; s++) {
-      html += s <= displayRating ? '<span style="color:#F39C12;font-size:22px;">★</span>' : '<span style="color:rgba(0,0,0,.1);font-size:22px;">★</span>';
+      html += s <= displayRating ? '<span style="color:#F39C12;font-size:25px;">★</span>' : '<span style="color:rgba(0,0,0,.1);font-size:25px;">★</span>';
     }
     html += '</div>';
     // 曲目（双调式显示两个，单模式显示一个）
@@ -13160,7 +13152,7 @@ function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w
         }
         if (dualMusicId) {
           var dualMusicIdx = dualMusicId.split('_m')[1] || '?';
-          html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+          html += '<div style="font-size:19px;color:var(--ink);line-height:1.6;">';
           html += '<span style="color:var(--ink-faint);">曲目' + (di+1) + '</span> ' + dualToneName + '·曲目' + dualMusicIdx;
           html += '</div>';
         }
@@ -13179,7 +13171,7 @@ function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w
             var sceneObj = dualTone.sceneList.find(function(s) { return s.sceneId === dualSceneId; });
             if (sceneObj) dualSceneName = sceneObj.name;
           }
-          html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+          html += '<div style="font-size:19px;color:var(--ink);line-height:1.6;">';
           html += '<span style="color:var(--ink-faint);">情境' + (di+1) + '</span> ' + dualSceneName;
           html += '</div>';
         }
@@ -13189,7 +13181,7 @@ function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w
       var musicIdSrc = d.musicId || (lrResource ? lrResource.musicId : null);
       if (musicIdSrc) {
         var musicIdx = musicIdSrc.split('_m')[1] || '?';
-        html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+        html += '<div style="font-size:19px;color:var(--ink);line-height:1.6;">';
         html += '<span style="color:var(--ink-faint);">曲目</span> ' + (wuyin ? wuyin.name : '') + '·曲目' + musicIdx;
         html += '</div>';
       }
@@ -13200,7 +13192,7 @@ function renderDiaryDetail(d) {var wuyin = WUYIN_DATA.find(function(w){ return w
           var scene = wuyin.sceneList.find(function(s) { return s.sceneId === sceneIdSrc; });
           sceneName = scene ? scene.name : sceneIdSrc;
         }
-        html += '<div style="font-size:16px;color:var(--ink);line-height:1.6;">';
+        html += '<div style="font-size:19px;color:var(--ink);line-height:1.6;">';
         html += '<span style="color:var(--ink-faint);">情境</span> ' + sceneName;
         html += '</div>';
       }
