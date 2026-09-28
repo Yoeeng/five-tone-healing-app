@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924ag"></script>
-<script src="oy_admin.js?v=20260924ag"></script>
+<script src="oy_account.js?v=20260924ao"></script>
+<script src="oy_admin.js?v=20260924ao"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -334,12 +334,12 @@
   #page-chat { background:var(--paper); overflow:hidden; }
 
   /* 背景图更明显：加大高度、加大不透明度 */
-  .chat-bg{position:absolute;left:0;right:0;top:0;height:420px;background:url('assets/images/avatar_sitting_new.jpg') center 30%/cover no-repeat;opacity:.45;z-index:0}
+  .chat-bg{position:absolute;left:0;right:0;top:0;height:480px;background:url('assets/images/chat-bg.png') center 30%/cover no-repeat;opacity:1;z-index:0}
   .chat-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,247,236,0) 0%,rgba(251,247,236,.6) 60%,var(--paper) 100%)}
 
   /* 顶部 header：字号 +3px */
   .chat-header{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:50px 20px 14px;background:linear-gradient(180deg,var(--paper) 60%,rgba(251,247,236,0) 100%)}
-  .chat-header .av{width:44px;height:44px;border-radius:50%;background:url('assets/images/avatar_sitting_new.jpg') center/cover;border:2px solid var(--paper-pure);box-shadow:var(--shadow-1);flex-shrink:0}
+  .chat-header .av{width:44px;height:44px;border-radius:50%;background:url('assets/images/avatar_xiaowu_v2.png') center/cover;border:2px solid var(--paper-pure);box-shadow:var(--shadow-1);flex-shrink:0}
   .chat-header .meta .name{font-family:var(--font-serif);font-size:24px;font-weight:600;color:var(--ink);line-height:1.3}
   .chat-header .meta .stat{font-family:var(--font-kai);font-size:19px;color:var(--yue-jue);display:flex;align-items:center;gap:6px;font-weight:500;margin-top:2px}
   .chat-header .meta .stat::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--yue-jue)}
@@ -361,7 +361,7 @@
   .chat-stream{position:relative;z-index:1;padding:8px 16px 0;display:flex;flex-direction:column;gap:12px}
   .bubble{display:flex;gap:10px;align-items:flex-end;max-width:88%}
   .bubble.user{flex-direction:row-reverse;margin-left:auto}
-  .bubble .av-sm{width:38px;height:38px;border-radius:50%;background:url('assets/images/avatar_sitting_new.jpg') center/cover;flex-shrink:0;box-shadow:var(--shadow-1)}
+  .bubble .av-sm{width:38px;height:38px;border-radius:50%;background:url('assets/images/avatar_xiaowu_v2.png') center/cover;flex-shrink:0;box-shadow:var(--shadow-1)}
   .bubble.user .av-sm{background:url('assets/images/user_avatar.jpg') center/cover}
   /* 气泡文字：17→20px */
   .bubble .b{background:var(--paper-pure);padding:14px 16px;border-radius:18px 18px 18px 4px;font-family:var(--font-kai);font-size:20px;line-height:1.7;color:var(--ink);box-shadow:var(--shadow-1);border:1px solid var(--paper-edge)}
@@ -2443,7 +2443,7 @@
   }
   .xiaowu-bubble .av{
     width:52px;height:52px;border-radius:50%;
-    background:url('assets/images/avatar_sitting_new.jpg') center/cover;
+    background:url('assets/images/avatar_xiaowu_v2.png') center/cover;
     flex-shrink:0;position:relative;
     box-shadow:0 2px 8px rgba(110,147,86,.25);
     border:2px solid var(--paper-pure);
@@ -4741,7 +4741,7 @@ function hasApiKey() {
   if (k && k.indexOf('sk-') === 0) return true;
   return SERVER_KEY_READY;
 }
-function setApiKey(key) { if (!key || key.indexOf('sk-') !== 0) return false; return localStorage.setItem(API_KEY_STORAGE, key); }
+function setApiKey(key) { if (!key) return false; key = String(key).replace(/[\s\u00A0\u1680\u2000-\u200D\u2060\u2028\u2029\u202F\u205F\u3000\uFEFF\u00AD\u200E\u200F]+/g, ''); if (key.indexOf('sk-') !== 0) return false; localStorage.setItem(API_KEY_STORAGE, key); return true; }
 function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); }
 // V3.0 unified chat API: try /chat proxy first, fallback to direct DashScope API
 async function callChatAPI(body, timeoutMs) {
@@ -6281,7 +6281,7 @@ var __YUE_T2S_EXTRA = {
   '陽':'阳','陰':'阴','種':'种','樣':'样','葉':'叶','縣':'县','鄉':'乡','裡':'里','雜':'杂','蘭':'兰',
   '華':'华','絕':'绝','網':'网','習':'习','練':'练','總':'总','髮':'发','變':'变','億':'亿','檔':'档',
   '順':'顺','稱':'称','幹':'干','廣':'广','術':'术','觀':'观','憂':'忧','腦':'脑','該':'该','質':'质',
-  '務':'务','條':'条','學':'学','均':'均','困':'困','兔':'免','導':'导','壞':'坏','應':'应','遼':'辽','腳':'脚'
+  '務':'务','條':'条','學':'学','均':'均','困':'困','兔':'免','導':'导','壞':'坏','應':'应','遼':'辽','腳':'脚','適':'适'
 };
 function __simplifyYue(text){
   if (!text) return text;
@@ -6497,7 +6497,7 @@ async function callQwenAPI(userText) {
 }
 
 // ========== 流式聊天（SSE）：边收边显示 + 分句即时播报 ==========
-var __stt = { buf:'', items:[], playing:false };
+var __stt = { buf:'', items:[], playing:false, started:false };
 function __cutStreamSentences(sstr){
   var out=[], last=0, m, re=/[。！？!?；;]/g;
   while((m=re.exec(sstr))){ out.push(sstr.slice(last, re.lastIndex)); last=re.lastIndex; }
@@ -6539,6 +6539,8 @@ function __streamTTSPush(delta){
   var r = __cutStreamSentences(__stt.buf);
   __stt.buf = r.leftover;
   for (var i = 0; i < r.done.length; i++) { var st = r.done[i].trim(); if (st) __sttPush(st); }
+  // 前半句先出声：当前回复第一个片段攒够字数即先开播，不必等句号，缩短首字到开口时间
+  if (!__stt.started && __stt.buf.length >= 10) { __stt.started = true; var frag = __stt.buf; __stt.buf = ''; __sttPush(frag); }
   __sttPlayNext();
 }
 function __streamTTSFlush(){
@@ -6547,7 +6549,7 @@ function __streamTTSFlush(){
   if (tail) __sttPush(tail);
   __sttPlayNext();
 }
-function __streamTTSReset(){ __stt = { buf:'', items:[], playing:false }; }
+function __streamTTSReset(){ __stt = { buf:'', items:[], playing:false, started:false }; }
 function __scrollChat(){
   var sc = document.querySelector('.chat-scroll');
   if (sc) sc.scrollTop = sc.scrollHeight;
@@ -7814,11 +7816,11 @@ var immersiveState = {
 };
 // 每调式5张情境图 [0]=旧占位图保留, [1-4]=新情境图
 var PANORAMA_IMAGES = [
-  ['assets/images/角音情境1_翠竹林.jpg', 'assets/images/角音情境2_春日山谷.png', 'assets/images/角音情境3_柳岸溪畔.png', 'assets/images/角音情境4_森林晨曦.png', 'assets/images/角音情境5_梅花小径.png'],
-  ['assets/images/徵音情境1_阳光草地.jpg', 'assets/images/徵音情境2_花海田园.png', 'assets/images/徵音情境3_夏日荷塘.png', 'assets/images/徵音情境4_朝霞山巅.jpg', 'assets/images/徵音情境5_晚霞湖畔.jpg'],
-  ['assets/images/宫音情境1_田园麦田.jpg', 'assets/images/宫音情境2_秋收田野.png', 'assets/images/宫音情境3_山间村落.png', 'assets/images/宫音情境4_古寺禅院.png', 'assets/images/宫音情境5_黄土高原.png'],
-  ['assets/images/商音情境1_秋日晴空.jpg', 'assets/images/商音情境2_月夜竹林.png', 'assets/images/商音情境3_清晨薄雾.png', 'assets/images/商音情境4_雪山之巅.png', 'assets/images/商音情境5_银色湖畔.jpg'],
-  ['assets/images/羽音情境1_宁静湖面.jpg', 'assets/images/羽音情境2_月下江流.png', 'assets/images/羽音情境3_深海幽蓝.png', 'assets/images/羽音情境4_雨夜窗前.png', 'assets/images/羽音情境5_冬日雪原.png']
+  ['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/角音情境1_翠竹林.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/角音情境2_春日山谷.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/角音情境3_柳岸溪畔.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/角音情境4_森林晨曦.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/角音情境5_梅花小径.webp'],
+  ['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/徵音情境1_阳光草地.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/徵音情境2_花海田园.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/徵音情境3_夏日荷塘.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/徵音情境4_朝霞山巅.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/徵音情境5_晚霞湖畔.webp'],
+  ['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/宫音情境1_田园麦田.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/宫音情境2_秋收田野.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/宫音情境3_山间村落.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/宫音情境4_古寺禅院.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/宫音情境5_黄土高原.webp'],
+  ['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/商音情境1_秋日晴空.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/商音情境2_月夜竹林.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/商音情境3_清晨薄雾.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/商音情境4_雪山之巅.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/商音情境5_银色湖畔.webp'],
+  ['https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/羽音情境1_宁静湖面.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/羽音情境2_月下江流.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/羽音情境3_深海幽蓝.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/羽音情境4_雨夜窗前.webp', 'https://wuyin-audio.oss-cn-hangzhou.aliyuncs.com/panorama/webp_q92/羽音情境5_冬日雪原.webp']
 ];
 
 function toggleImmersiveMode() {
@@ -11475,15 +11477,27 @@ function __asrReady(inputEl, onResult) {
   __asrState.pcm = [];
   if (!(typeof hasApiKey === 'function' ? hasApiKey() : false)) { showToast('请先在"我的"页设置 API 密钥'); if (onResult) onResult(''); return; }
   showToast('识别中...');
-  fetch('/asr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-    apiKey: (typeof getApiKey==='function'?getApiKey():''), audio: b64, format: 'pcm', sampleRate: rate
-  })}).then(function(r){ return r.json(); })
-    .then(function(d){
-      if (d && typeof d.text === 'string' && d.text) { window.__lastAsr='成功:「' + d.text + '」'; if (onResult) onResult(d.text); }
-      else if (d && typeof d.text === 'string') { window.__lastAsr='成功(空):「」'; showToast('没听清，请再说一遍'); }
-      else { window.__lastAsr='失败: ' + (d && d.error || '未知错误'); showToast('识别失败：' + (d && d.error || '未知错误')); }
-    })
-    .catch(function(){ window.__lastAsr='失败: 网络错误'; showToast('识别失败：网络错误'); });
+  var maxTry = 2;
+  (function attempt(tryNo){
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var to = ctrl ? setTimeout(function(){ ctrl.abort(); }, 55000) : null;
+    fetch('/asr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      apiKey: (typeof getApiKey==='function'?getApiKey():''), audio: b64, format: 'pcm', sampleRate: rate
+    }), signal: ctrl ? ctrl.signal : undefined })
+      .then(function(r){ if (!r.ok) return r.text().then(function(t){ throw new Error(t.slice(0,200) || ('HTTP '+r.status)); }); return r.json(); })
+      .then(function(d){
+        if (to) clearTimeout(to);
+        if (d && typeof d.text === 'string' && d.text) { window.__lastAsr='成功:「' + d.text + '」'; if (onResult) onResult(d.text); }
+        else if (d && typeof d.text === 'string') { window.__lastAsr='成功(空):「」'; showToast('没听清，请再说一遍'); }
+        else { window.__lastAsr='失败: ' + (d && d.error || '未知错误'); showToast('识别失败：' + (d && d.error || '未知错误')); }
+      })
+      .catch(function(err){
+        if (to) clearTimeout(to);
+        var msg = (err && err.message) || '网络错误';
+        if (tryNo < maxTry) { window.__lastAsr='重试(' + tryNo + ')...'; setTimeout(function(){ attempt(tryNo+1); }, 800); return; }
+        window.__lastAsr='失败: ' + msg; showToast('识别失败：' + msg);
+      });
+  })(1);
 }
 
 // ===== 诊断面板：一键复制手机音频/识别状态给开发者 =====
@@ -11494,7 +11508,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20260924ag');
+  lines.push('版本: 20260924ao');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
