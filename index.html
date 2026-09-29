@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924av"></script>
-<script src="oy_admin.js?v=20260924av"></script>
+<script src="oy_account.js?v=20260924ax"></script>
+<script src="oy_admin.js?v=20260924ax"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1155,6 +1155,8 @@
     font-size:21px; font-weight:600; cursor:pointer; font-family:inherit;
   }
   .rating-submit-btn:active { transform:scale(.96); }
+  #ratingVoiceText{color:#fff !important;}
+  #ratingVoiceText::placeholder{color:rgba(255,255,255,.5)}
 
   /* ========== DATA PAGE (aligned DataScreen.tsx) ========== */
   #page-data { background:var(--paper); height:100%; }
@@ -3583,7 +3585,7 @@
     <!-- 输入区域：固定在底部，不随消息滚动 -->
     <div class="chat-input-fixed">
       <!-- 语音模式（默认）：大按钮居中，旁边可切换文字 -->
-      <div class="chat-voice-center" id="chatVoiceCenter">
+      <div class="chat-voice-center" id="chatVoiceCenter" style="display:none;">
         <button class="chat-mic-large" id="chatMicBtn" onclick="toggleChatRecording()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3597,10 +3599,10 @@
         </button>
       </div>
       <!-- "点击说话" 提示：作为独立块元素在按钮下方，绝对不会被 tabbar 挡 -->
-      <div class="chat-mic-hint" id="chatMicHint">点击说话</div>
+      <div class="chat-mic-hint" id="chatMicHint" style="display:none;">点击说话</div>
 
       <!-- 文字模式：输入框 + 发送按钮 + 返回语音 -->
-      <div class="chat-text-bar" id="chatTextBar" style="display:none;">
+      <div class="chat-text-bar" id="chatTextBar" style="display:flex;">
         <button class="chat-back-voice" onclick="setChatMode('voice')" aria-label="返回语音">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -4490,7 +4492,7 @@
           <ion-icon name="mic-outline"></ion-icon>
           <span>点击语音说出感受</span>
         </button>
-        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:var(--ink);font-size:18px;resize:none;display:none;margin:6px 0;"></textarea>
+        <textarea id="ratingVoiceText" placeholder="语音内容将自动转为文字显示，也可手动输入" style="width:100%;min-height:50px;max-height:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;color:#fff;font-size:18px;resize:none;display:none;margin:6px 0;"></textarea>
         <button class="rating-submit-btn" id="ratingSubmitBtn" onclick="submitRating()">提交评价</button>
       </div>
     </div>
@@ -4887,7 +4889,7 @@ var playProgress = 0;
 var isQuestionnaireTrial = false;
 var savedPlayerDuration = 300;
 var isLastTrial = false;
-var chatMode = 'voice'; // 'voice' or 'text'
+var chatMode = 'text'; // 'voice' or 'text'
 var isChatRecording = false;
 var isRatingRecording = false;
 // ==================== V3.0 AI对话与情志动态识别模块 ====================
@@ -5532,6 +5534,22 @@ function enterHealingFromHome() {
     }
   }, 200);
 }
+
+// ✅ 全局兜底：疗愈推荐卡片点击委托（防止 DOM 重绘等导致偶发"点了没反应"）
+(function(){
+  if (window.__recDelegateInstalled) return;
+  window.__recDelegateInstalled = true;
+  function __delegateRec(e){
+    var t = e && e.target;
+    var card = t && t.closest ? t.closest('.healing-rec-card') : null;
+    if (!card) return;
+    // 已有 inline onclick 的卡片由它自己处理；仅兜底“丢失绑定”的卡片
+    if (card.hasAttribute('onclick')) return;
+    try { enterHealingFromHome(); } catch(_){}
+  }
+  var h = document.getElementById('phoneScreen') || document;
+  h.addEventListener('click', __delegateRec);
+})();
 
 // ========== 第 6 屏 · 沉浸播放器（按 design-preview-v10.html 1:1 还原） ==========
 var _immersiveAudio = null;
@@ -8017,7 +8035,7 @@ function getImmersiveKenBurnsScale() {
   var cycle = 240; // 4 分钟一个周期
   var phase = (elapsed % cycle) / cycle;
   var progress = (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
-  return 1.0 + 0.04 * progress; // 1.00 ~ 1.04
+  return 1.18 + 0.04 * progress; // 1.18~1.22：兜底放大，防止陀螺仪转动时四周露出黑边
 }
 
 function startImmersiveKenBurns() {
@@ -10340,6 +10358,11 @@ function continueNextRound() {
   if (qprogEl) qprogEl.style.display = 'block';
   var actionBtns = document.getElementById('questionnaireActionBtns');
   if (actionBtns) actionBtns.style.display = 'none';
+  // ✅ 重新激活问卷填写 overlay（试听后“继续下一轮”会关闭 overlay，需重新显示，否则停在疗愈界面）
+  var __qo = document.getElementById('questionnaireOverlay');
+  if (__qo) { __qo.classList.add('active'); __qo.style.display = 'flex'; }
+  var __tab = document.getElementById('tabbar');
+  if (__tab) __tab.style.display = 'none';
   renderQuestion();
 }
 
@@ -11499,7 +11522,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20260924av');
+  lines.push('版本: 20260924ax');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
@@ -14082,19 +14105,7 @@ function updateHomeRecommendation() {
 
   el.innerHTML = html;
   el.style.display = 'block';
-  // ✅ 移动端可靠点击：inline onclick 转 addEventListener + 兜底（与疗愈页推荐卡片一致，避免偶发"无反应"）
-  try {
-    var _homeCard = el.querySelector('.healing-rec-card[onclick]');
-    if (_homeCard) {
-      var _code = _homeCard.getAttribute('onclick');
-      _homeCard.removeAttribute('onclick');
-      _homeCard.addEventListener('click', function(ev) {
-        ev.preventDefault();
-        try { (new Function(_code))(); }
-        catch(e) { console.error('[home-rec-card] click error', e); if (typeof showToast === 'function') showToast('打开疗愈失败，请重试'); }
-      });
-    }
-  } catch(e) { console.error('[home-rec-card] bind error', e); }
+  // ✅ 点击由 inline onclick 承担 + 全局委托兜底（见 enterHealingFromHome 后的委托监听）
   // 同步 rec.primaryItem / rec.primaryRec（供其他逻辑使用）
   rec.primaryItem = firstCard.wuyin;
   rec.primaryRec = firstCard.wuyinId;
@@ -14257,19 +14268,6 @@ function renderHealingRecCards() {
       '</div>';
   });
   container.innerHTML = html;
-  // ✅ 修复：将 inline onclick 转为 addEventListener，确保移动端点击可靠
-  container.querySelectorAll('.healing-rec-card[onclick]').forEach(function(cardEl) {
-    var code = cardEl.getAttribute('onclick');
-    cardEl.removeAttribute('onclick');
-    cardEl.addEventListener('click', function(ev) {
-      try {
-        (new Function(code))();
-      } catch(err) {
-        console.error('[healing-rec-card] click error:', err);
-        if (typeof showToast === 'function') showToast('打开疗愈失败，请重试');
-      }
-    });
-  });
 }
 
 // 单推荐卡片（来源标签在卡片上方的"今日推荐"标题处统一显示，卡片内不再重复）
