@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20260924ax"></script>
-<script src="oy_admin.js?v=20260924ax"></script>
+<script src="oy_account.js?v=20260924az"></script>
+<script src="oy_admin.js?v=20260924az"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1467,6 +1467,42 @@
   }
 
   /* ========== HEALING RECOMMENDATION CARD (in chat) ========== */
+
+  /* ========== 平板/大屏触控 自适应（方案乙：铺满整屏 + 舒适最大宽度居中） ========== */
+  @media (min-width:421px) and (pointer:coarse) {
+    html, body { overflow-x:hidden; }
+    .app-wrapper {
+      padding:0 !important; gap:0; margin:0 !important;
+      width:100vw; height:100vh; height:100dvh; position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background:var(--paper,#FBF7EC);
+      background-image:linear-gradient(180deg, #FBF7EC 0%, #F5F0E6 100%);
+      align-items:stretch !important; justify-content:flex-start;
+    }
+    .app-title-bar { display:none; }
+    .phone-frame {
+      display:block; width:100vw; height:100vh; height:100dvh; max-width:900px;
+      border-radius:0; padding:0; box-shadow:none; background:transparent;
+      transform:none !important; margin:0 auto;
+    }
+    .phone-side-btn, .phone-notch, .phone-home-indicator { display:none; }
+    .phone-screen {
+      border-radius:0; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important;
+    }
+    .subpage-overlay {
+      position:absolute !important; top:0 !important; left:0 !important; right:0 !important;
+      bottom:var(--tabbar-h,90px) !important; z-index:200 !important;
+    }
+    #subpage-player { bottom:0 !important; }
+    #tabbar { z-index:300 !important; }
+    /* 平板高度下内容一律可滚动，避免固定顶底栏把中间内容压没/裁掉 */
+    .page, .page.active { overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+    .home-content, .questionnaire-body, .questionnaire-results { min-height:0; }
+    .qz-modal-mask { align-items:center; justify-content:center; }
+    .qz-modal-sheet { max-width:480px; border-radius:24px; }
+  }
+
+
   .healing-rec-msg {
     display:flex; flex-direction:column; padding:0; background:rgba(253,250,245,0.95);
     border-radius:16px; border:1px solid rgba(201,169,78,0.2); cursor:pointer;
@@ -7839,10 +7875,13 @@ function toggleImmersiveMode() {
   if (immersiveState.active) {
     overlay.classList.remove('active');
     immersiveState.active = false;
-    // 显示底部导航栏（仍在疗愈页时）
+    // 退出沉浸时，仅“真正回到疗愈页且不在播放器子页”才恢复底部导航，避免遮挡“进入沉浸模式”按钮
     var tabbar = document.getElementById('tabbar');
-    if (tabbar && document.getElementById('page-healing').classList.contains('active')) {
-      tabbar.style.display = 'flex';
+    if (tabbar && document.getElementById('page-healing') && document.getElementById('page-healing').classList.contains('active')) {
+      var _inPlayer = document.getElementById('subpage-player');
+      if (!_inPlayer || !_inPlayer.classList.contains('active')) {
+        tabbar.style.display = 'flex';
+      }
     }
     // 停止自动平移
     if (immersiveState.autoTimer) { clearInterval(immersiveState.autoTimer); immersiveState.autoTimer = null; }
@@ -11522,7 +11561,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20260924ax');
+  lines.push('版本: 20260924az');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
