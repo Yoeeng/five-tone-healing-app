@@ -229,7 +229,8 @@ async function handleChat(req, res) {
     catch (e) { return sendJSON(res, 400, { error: 'Invalid JSON body' }); }
 
     const envKey = process.env.DASHSCOPE_API_KEY || '';
-    const apiKey = (payload.apiKey && payload.apiKey.trim()) || envKey;
+    let apiKey = String((payload.apiKey && String(payload.apiKey)) || envKey || '');
+    apiKey = apiKey.replace(/[\s\u00A0\u1680\u2000-\u200D\u2060\u2028\u2029\u202F\u205F\u3000\uFEFF\u00AD\u200E\u200F]/g, '');
     const messages = (payload.messages && payload.messages.length > 0)
       ? payload.messages
       : (payload.input && payload.input.messages ? payload.input.messages : []);

@@ -18,7 +18,8 @@ export async function onRequestPost({ request, env }) {
   catch (e) { return json({ 'Content-Type': 'application/json' }, 400, { error: 'Invalid JSON body' }); }
 
   const envKey = (env && env.DASHSCOPE_API_KEY) || '';
-  const apiKey = (payload.apiKey && payload.apiKey.trim()) || envKey;
+  let apiKey = String((payload.apiKey && String(payload.apiKey)) || envKey || '');
+  apiKey = apiKey.replace(/[\s\u00A0\u1680\u2000-\u200D\u2060\u2028\u2029\u202F\u205F\u3000\uFEFF\u00AD\u200E\u200F]/g, '');
   const messages = (payload.messages && payload.messages.length > 0) ? payload.messages : (payload.input && payload.input.messages ? payload.input.messages : []);
   const model = payload.model || 'qwen-plus';
   const maxTokens = payload.max_tokens || (payload.parameters && payload.parameters.max_tokens) || 100;
