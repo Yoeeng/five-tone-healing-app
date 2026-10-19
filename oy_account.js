@@ -376,6 +376,25 @@
     for (i = 1; i <= 34; i++){ if (__ansAt(ans, 'body', i) >= 3) bodyPos++; }
     return { emotionTotal: emoTotal, emotionPositive: emoPos, body: body, bodyTotal: bodyTotal, bodyPositive: bodyPos };
   }
+  // ===== 逐题答题明细（按轮拆分：每轮前10题情绪+后7题躯体，第5轮躯体6题，共84题）=====
+  // 返回 [{ emoRange:'1-10', bodyRange:'1-7', emo:[...10], body:[...] } × 5]；非新格式(不足78题)返回 []
+  function __roundDetails(ans){
+    if (!Array.isArray(ans) || ans.length < 78) return [];
+    var out = [];
+    for (var r = 0; r < 5; r++){
+      var bCount = (r === 4) ? 6 : 7;
+      var emo = [], body = [];
+      for (var q = 0; q < 10; q++){ var ie = r * 17 + q; emo.push((ie < ans.length && ans[ie] != null) ? ans[ie] : ''); }
+      for (var b = 0; b < bCount; b++){ var ib = r * 17 + 10 + b; body.push((ib < ans.length && ans[ib] != null) ? ans[ib] : ''); }
+      out.push({ emoRange: (r * 10 + 1) + '-' + (r * 10 + 10), bodyRange: (r * 7 + 1) + '-' + (r * 7 + bCount), emo: emo, body: body });
+    }
+    return out;
+  }
+  // 单轮明细单行文本（CSV/TXT 共用）
+  function __roundLine(rd){
+    if (!rd) return '';
+    return '情绪Q' + rd.emoRange + ':' + rd.emo.join(',') + ' ｜ 躯体Q' + rd.bodyRange + ':' + rd.body.join(',');
+  }
   // ===== 当前问卷（从未归档，直接读 wuyin_questionnaire_answers 计分）=====
   var __Q_EMOTION_IDS = {
     jue:[1,2,7,11,13,17,28,29,37,43], zhi:[6,9,15,16,20,23,27,36,42,47],
@@ -671,7 +690,7 @@
       });
       var qh = (D.questionnaire_history || []).filter(function(x){ return x && __inTR(x.date, TR); });
       var qrows = qh.map(function(x){
-        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', scores: x.scores || null, quizFillSec: (typeof x.quizFillSec === 'number') ? x.quizFillSec : 0, quizRounds: (Array.isArray(x.quizRounds)) ? x.quizRounds : [] }, __scoreQuestionnaire(x));
+        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', scores: x.scores || null, quizFillSec: (typeof x.quizFillSec === 'number') ? x.quizFillSec : 0, quizRounds: (Array.isArray(x.quizRounds)) ? x.quizRounds : [] }, __scoreQuestionnaire(x), { rounds: __roundDetails(x.answers) });
       });
       // 兜底：首次问卷未归档 history，但存在当前题库（wuyin_questionnaire_answers）或当前五态 qingzhi。
       // 生成一条"当前情志测评"记录，并从真实答案计算情绪总分/阳性数 + 躯体化七因子/总分/阳性数。
@@ -682,7 +701,7 @@
           var sc2 = __scoreQuestionnaire({ scores: curQ2.scores, answers: curQ2.answers });
           var _cf = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
           var _cft = _cf ? _cf.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
-          var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评', scores: curQ2.scores, isCurrent: true, quizFillSec: _cft, quizRounds: _cf ? _cf.rounds.slice() : [] }, sc2);
+          var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评', scores: curQ2.scores, isCurrent: true, quizFillSec: _cft, quizRounds: _cf ? _cf.rounds.slice() : [] }, sc2, { rounds: __roundDetails(curQ2.answers) });
           qrows.push(qrow2);
         }
       }
@@ -862,7 +881,7 @@
           bc.evidence.forEach(function(ev, i){ L.push('  依据' + (i+1) + '：' + ev); });
         }
       } else { L.push('  （无）'); }
-      L.push('  ── 情志测评（问卷渠道：日期 | 时间 | 角(怒) | 徵(喜) | 宫(思) | 商(忧) | 羽(恐) | 情绪总分 | 情绪阳性数 | 心血管 | 脑神经 | 消化 | 呼吸 | 泌尿 | 四肢肌肉 | 其他 | 躯体化总分 | 躯体化阳性数）──');
+      L.push('  ── 情志测评（问卷渠道：日期 | 时间 | 角(怒) | 徵(喜) | 宫(思) | 商(忧) | 羽(恐) | 情绪总分 | 情绪阳性数 | 心血管 | 脑神经 | 消化 | 呼吸 | 泌尿 | 四肢肌肉 | 其他 | 躯体化总分 | 躯体化阳性数）（下方逐行列出5轮逐题答题明细）──');
       if (!B.emotion.questionnaire.length) L.push('  （无记录）');
       B.emotion.questionnaire.forEach(function(x){
         var sc = x.scores || {}, bd = x.body || {};
@@ -872,6 +891,9 @@
           + ' | ' + dv(x.emotionTotal) + ' | ' + dv(x.emotionPositive)
           + ' | ' + bv('心血管') + ' | ' + bv('脑神经') + ' | ' + bv('消化') + ' | ' + bv('呼吸') + ' | ' + bv('泌尿') + ' | ' + bv('四肢肌肉') + ' | ' + bv('其他')
           + ' | ' + dv(x.bodyTotal) + ' | ' + dv(x.bodyPositive));
+        if (Array.isArray(x.rounds) && x.rounds.length){
+          x.rounds.forEach(function(rd, ri){ L.push('      第' + (ri + 1) + '轮答题明细：' + __roundLine(rd)); });
+        }
       });
       if (B.emotion.summary && B.emotion.summary.quizRounds && B.emotion.summary.quizRounds.length){
         L.push('  ── 问卷填写时长（最近一次测评，逐轮秒数）──');
@@ -974,9 +996,10 @@
           (x.quizFillSec != null ? +(x.quizFillSec/60).toFixed(1) : ''), (x.quizFillSec != null ? x.quizFillSec : ''), (Array.isArray(x.quizRounds) && x.quizRounds.length ? x.quizRounds.map(function(s2,i2){ return 'R' + (i2+1) + '=' + s2; }).join(';') : ''), sc.jue != null ? sc.jue : '', sc.zhi != null ? sc.zhi : '', sc.gong != null ? sc.gong : '', sc.shang != null ? sc.shang : '', sc.yu != null ? sc.yu : '',
           x.emotionTotal != null ? x.emotionTotal : '', x.emotionPositive != null ? x.emotionPositive : '',
           (x.body && x.body['心血管'] != null) ? x.body['心血管'] : '', (x.body && x.body['脑神经'] != null) ? x.body['脑神经'] : '', (x.body && x.body['消化'] != null) ? x.body['消化'] : '', (x.body && x.body['呼吸'] != null) ? x.body['呼吸'] : '', (x.body && x.body['泌尿'] != null) ? x.body['泌尿'] : '', (x.body && x.body['四肢肌肉'] != null) ? x.body['四肢肌肉'] : '', (x.body && x.body['其他'] != null) ? x.body['其他'] : '',
-          x.bodyTotal != null ? x.bodyTotal : '', x.bodyPositive != null ? x.bodyPositive : '']);
+          x.bodyTotal != null ? x.bodyTotal : '', x.bodyPositive != null ? x.bodyPositive : '',
+          __roundLine((x.rounds && x.rounds[0]) || null), __roundLine((x.rounds && x.rounds[1]) || null), __roundLine((x.rounds && x.rounds[2]) || null), __roundLine((x.rounds && x.rounds[3]) || null), __roundLine((x.rounds && x.rounds[4]) || null)]);
       }); });
-      sec('情志测评(问卷渠道)：情绪总分=喜怒忧思恐五因子和，情绪阳性=50题中选3-4数量；心血管/脑神经/消化/呼吸/泌尿/四肢肌肉/其他=34题按医学因子得分，躯体化总分=7因子和，阳性=34题中选3-4数量', ['编号','日期','时间','类型','问卷填写时长(分钟)','问卷填写时长(秒)','问卷逐轮秒数','角(怒)','徵(喜)','宫(思)','商(忧)','羽(恐)','情绪总分','情绪阳性数','心血管','脑神经','消化','呼吸','泌尿','四肢肌肉','其他','躯体化总分','躯体化阳性数'], rows6);
+      sec('情志测评(问卷渠道)：情绪总分=喜怒忧思恐五因子和，情绪阳性=50题中选3-4数量；心血管/脑神经/消化/呼吸/泌尿/四肢肌肉/其他=34题按医学因子得分，躯体化总分=7因子和，阳性=34题中选3-4数量；第N轮答题明细=该轮逐题得分(0-4分)，顺序为先10道情绪题、后躯体题，Q后数字为全局题号', ['编号','日期','时间','类型','问卷填写时长(分钟)','问卷填写时长(秒)','问卷逐轮秒数','角(怒)','徵(喜)','宫(思)','商(忧)','羽(恐)','情绪总分','情绪阳性数','心血管','脑神经','消化','呼吸','泌尿','四肢肌肉','其他','躯体化总分','躯体化阳性数','第1轮答题明细','第2轮答题明细','第3轮答题明细','第4轮答题明细','第5轮答题明细'], rows6);
     }
     // ⑦ 推荐命中（问卷/AI/时辰三来源）
     if (any && any.recommend){
