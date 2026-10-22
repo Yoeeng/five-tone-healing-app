@@ -690,20 +690,22 @@
       });
       var qh = (D.questionnaire_history || []).filter(function(x){ return x && __inTR(x.date, TR); });
       var qrows = qh.map(function(x){
-        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', scores: x.scores || null, quizFillSec: (typeof x.quizFillSec === 'number') ? x.quizFillSec : 0, quizRounds: (Array.isArray(x.quizRounds)) ? x.quizRounds : [] }, __scoreQuestionnaire(x), { rounds: __roundDetails(x.answers) });
+        return Object.assign({ date: x.date || '', time: x.time || '', title: x.title || '', answers: Array.isArray(x.answers) ? x.answers : [], scores: x.scores || null, quizFillSec: (typeof x.quizFillSec === 'number') ? x.quizFillSec : 0, quizRounds: (Array.isArray(x.quizRounds)) ? x.quizRounds : [] }, __scoreQuestionnaire(x), { rounds: __roundDetails(x.answers) });
       });
-      // 兜底：首次问卷未归档 history，但存在当前题库（wuyin_questionnaire_answers）或当前五态 qingzhi。
-      // 生成一条"当前情志测评"记录，并从真实答案计算情绪总分/阳性数 + 躯体化七因子/总分/阳性数。
-      if (!qrows.length) {
-        var curQ2 = (typeof __curQuestionnaire === 'function') ? __curQuestionnaire(D) : null;
-        if (curQ2 && curQ2.scores) {
-          var qDate2 = __dateOf(curQ2.ts) || todayStr();
-          var sc2 = __scoreQuestionnaire({ scores: curQ2.scores, answers: curQ2.answers });
-          var _cf = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
-          var _cft = _cf ? _cf.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
-          var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评', scores: curQ2.scores, isCurrent: true, quizFillSec: _cft, quizRounds: _cf ? _cf.rounds.slice() : [] }, sc2, { rounds: __roundDetails(curQ2.answers) });
-          qrows.push(qrow2);
-        }
+      // ✅ 无论是否已有历史，都补上"当前最新测评"（置顶 + 类型列标注），并与历史去重
+      // 仅当存在完整答案（>=50题）时纳入；无任何历史时才允许用旧 qingzhi 兜底，避免重测中途误判为当前结果
+      var _hasAnyHistory = Array.isArray(D.questionnaire_history) && D.questionnaire_history.length > 0;
+      var curQ2 = (typeof __curQuestionnaire === 'function') ? __curQuestionnaire(D) : null;
+      var _curHasAnswers = !!(curQ2 && Array.isArray(curQ2.answers) && curQ2.answers.length >= 50);
+      if (curQ2 && curQ2.scores && (_curHasAnswers || !_hasAnyHistory)) {
+        var qDate2 = __dateOf(curQ2.ts) || todayStr();
+        var sc2 = __scoreQuestionnaire({ scores: curQ2.scores, answers: curQ2.answers });
+        var _cf = (D.quiz_fill && Array.isArray(D.quiz_fill.rounds)) ? D.quiz_fill : null;
+        var _cft = _cf ? _cf.rounds.reduce(function(a,b){ return a + (Number(b)||0); }, 0) : 0;
+        var qrow2 = Object.assign({ date: qDate2, time: __timeOf(curQ2.ts), title: '当前情志测评（最新）', answers: Array.isArray(curQ2.answers) ? curQ2.answers : [], scores: curQ2.scores, isCurrent: true, quizFillSec: _cft, quizRounds: _cf ? _cf.rounds.slice() : [] }, sc2, { rounds: __roundDetails(curQ2.answers) });
+        // 去重：日期/时间/答案完全一致，说明当前测评已归档在历史里
+        var _dup = qrows.some(function(h){ return h.date === qrow2.date && (h.time || '') === (qrow2.time || '') && JSON.stringify(h.answers || []) === JSON.stringify(qrow2.answers || []); });
+        if (!_dup) qrows.unshift(qrow2);
       }
       var inRangeHist = (D.ai_chat_history || []).filter(function(x){ return x && __inTR(x.date || __dateOf(x.timestamp), TR); });
       var rec = inRangeHist.length ? inRangeHist[inRangeHist.length-1] : null;

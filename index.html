@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20261019a"></script>
-<script src="oy_admin.js?v=20261019a"></script>
+<script src="oy_account.js?v=20261022a"></script>
+<script src="oy_admin.js?v=20261022a"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2959,6 +2959,7 @@
   .qh-item .qh-date .mon{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.2;margin-top:2px}
   .qh-item .qh-body{flex:1;min-width:0}
   .qh-item .qh-title{font-family:var(--v10-font-serif);font-size:18px;font-weight:700;color:var(--v10-ink);margin-bottom:2px;line-height:1.3}
+  .qh-item .qh-cur-badge{display:inline-block;margin-left:8px;font-family:var(--v10-font-kai);font-size:14px;font-weight:600;color:#fff;background:var(--v10-cinnabar,#C85A3D);border-radius:8px;padding:2px 8px;vertical-align:middle;letter-spacing:1px}
   .qh-item .qh-desc{font-family:var(--v10-font-kai);font-size:18px;color:var(--v10-ink-faint);line-height:1.55;margin-bottom:6px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
   }
@@ -3885,7 +3886,7 @@
 
       <!-- 情志测评历史（重新测评后，旧结果归档到这里） -->
       <div class="section-eyebrow" id="questionnaireHistoryAnchor">情志测评历史</div>
-      <div class="qh-sub">重新测评后，旧的测评结果将归档在此</div>
+      <div class="qh-sub">当前测评显示在最上方，历史结果按时间倒序排列</div>
       <div id="questionnaireHistoryContainer"></div>
 
       <!-- 近期日记（动态填充 from healingRecordsContainer） -->
@@ -5983,10 +5984,11 @@ function updateHomeV10() {
     var hasData = (vals !== null);
     var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
 
-    // 如果有问卷数据但 wuyin_qingzhi 为空，自动计算
-    if (!hasData && completed) {
-      var allAns = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]');
-      if (allAns.length >= 50) {
+    // ✅ 始终以"当前最新测评"的答案实时计算，避免查看/删除历史后残留旧分数
+    if (completed) {
+      var allAns = [];
+      try { allAns = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]'); } catch(e) {}
+      if (Array.isArray(allAns) && allAns.length >= 50) {
         var emotionIds = { 喜:[6,9,15,16,20,23,27,36,42,47], 怒:[1,2,7,11,13,17,28,29,37,43], 忧:[12,21,24,30,31,32,38,39,46,48], 思:[3,8,10,18,19,25,33,40,44,50], 恐:[4,5,14,22,26,34,35,41,45,49] };
         var rawScores = { 怒:0, 喜:0, 思:0, 忧:0, 恐:0 };
         // 提取50道情绪题
@@ -11561,7 +11563,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20261019a');
+  lines.push('版本: 20261022a');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));
@@ -13622,6 +13624,36 @@ function getHistoryTopWuyins(record, maxN) {
   return out;
 }
 
+// ✅ 取"当前最新测评"记录（用于历史列表置顶展示 / 查看 / 删除）
+function getCurrentQuestionnaireRecord() {
+  try {
+    var completed = localStorage.getItem('wuyin_questionnaire_completed') === 'true';
+    var answers = [];
+    try { answers = JSON.parse(localStorage.getItem('wuyin_questionnaire_answers') || '[]'); } catch(e) { answers = []; }
+    if (!completed || !Array.isArray(answers) || answers.length < 50) return null;
+    var ts = Number(localStorage.getItem('wuyin_questionnaire_completed_time')) || 0;
+    var d = ts ? new Date(ts) : new Date();
+    var pad2 = function(n) { return (n < 10 ? '0' : '') + n; };
+    var dateStr = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    var timeStr = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    var scores = null;
+    try { var qr = getQuestionnaireResult(); if (qr && qr.scores) scores = qr.scores; } catch(e) {}
+    var quizFillSec = 0, quizRounds = [];
+    try {
+      var qz = JSON.parse(localStorage.getItem('wuyin_quiz_fill') || 'null');
+      if (qz && Array.isArray(qz.rounds)) {
+        quizRounds = qz.rounds.slice();
+        quizFillSec = quizRounds.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
+      }
+    } catch(e) {}
+    return {
+      id: '__current__', isCurrent: true, date: dateStr, time: timeStr,
+      title: '当前情志测评', answers: answers, scores: scores,
+      quizFillSec: quizFillSec, quizRounds: quizRounds
+    };
+  } catch(e) { return null; }
+}
+
 // 渲染档案页"情志测评历史"列表
 function renderQuestionnaireHistory() {
   try {
@@ -13633,29 +13665,33 @@ function renderQuestionnaireHistory() {
     try { history = JSON.parse(localStorage.getItem('wuyin_questionnaire_history') || '[]'); } catch(e) { history = []; }
     if (!Array.isArray(history)) history = [];
 
+    // ✅ 当前最新测评也纳入列表（置顶展示），可直接查看与删除
+    var curRec = getCurrentQuestionnaireRecord();
+    var list = curRec ? [curRec].concat(history) : history;
+
     // 顶部计数徽标
     if (badge) {
-      if (history.length > 0) {
+      if (list.length > 0) {
         badge.style.display = '';
-        badge.textContent = '共 ' + history.length + ' 条';
+        badge.textContent = '共 ' + list.length + ' 条';
       } else {
         badge.style.display = 'none';
         badge.textContent = '';
       }
     }
 
-    if (history.length === 0) {
+    if (list.length === 0) {
       container.innerHTML = ''
         + '<div class="qh-empty">'
         +   '<div class="ic"><ion-icon name="archive-outline"></ion-icon></div>'
         +   '<div class="t">暂无历史测评</div>'
-        +   '<div class="d">完成首次测评后，结果会显示在档案页"近期情志"<br>重新测评时，旧的测评结果将自动归档到这里</div>'
+        +   '<div class="d">完成首次测评后，结果会显示在档案页"近期情志"<br>历史测评将按时间顺序排列在这里</div>'
         + '</div>';
       return;
     }
 
     var html = '<div class="qh-list">';
-    history.forEach(function(rec, idx) {
+    list.forEach(function(rec, idx) {
       // 日期
       var dateStr = rec.date || '';
       var day = '--';
@@ -13700,7 +13736,7 @@ function renderQuestionnaireHistory() {
         +     '<div class="mon">' + mon + '</div>'
         +   '</div>'
         +   '<div class="qh-body">'
-        +     '<div class="qh-title">' + title + '</div>'
+        +     '<div class="qh-title">' + title + (rec.isCurrent ? '<span class="qh-cur-badge">当前</span>' : '') + '</div>'
         +     (desc ? '<div class="qh-desc">' + desc + '</div>' : '')
         +     '<div class="qh-dots">' + dotsHtml + '</div>'
         +     (timeStr ? '<div class="qh-time">' + timeStr + '</div>' : '')
@@ -13729,14 +13765,20 @@ function scrollToQuestionnaireHistory() {
 function viewHistoryRecord(historyId) {
   try {
     if (!historyId) return;
+    var isCurrentRec = (historyId === '__current__');
     var history = [];
-    try { history = JSON.parse(localStorage.getItem('wuyin_questionnaire_history') || '[]'); } catch(e) { history = []; }
     var rec = null;
-    for (var i = 0; i < history.length; i++) {
-      if (history[i].id === historyId) { rec = history[i]; break; }
+    if (isCurrentRec) {
+      rec = getCurrentQuestionnaireRecord();
+      window._qhViewBackup = null;
+    } else {
+      try { history = JSON.parse(localStorage.getItem('wuyin_questionnaire_history') || '[]'); } catch(e) { history = []; }
+      for (var i = 0; i < history.length; i++) {
+        if (history[i].id === historyId) { rec = history[i]; break; }
+      }
     }
     if (!rec) {
-      try { if (typeof showToast === 'function') showToast('未找到该历史记录'); } catch(_) {}
+      try { if (typeof showToast === 'function') showToast(isCurrentRec ? '当前暂无测评数据' : '未找到该历史记录'); } catch(_) {}
       return;
     }
     if (!rec.answers || rec.answers.length < 50) {
@@ -13744,8 +13786,9 @@ function viewHistoryRecord(historyId) {
       return;
     }
 
-    // ✅ 1) 备份当前问卷状态（关闭结果页时恢复）
-    if (window._qhViewBackup === undefined) {
+    // ✅ 1) 备份当前问卷状态（关闭结果页时恢复）—— 仅历史记录需要
+    if (!isCurrentRec) {
+    if (!window._qhViewBackup) {
       window._qhViewBackup = {
         answers: null,
         round: null,
@@ -13770,37 +13813,21 @@ function viewHistoryRecord(historyId) {
         questionnaireState.currentRound = 5;
       }
     } catch(e) { console.error('[viewHistoryRecord] inject answers:', e); }
+    }
 
-    // 同步保存情志档案数据到 wuyin_qingzhi（从历史记录计算）
-    try {
-      var emotionIds = { 喜:[6,9,15,16,20,23,27,36,42,47], 怒:[1,2,7,11,13,17,28,29,37,43], 忧:[12,21,24,30,31,32,38,39,46,48], 思:[3,8,10,18,19,25,33,40,44,50], 恐:[4,5,14,22,26,34,35,41,45,49] };
-      var rawScores = { 怒:0, 喜:0, 思:0, 忧:0, 恐:0 };
-      var emotionAnswers = [];
-      if (rec.answers.length >= 78) {
-        for (var r = 0; r < 5; r++) { var off = r * 17; for (var q = 0; q < 10; q++) { emotionAnswers.push(rec.answers[off + q]); } }
-      } else {
-        emotionAnswers = rec.answers.slice(0, 50);
-      }
-      emotionAnswers.forEach(function(ans, idx) {
-        if (typeof ans !== 'number' || ans < 0) return;
-        var qNum = idx + 1;
-        for (var factor in emotionIds) {
-          if (emotionIds[factor].indexOf(qNum) >= 0) { rawScores[factor] += ans; break; }
-        }
-      });
-      var qingzhiVals = ['怒','喜','思','忧','恐'].map(function(f) { return Math.max(5, Math.round((rawScores[f] / 40) * 100)); });
-      localStorage.setItem('wuyin_qingzhi', JSON.stringify(qingzhiVals));
-    } catch(e) {}
+    // ✅ 历史为只读查看，不再覆盖当前情志档案数据（wuyin_qingzhi）
 
     // ✅ 3) 打开结果页（只读模式：隐藏"开始今日疗愈"和"重新测评"按钮避免误操作）
-    try {
-      var startBtn = document.getElementById('resultsStartBtn');
-      if (startBtn) startBtn.style.display = 'none';
-      var retakeBtn = document.getElementById('resultsRetakeBtn');
-      if (retakeBtn) retakeBtn.style.display = 'none';
-      var detailBtn = document.getElementById('resultsDetailBtn');
-      if (detailBtn) detailBtn.style.display = 'none';
-    } catch(e) {}
+    if (!isCurrentRec) {
+      try {
+        var startBtn = document.getElementById('resultsStartBtn');
+        if (startBtn) startBtn.style.display = 'none';
+        var retakeBtn = document.getElementById('resultsRetakeBtn');
+        if (retakeBtn) retakeBtn.style.display = 'none';
+        var detailBtn = document.getElementById('resultsDetailBtn');
+        if (detailBtn) detailBtn.style.display = 'none';
+      } catch(e) {}
+    }
 
     // ✅ 4) 显示历史浮层
     showHistoryViewer(rec, function() {
@@ -13883,9 +13910,17 @@ function showHistoryViewer(record, onClose) {
       .replace(/id="resultsRetakeBtn"[^>]*>/i, 'id="resultsRetakeBtn" style="display:none">')
       .replace(/id="resultsDetailBtn"[^>]*>/i, 'id="resultsDetailBtn" style="display:none">');
 
+    // ✅ 记住当前查看的记录 id，供"删除这条测评"按钮使用
+    window._qhViewerRecordId = (record && record.id) ? String(record.id) : '';
+    var deleteBlock = ''
+      + '<div style="margin-top:18px;padding-top:18px;border-top:1px dashed var(--v10-paper-edge,rgba(60,50,40,0.15));text-align:center;">'
+      +   '<button onclick="deleteQuestionnaireRecord()" style="width:100%;max-width:360px;padding:14px 20px;background:transparent;border:1.5px solid var(--v10-cinnabar,#C85A3D);border-radius:12px;color:var(--v10-cinnabar,#C85A3D);font-family:var(--v10-font-serif,serif);font-size:18px;font-weight:700;cursor:pointer;letter-spacing:1px;">删除这条测评</button>'
+      +   '<div style="font-family:var(--v10-font-kai,serif);font-size:15px;color:var(--v10-ink-faint,#7A7066);margin-top:8px;">删除后不可恢复</div>'
+      + '</div>';
     viewer.innerHTML = topHtml
       + '<div class="questionnaire-results active" style="position:relative;display:block;padding:24px 20px 100px;max-width:480px;margin:0 auto;">'
       +   innerHtml
+      +   deleteBlock
       + '</div>';
 
     // 6) ✅ 恢复原 #questionnaireResults 内容 + 隐藏整个容器
@@ -13919,6 +13954,70 @@ function closeHistoryViewer() {
       window._qhViewerOnClose = null;
     }
   } catch(e) { console.error('[closeHistoryViewer]', e); }
+}
+
+// ✅ 删除一条情志测评（历史记录或当前测评）
+function deleteQuestionnaireRecord() {
+  try {
+    var id = window._qhViewerRecordId || '';
+    if (!id) return;
+    var isCurrent = (id === '__current__');
+    var msg = isCurrent
+      ? '确定删除当前这次情志测评吗？\n删除后首页情志档案将清空，且不可恢复。'
+      : '确定删除这条情志测评记录吗？\n删除后不可恢复。';
+    if (typeof window.confirm === 'function' && !window.confirm(msg)) return;
+
+    if (isCurrent) {
+      localStorage.removeItem('wuyin_questionnaire_answers');
+      localStorage.removeItem('wuyin_questionnaire_round');
+      localStorage.removeItem('wuyin_questionnaire_completed');
+      localStorage.removeItem('wuyin_questionnaire_completed_time');
+      localStorage.removeItem('wuyin_qingzhi');
+      localStorage.removeItem('wuyin_positive_emotion');
+      localStorage.removeItem('wuyin_recommend_ids');
+      localStorage.removeItem('wuyin_quiz_fill');
+      try {
+        if (typeof questionnaireState === 'object' && questionnaireState) {
+          questionnaireState.answers = [];
+          questionnaireState.currentRound = 0;
+          questionnaireState.currentQuestion = 0;
+          questionnaireState.feeling = 0;
+        }
+      } catch(e) {}
+    } else {
+      // 先把查看历史时临时注入的答案还原，避免删除后历史答案残留在"当前"
+      try {
+        var b = window._qhViewBackup;
+        if (b && !b.restored) {
+          if (b.answers === null) localStorage.removeItem('wuyin_questionnaire_answers');
+          else localStorage.setItem('wuyin_questionnaire_answers', b.answers);
+          if (b.round === null) localStorage.removeItem('wuyin_questionnaire_round');
+          else localStorage.setItem('wuyin_questionnaire_round', b.round);
+          if (b.completed === null) localStorage.removeItem('wuyin_questionnaire_completed');
+          else localStorage.setItem('wuyin_questionnaire_completed', b.completed);
+        }
+      } catch(e) {}
+      var history = [];
+      try { history = JSON.parse(localStorage.getItem('wuyin_questionnaire_history') || '[]'); } catch(e) { history = []; }
+      if (!Array.isArray(history)) history = [];
+      localStorage.setItem('wuyin_questionnaire_history', JSON.stringify(history.filter(function(x) { return x && x.id !== id; })));
+    }
+
+    // 丢弃历史查看的备份，避免关闭时把已删除的数据还原
+    window._qhViewBackup = null;
+    window._qhViewerRecordId = '';
+    closeHistoryViewer();
+
+    try { renderQuestionnaireHistory(); } catch(e) {}
+    try { updateHomeV10(); } catch(e) {}
+    try { updateRecordsHero(); } catch(e) {}
+    try { updateRecordsStats(); } catch(e) {}
+    try { if (typeof updateHomeRecommendation === 'function') updateHomeRecommendation(); } catch(e) {}
+    try { if (typeof showToast === 'function') showToast(isCurrent ? '已删除当前测评' : '已删除该测评记录'); } catch(e) {}
+  } catch(e) {
+    console.error('[deleteQuestionnaireRecord]', e);
+    try { if (typeof showToast === 'function') showToast('删除失败，请重试'); } catch(_) {}
+  }
 }
 function saveVoiceDiary(wuyinId, wuyinName, rating, text) {
   var diaries = JSON.parse(localStorage.getItem('wuyin_voice_diary') || '[]');
