@@ -47,8 +47,8 @@
   }, 10000);
 </script>
 
-<script src="oy_account.js?v=20261022a"></script>
-<script src="oy_admin.js?v=20261022a"></script>
+<script src="oy_account.js?v=20261116a"></script>
+<script src="oy_admin.js?v=20261116a"></script>
 
 <!-- 性能优化 ①：字体走 link 标签（不阻塞 CSS 解析） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4372,7 +4372,7 @@
           <button class="duration-circle" data-min="10" onclick="selectDuration(this,10)"><span class="num">10</span><span class="unit">分</span></button>
           <button class="duration-circle active" data-min="20" onclick="selectDuration(this,20)"><span class="num">20</span><span class="unit">分</span></button>
           <button class="duration-circle" data-min="30" onclick="selectDuration(this,30)"><span class="num">30</span><span class="unit">分</span></button>
-          <button class="duration-circle" data-min="45" onclick="selectDuration(this,45)"><span class="num">45</span><span class="unit">分</span></button>
+          <button class="duration-circle" data-min="40" onclick="selectDuration(this,40)"><span class="num">40</span><span class="unit">分</span></button>
         </div>
       </div>
       <button class="intro-start-btn" id="introStartBtn" onclick="startHealing()">
@@ -11563,7 +11563,7 @@ function __diagCollect() {
   var ctxState = (typeof __TTSActx !== 'undefined' && __TTSActx) ? __TTSActx.state : '未创建';
   var prov = (typeof ttsConfig !== 'undefined' && ttsConfig.provider) ? ttsConfig.provider : '';
   var lines = [];
-  lines.push('版本: 20261022a');
+  lines.push('版本: 20261116a');
   lines.push('UA: ' + ua);
   lines.push('浏览器: ' + (/Safari/i.test(ua)&&!/Chrome/i.test(ua)?'Safari':(/Chrome/i.test(ua)?'Chrome':(/Android/i.test(ua)?'Android':'其他'))));
   lines.push('getUserMedia: ' + ((navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?'支持':'不支持'));

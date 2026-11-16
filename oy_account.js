@@ -479,14 +479,15 @@
     return { rounds: rounds, daily: daily };
   }
   // ===== 疗愈记录试听判定 =====
-  // 新数据：isTrial===true 或 自选时长===1（试听恒 1 分钟，正常自选仅 10/20/30/45）
-  // 历史旧数据（无 isTrial/durationMin）：非 {10,20,30,45} 且 早于该用户"完整情志测评结果"完成时间，且约1分钟 → 视为试听
+  // 新数据：isTrial===true 或 自选时长===1（试听恒 1 分钟，正常自选仅 10/20/30/40）
+  // 历史旧数据（无 isTrial/durationMin）：非 {10,20,30,40,45} 且 早于该用户"完整情志测评结果"完成时间，且约1分钟 → 视为试听
+  // 说明：45 为改版前的最后一档时长，保留在标准时长列表内，避免旧记录被误判为试听
   function __isTrial(r, completeTs){
     if (!r) return false;
     if (r.isTrial === true) return true;
     var dm = r.durationMin;
     if (dm === 1) return true;
-    var std = [10, 20, 30, 45];
+    var std = [10, 20, 30, 40, 45];
     if (typeof dm === 'number' && std.indexOf(dm) >= 0) return false; // 明确选择标准正式时长 → 正式疗愈
     // 无明确标准时长（含旧数据缺 durationMin）→ 需在完成完整情志测评之前才算试听
     if (typeof r.timestamp === 'number' && completeTs && r.timestamp < completeTs) return true;
