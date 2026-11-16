@@ -805,7 +805,7 @@
 
   /* ========== HEALING INTRO SUB-PAGE (aligned HealingIntroScreen.tsx) ========== */
   /* ✅ 单模式：图片独立显示在上方，文字在图片下方（不再与图片重叠） */
-  .intro-header-wrap { position:relative; width:100%; background:var(--card-solid); overflow:hidden; display:flex; flex-direction:column; }
+  .intro-header-wrap { position:relative; width:100%; background:var(--card-solid); overflow:hidden; display:flex; flex-direction:column; flex-shrink:0; }
   .intro-header-img { width:100%; height:220px; object-fit:cover; display:block; flex-shrink:0; }
   /* 遮罩默认不显示（用户要求图片与文字独立、不再叠加） */
   .intro-header-mask { display:none; }
@@ -816,11 +816,11 @@
   }
   .intro-back-btn ion-icon { font-size:22px; color:#fff; }
   /* ✅ 文字区域：相对定位 + 白底 + 加大 padding，与图片明显分离 */
-  .intro-header-text { position:relative; padding:22px 20px 24px; color:var(--ink); background:var(--card-solid); border-bottom:1px solid var(--border); z-index:3; flex:1; }
+  .intro-header-text { position:relative; padding:22px 20px 12px; color:var(--ink); background:var(--card-solid); z-index:3; flex:1; }
   .intro-header-text h2 { font-family:'Noto Serif SC',serif; font-size:26px; font-weight:700; color:var(--ink); text-shadow:none; }
   .intro-header-text .intro-header-scene { font-size:19px; opacity:1; color:#5A5A5A; margin-top:8px; }
   .intro-header-text .intro-header-element { font-size:17px; opacity:1; color:#8A8A8A; margin-top:6px; }
-  .intro-body { padding:20px; flex:1; overflow-y:auto; background:var(--bg); }
+  .intro-body { padding:0 20px 20px; background:var(--bg); flex-shrink:0; }
   .intro-body::-webkit-scrollbar { width:0; }
 
   /* description card · 五音圆形标志移到 h3 行内左侧，详细文字独立成段 */
@@ -4344,18 +4344,8 @@
       </div>
     </div>
     <div class="intro-body">
-      <div class="intro-desc-card" id="introDescCard">
-        <div class="intro-desc-card-inner">
-          <h3 class="intro-desc-title">
-            <span class="intro-desc-icon" id="introDescIcon"></span>
-            <span id="introDescTitle"></span>
-          </h3>
-          <p id="introDesc" class="intro-desc-text"></p>
-        </div>
-        <div class="intro-desc-color-bar" id="introDescColorBar"></div>
-      </div>
       <!-- 原 intro-music-card 整块已按用户要求删除（古琴与竹笛...的乐器描述板块） -->
-      <div id="introModesToggle" onclick="toggleIntroModes()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:8px;cursor:pointer;">
+      <div id="introModesToggle" onclick="toggleIntroModes()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 12px;margin-top:0;cursor:pointer;">
         <div>
           <div class="intro-other-title">您也可以尝试其他调式</div>
           <div class="intro-other-sub">每种调式对应不同情志，可多选组合</div>
@@ -7516,6 +7506,8 @@ function openIntro(idx) {
   selectedIntroIdx = idx;
   var item = WUYIN_DATA[idx];
   currentWuyinItem = item;
+  // 整页滚动：每次进入时回到顶部
+  try { var introPage = document.getElementById('subpage-intro'); if (introPage) introPage.scrollTop = 0; } catch(e) {}
 
   // ✅ 修复全局状态残留：只有当 idx 对应 _dualHealingIds 之一时，才视为双调式
   // 否则强制重置为单调式（解决"点宫音卡却进入角+徵双调式"等 bug）
@@ -7544,7 +7536,7 @@ function openIntro(idx) {
     var headerMask = document.querySelector('.intro-header-mask');
     if (headerMask) headerMask.style.display = 'none';
     var headerText = document.querySelector('.intro-header-text');
-    if (headerText) { headerText.style.position = 'relative'; headerText.style.bottom = 'auto'; headerText.style.left = 'auto'; headerText.style.right = 'auto'; headerText.style.marginTop = '0'; headerText.style.padding = '22px 20px 24px'; headerText.style.background = 'var(--card-solid)'; headerText.style.borderBottom = '1px solid var(--border)'; headerText.style.color = 'var(--ink)'; }
+    if (headerText) { headerText.style.position = 'relative'; headerText.style.bottom = 'auto'; headerText.style.left = 'auto'; headerText.style.right = 'auto'; headerText.style.marginTop = '0'; headerText.style.padding = '22px 20px 12px'; headerText.style.background = 'var(--card-solid)'; headerText.style.borderBottom = 'none'; headerText.style.color = 'var(--ink)'; }
     var headerScene = document.querySelector('.intro-header-scene');
     if (headerScene) headerScene.style.color = '#5A5A5A';
     var headerElement = document.querySelector('.intro-header-element');
@@ -7567,33 +7559,6 @@ function openIntro(idx) {
     document.getElementById('introTitle').style.textShadow = 'none';
     document.getElementById('introScene').textContent = '组合疗愈 · ' + item1.scene + ' / ' + item2.scene;
     document.getElementById('introElement').textContent = item1.element + '·' + item1.organ + ' + ' + item2.element + '·' + item2.organ;
-    // 上下双介绍卡片 + 国风虚线分隔
-    var descCard = document.getElementById('introDescCard');
-    var guofengDivider = '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">' +
-      '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.4;"></div>' +
-      '<div style="width:24px;height:24px;border-radius:50%;border:1.5px dashed var(--gold);display:flex;align-items:center;justify-content:center;opacity:0.6;">' +
-        '<ion-icon name="infinite" style="font-size:15px;color:var(--gold);"></ion-icon>' +
-      '</div>' +
-      '<div style="flex:1;border-top:1.5px dashed var(--gold);opacity:0.4;"></div>' +
-    '</div>';
-    descCard.innerHTML =
-      // 第一个调式
-      '<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">' +
-        '<div style="width:32px;height:32px;border-radius:50%;background:' + item1.accent + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;"><ion-icon name="' + item1.icon + '" style="font-size:16px;color:#fff;"></ion-icon></div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:16px;font-weight:700;color:var(--ink);">' + item1.name + ' · ' + item1.emotionLabel + '</div>' +
-          '<div style="font-size:17px;color:#888;line-height:1.4;margin-top:2px;">' + item1.description + '</div>' +
-        '</div>' +
-      '</div>' +
-      guofengDivider +
-      // 第二个调式
-      '<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">' +
-        '<div style="width:32px;height:32px;border-radius:50%;background:' + item2.accent + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;"><ion-icon name="' + item2.icon + '" style="font-size:16px;color:#fff;"></ion-icon></div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:16px;font-weight:700;color:var(--ink);">' + item2.name + ' · ' + item2.emotionLabel + '</div>' +
-          '<div style="font-size:17px;color:#888;line-height:1.4;margin-top:2px;">' + item2.description + '</div>' +
-        '</div>' +
-      '</div>';
     // 隐藏第二个卡片
     var desc2 = document.getElementById('introDescCard2');
     if (desc2) desc2.style.display = 'none';
@@ -7620,19 +7585,6 @@ function openIntro(idx) {
     document.getElementById('introTitle').textContent = item.name;
     document.getElementById('introScene').textContent = item.name + ' · ' + item.scene;
     document.getElementById('introElement').textContent = item.element + ' · ' + item.organ + ' · ' + item.emotion + ' · ' + item.emotionLabel;
-    // 恢复单模式介绍卡片结构 · 五音圆形标志移到 h3 行内左侧
-    var descCard = document.getElementById('introDescCard');
-    descCard.innerHTML =
-      '<div class="intro-desc-card-inner">' +
-        '<h3 class="intro-desc-title">' +
-          '<span class="intro-desc-icon" id="introDescIcon" style="background:' + item.accent + ';"><ion-icon name="' + item.icon + '" style="font-size:15px;color:#fff;"></ion-icon></span>' +
-          '<span id="introDescTitle">' + item.name + ' · ' + item.emotionLabel + '</span>' +
-        '</h3>' +
-        '<p id="introDesc" class="intro-desc-text">' + item.description + '</p>' +
-      '</div>' +
-      '<div class="intro-desc-color-bar" id="introDescColorBar" style="background:' + item.accent + ';"></div>';
-    var desc2 = document.getElementById('introDescCard2');
-    if (desc2) desc2.style.display = 'none';
     // 音乐描述卡已删除，无需操作
   }
 
